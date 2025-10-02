@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You - LOFINDA Perfumes</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      padding: 40px;
+      text-align: center;
+    }
+    .invoice {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    .invoice-header {
+      border-bottom: 2px solid #2f1e3d;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .invoice-header h1 {
+      color: #2f1e3d;
+      margin: 0;
+    }
+    .invoice-details {
+      margin-bottom: 20px;
+    }
+    .invoice-details p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #f3f3f3;
+    }
+    .total {
+      font-weight: bold;
+      font-size: 16px;
+      text-align: right;
+    }
+    .thankyou-msg {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 18px;
+      color: #333;
+    }
+    .back-home {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #2f1e3d;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    .back-home:hover {
+      background: #b02956;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="invoice">
+    <div class="invoice-header">
+      <h1>🎉 Thank You for Your Order!</h1>
+      <p>Your purchase was successful.</p>
+    </div>
+
+    <div class="invoice-details">
+      <p><strong>Name:</strong> <span id="customer-name"></span></p>
+      <p><strong>Email:</strong> <span id="customer-email"></span></p>
+      <p><strong>Phone:</strong> <span id="customer-phone"></span></p>
+      <p><strong>Address:</strong> <span id="customer-address"></span></p>
+    </div>
+
+    <h3>Order Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Price (₦)</th>
+          <th>Qty</th>
+          <th>Subtotal (₦)</th>
+        </tr>
+      </thead>
+      <tbody id="order-items"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" class="total">Shipping:</td>
+          <td>₦<span id="order-shipping"></span></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="total">Total Paid:</td>
+          <td><strong>₦<span id="order-total"></span></strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p class="thankyou-msg">We’ll process your order shortly and contact you with delivery details. 💐</p>
+
+    <div style="text-align:center;">
+      <a href="index.html" class="back-home">Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    // Retrieve order details from localStorage
+    const orderData = JSON.parse(localStorage.getItem("orderData"));
+
+    if (orderData) {
+      document.getElementById("customer-name").textContent = orderData.name;
+      document.getElementById("customer-email").textContent = orderData.email;
+      document.getElementById("customer-phone").textContent = orderData.phone;
+      document.getElementById("customer-address").textContent = orderData.address;
+      document.getElementById("order-total").textContent = orderData.total.toLocaleString();
+      document.getElementById("order-shipping").textContent = orderData.shipping.toLocaleString();
+
+      const itemsList = document.getElementById("order-items");
+      orderData.items.forEach(item => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${item.name}</td>
+          <td>₦${(item.price).toLocaleString()}</td>
+          <td>${item.qty}</td>
+          <td>₦${(item.subtotal).toLocaleString()}</td>
+        `;
+        itemsList.appendChild(tr);
+      });
+
+      // ✅ Clear order data after showing
+      localStorage.removeItem("orderData");
+    }
+  </script>
+</body>
+</html>

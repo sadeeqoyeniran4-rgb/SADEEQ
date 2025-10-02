@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Luxury perfumes vendor - shop premium Arabian & designer fragrances.">
+  <title>LÓFÍNDÀ Perfumes</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <!-- ================= HEADER ================= -->
+  <header>
+    <nav>
+      <div class="logo">
+        <img src="lofinda2.png" alt="LOFINDA Logo">
+      </div>
+
+      <div class="nav-search">
+        <input type="text" id="search-input" placeholder="Search...">
+        <button id="clear-search">&times;</button>
+        <button id="search-btn">Search</button>
+      </div>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#" id="aboutBtn">About</a></li>
+        <li><a href="#" id="contactBtn">Contact</a></li>
+        <li><a href="#" id="cartBtn">Cart <span id="cart-count">0</span></a></li>
+      </ul>
+
+      <!-- Hamburger toggle -->
+      <div class="hamburger" id="hamburger">☰</div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ================= HERO ================= -->
+    <section id="home" class="hero">
+      <div class="hero-text">
+        <h1>Discover Your Signature Scent</h1>
+        <p>Luxury Arabian & Designer Perfumes</p>
+        <button onclick="document.querySelector('#shop').scrollIntoView({behavior:'smooth'})">Shop Now</button>
+      </div>
+    </section>
+
+    <!-- ================= SHOP ================= -->
+    <section id="shop" class="products">
+      <h2>Our Collection</h2>
+      <div class="product-grid" id="product-grid">
+        <!-- Products will be dynamically loaded here -->
+      </div>
+    </section>
+
+    <!-- ================= ABOUT MODAL ================= -->
+    <div id="about-modal" class="modal">
+      <div class="modal-box">
+        <span id="close-about" class="close">&times;</span>
+        <h2 class="modal-title">About Us</h2>
+        <p>We curate the finest Arabian and designer perfumes, helping you find the scent that tells your story.</p>
+      </div>
+    </div>
+
+    <!-- ================= CONTACT MODAL ================= -->
+    <div id="contact-modal" class="modal">
+      <div class="modal-box">
+        <span id="close-contact" class="close">&times;</span>
+        <h2 class="modal-title">Contact Us</h2>
+        <form id="contactForm">
+          <input type="text" id="contact-name" name="name" placeholder="Your Name" required>
+          <input type="email" id="contact-email" name="email" placeholder="Your Email" required>
+          <textarea id="message" name="message" placeholder="Your Message" required></textarea>
+          <button type="submit" class="modal-btn">Send Message</button>
+        </form>
+        <div id="formResponse"></div>
+      </div>
+    </div>
+
+    <!-- ================= CART SIDEBAR ================= -->
+    <div id="cart-sidebar" class="cart-sidebar">
+      <h2>Your Cart</h2>
+      <div id="cart-items"></div>
+      <div>Total: <span id="cart-total">₦0</span></div>
+      <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
+      <button id="close-cart" class="close-btn">&times;</button>
+    </div>
+
+    <!-- ================= CHECKOUT MODAL ================= -->
+    <div id="checkout-modal" class="modal">
+      <div class="modal-box">
+        <span class="close" id="checkout-close">&times;</span>
+        <h2 class="modal-title">Checkout</h2>
+
+        <form id="checkout-form" class="modal-form">
+          <div class="form-group">
+            <label for="checkout-name">Full Name</label>
+            <input type="text" id="checkout-name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="checkout-email">Email</label>
+            <input type="email" id="checkout-email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="checkout-phone">Phone Number</label>
+            <input type="tel" id="checkout-phone" required>
+          </div>
+
+          <div class="form-group">
+            <label for="address">Delivery Address</label>
+            <textarea id="address" rows="3" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="shipping">Shipping Method</label>
+            <select id="shipping" required>
+              <option value="">-- Select Shipping --</option>
+              <option value="delivery">Standard Delivery</option>
+              <option value="express">Express Delivery</option>
+              <option value="pickup">Pickup</option>
+            </select>
+          </div>
+
+          <p class="checkout-total">
+            <strong>Total: </strong><span id="checkout-total">₦0</span>
+          </p>
+
+          <button type="submit" id="proceed-payment" class="modal-btn">
+            Proceed to Payment
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    <p>&copy; 2025 LÓFÍNDÀ Perfumes. All rights reserved.</p>
+  </footer>
+
+  <!-- ================= SCRIPTS ================= -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="app.js"></script>
+  <script>
+    const hamburger = document.getElementById("hamburger");
+    const navLinks = document.getElementById("nav-links");
+
+    // Toggle menu
+    hamburger.addEventListener("click", () => {
+      navLinks.classList.toggle("open");
+    });
+
+    // Close menu when clicking a link
+    document.querySelectorAll("#nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+      });
+    });
+  </script>
+</body>
+</html>
