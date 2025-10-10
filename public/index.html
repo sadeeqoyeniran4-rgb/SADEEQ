@@ -116,8 +116,8 @@
             <label for="shipping">Shipping Method</label>
             <select id="shipping" required>
               <option value="">-- Select Shipping --</option>
-              <option value="delivery">Standard Delivery</option>
-              <option value="express">Express Delivery</option>
+              <option value="intra-state">Intra-State Delivery</option>
+              <option value="inter-state">Inter-State Delivery</option>
               <option value="pickup">Pickup</option>
             </select>
           </div>
@@ -137,11 +137,9 @@
   <!-- ================= FOOTER ================= -->
   <footer>
     <p>&copy; 2025 LÓFÍNDÀ Perfumes. All rights reserved.</p>
+     <a href="admin.html" style="color: white; text-decoration: none;" id="adminLink">@</a>
   </footer>
 
-  <!-- ================= SCRIPTS ================= -->
-  <script src="https://js.paystack.co/v1/inline.js"></script>
-  <script src="app.js"></script>
   <script>
     const hamburger = document.getElementById("hamburger");
     const navLinks = document.getElementById("nav-links");
@@ -158,5 +156,268 @@
       });
     });
   </script>
+<!-- ❌ Transaction Failed Modal -->
+<div id="payment-failed-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal('payment-failed-modal')">&times;</span>
+    <h2>⚠️ Payment Failed</h2>
+    <p>Your transaction was not completed. Please try again.</p>
+    <div class="modal-buttons">
+      <button class="retry-btn" onclick="retryPayment()">🔄 Retry Payment</button>
+      <button class="close-btn-alt" onclick="closeModal('payment-failed-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+  }
+  .modal-content {
+    background: #fff;
+    max-width: 400px;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+  .modal-content h2 {
+    color: #b02956;
+    margin-bottom: 10px;
+  }
+  .modal-content p {
+    color: #333;
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+  .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  .retry-btn {
+    background: #2f1e3d;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .retry-btn:hover {
+    background: #b02956;
+  }
+  .close-btn-alt {
+    background: #777;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .close-btn-alt:hover {
+    background: #555;
+  }
+  .close-btn {
+    float: right;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #666;
+  }
+  .close-btn:hover {
+    color: #b02956;
+  }
+</style>
+
+<script>
+  function showModal(id) {
+    document.getElementById(id).style.display = "block";
+  }
+  function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+  }
+</script>
+
+<!-- ================= ADMIN LOGIN MODAL ================= -->
+<div id="admin-login-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal('admin-login-modal')">&times;</span>
+    <h2>🔐 Admin Login</h2>
+    <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+    <button onclick="checkAdminLogin()" class="modal-btn">Login</button>
+    <p id="loginResponse" style="color:red; margin-top:10px;"></p>
+  </div>
+</div>
+
+<!-- ================= ADMIN PRODUCT FORM (Hidden) ================= -->
+<section id="admin" class="admin-panel" style="display:none;">
+  <h2>Add New Product</h2>
+  <form id="addProductForm">
+    <div class="form-group">
+      <label for="productName">Product Name</label>
+      <input type="text" id="productName" name="name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="productDescription">Description</label>
+      <textarea id="productDescription" name="description"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="productPrice">Price (₦)</label>
+      <input type="number" id="productPrice" name="price" required>
+    </div>
+
+    <div class="form-group">
+      <label for="productImage">Image URL</label>
+      <input type="url" id="productImage" name="image_url" placeholder="https://example.com/image.jpg">
+    </div>
+
+    <div class="form-group">
+      <img id="imagePreview" src="" alt="Image Preview" style="max-width:150px; display:none; margin-top:10px;">
+    </div>
+
+    <button type="submit" class="modal-btn">Add Product</button>
+  </form>
+
+  <div id="adminResponse"></div>
+</section>
+
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+  }
+  .modal-content {
+    background: #fff;
+    max-width: 350px;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+  }
+  .modal-content input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+</style>
+
+<script>
+  // ------------------ LOGIN CHECK ------------------
+  function openAdminLogin() {
+    if (!localStorage.getItem("isAdmin")) {
+      showModal("admin-login-modal");
+    } else {
+      document.getElementById("admin").style.display = "block";
+    }
+  }
+
+  function checkAdminLogin() {
+    const enteredPassword = document.getElementById("adminPassword").value;
+    
+    // ✅ Replace "supersecret" with your own password
+    if (enteredPassword === "sadeeq123") {
+      localStorage.setItem("isAdmin", "true");
+      closeModal("admin-login-modal");
+      document.getElementById("admin").style.display = "block";
+    } else {
+      document.getElementById("loginResponse").textContent = "❌ Wrong password!";
+    }
+  }
+
+  // ------------------ FORM HANDLING ------------------
+  const productImageInput = document.getElementById("productImage");
+  const imagePreview = document.getElementById("imagePreview");
+
+  productImageInput.addEventListener("input", () => {
+    const url = productImageInput.value;
+    if (url) {
+      imagePreview.src = url;
+      imagePreview.style.display = "block";
+    } else {
+      imagePreview.style.display = "none";
+    }
+  });
+
+  document.getElementById("addProductForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const product = {
+      name: document.getElementById("productName").value,
+      description: document.getElementById("productDescription").value,
+      price: parseFloat(document.getElementById("productPrice").value),
+      image_url: document.getElementById("productImage").value
+    };
+
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(product)
+      });
+      const data = await res.json();
+      if (data.id) {
+        document.getElementById("adminResponse").textContent = "✅ Product added!";
+        document.getElementById("addProductForm").reset();
+        imagePreview.style.display = "none";
+        if (typeof loadProducts === "function") loadProducts();
+      } else {
+        document.getElementById("adminResponse").textContent = "❌ Failed to add product.";
+      }
+    } catch (err) {
+      console.error("Error adding product:", err);
+      document.getElementById("adminResponse").textContent = "❌ Error saving product.";
+    }
+  });
+
+  // Utility functions
+  function showModal(id) {
+    document.getElementById(id).style.display = "block";
+  }
+  function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+  }
+
+  // In your admin login JS
+const res = await fetch("/api/admin-login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ password: enteredPassword })
+});
+const data = await res.json();
+if (data.success) {
+  localStorage.setItem("adminToken", data.token);
+  // show admin form
+}
+
+const token = localStorage.getItem("adminToken");
+await fetch("/api/products", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+  },
+  body: JSON.stringify(product)
+});
+
+</script>
+<!-- ================= SCRIPTS ================= -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="app.js"></script>
+
 </body>
 </html>

@@ -5,16 +5,18 @@ const path = require("path");
 const { Pool } = require("pg");
 const cors = require("cors");
 const fetch = require("node-fetch"); // npm install node-fetch@2
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// ================== MIDDLEWARE ==================
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// 🔹 PostgreSQL connection (use .env for safety)
+// ================== DATABASE ==================
 const pool = new Pool({
   user: process.env.DB_USER || "myuser",
   host: process.env.DB_HOST || "localhost",
@@ -23,22 +25,56 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5432,
 });
 
-// ✅ Contact form route
+// ================== ADMIN AUTH ==================
+function verifyAdmin(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) return res.status(403).json({ message: "No token provided" });
+
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.JWT_SECRET || "jwtsecretkey", (err, decoded) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
+    req.admin = decoded;
+    next();
+  });
+}
+
+app.post("/api/admin-login", (req, res) => {
+  const { password } = req.body;
+  const ADMIN_PASS = process.env.ADMIN_PASS || "sadeeq123";
+
+  if (password === ADMIN_PASS) {
+    const token = jwt.sign({ role: "admin" }, process.env.JWT_SECRET || "jwtsecretkey", {
+      expiresIn: "2h",
+    });
+    return res.json({ success: true, token });
+  }
+  return res.status(401).json({ success: false, message: "Invalid password" });
+});
+
+// ================== IMAGE UPLOAD ==================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, "public/uploads")),
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+});
+const upload = multer({ storage });
+
+app.post("/api/upload", verifyAdmin, upload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
+  const fileUrl = `/uploads/${req.file.filename}`;
+  res.json({ success: true, url: fileUrl });
+});
+
+// ================== CONTACT FORM ==================
 app.post("/api/contact", (req, res) => {
   const { name, email, message } = req.body;
   if (!name || !email || !message) {
-    return res
-      .status(400)
-      .json({ success: false, message: "All fields are required." });
+    return res.status(400).json({ success: false, message: "All fields are required." });
   }
   console.log("📩 New Contact Message:", { name, email, message });
-  return res.json({
-    success: true,
-    message: "Message received! We'll get back to you soon.",
-  });
+  res.json({ success: true, message: "Message received! We'll get back to you soon." });
 });
 
-// ✅ Fetch all products
+// ================== PRODUCTS ==================
 app.get("/api/products", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM products ORDER BY id DESC");
@@ -49,13 +85,10 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-// ✅ Add a new product
-app.post("/api/products", async (req, res) => {
+app.post("/api/products", verifyAdmin, async (req, res) => {
   const { name, description, price, image_url } = req.body;
   if (!name || !price) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Name and price are required." });
+    return res.status(400).json({ success: false, message: "Name and price are required." });
   }
   try {
     const result = await pool.query(
@@ -69,79 +102,141 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
-// ✅ Checkout route (calculates totals + shipping)
-app.post("/api/checkout", (req, res) => {
-  const { cart, shipping } = req.body;
-  if (!cart || cart.length === 0) {
-    return res.json({ success: false, message: "Cart is empty" });
+app.delete("/api/products/:id", verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const check = await pool.query("SELECT * FROM products WHERE id = $1", [id]);
+    if (check.rowCount === 0) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    await pool.query("DELETE FROM products WHERE id = $1", [id]);
+    res.status(200).json({ success: true, message: "Product deleted" });
+  } catch (err) {
+    console.error("❌ Error deleting product:", err);
+    res.status(500).json({ error: "Failed to delete product" });
   }
-
-  let total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-  // shipping costs
-  let shippingCost = 0;
-  if (shipping === "standard") shippingCost = 2000;
-  else if (shipping === "express") shippingCost = 5000;
-
-  const grandTotal = total + shippingCost;
-
-  return res.json({ success: true, total, shippingCost, grandTotal });
 });
 
-// ✅ Payment verification (Paystack)
+app.put("/api/products/:id", verifyAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { name, description, price, image_url } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE products SET name = $1, description = $2, price = $3, image_url = $4 WHERE id = $5 RETURNING *`,
+      [name, description, price, image_url, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+    res.json({ success: true, message: "Product updated", product: result.rows[0] });
+  } catch (err) {
+    console.error("❌ Error updating product:", err);
+    res.status(500).json({ success: false, message: "Update failed" });
+  }
+});
+
+// ================== CHECKOUT ==================
+app.post("/api/checkout", async (req, res) => {
+  try {
+    const { cart, shipping } = req.body;
+    if (!cart || cart.length === 0) {
+      return res.status(400).json({ success: false, message: "Cart is empty" });
+    }
+
+    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+    // ✅ Correct shipping logic
+    let shippingCost = 0;
+    if (shipping === "intra-state") shippingCost = 3000;
+    else if (shipping === "inter-state") shippingCost = 5000;
+    else if (shipping === "pickup") shippingCost = 0;
+    else shippingCost = 0; // fallback
+
+    const grandTotal = total + shippingCost;
+
+    res.json({
+      success: true,
+      total,
+      shippingCost,
+      grandTotal,
+    });
+  } catch (err) {
+    console.error("❌ Checkout error:", err);
+    res.status(500).json({ success: false, message: "Server error during checkout" });
+  }
+});
+
+// ======================= VERIFY PAYMENT AND SAVE ORDER =======================
 app.post("/api/verify-payment", async (req, res) => {
-  const { reference, cart, customer, totals } = req.body;
+  const { reference, name, email, phone, address, cart, total_amount } = req.body;
 
   try {
-    const response = await fetch(
-      `https://api.paystack.co/transaction/verify/${reference}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
-        },
-      }
-    );
-
+    // ✅ 1. Verify payment with Paystack
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+      },
+    });
     const data = await response.json();
 
-    if (data.data && data.data.status === "success") {
-      console.log("✅ Order confirmed:", { cart, customer, totals });
+    if (data.status && data.data.status === "success") {
+      // ✅ 2. Save the order
+      const orderResult = await pool.query(
+        `INSERT INTO orders (name, email, phone, address, total_amount, payment_reference)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        [name, email, phone, address, total_amount, reference]
+      );
 
-      // 👉 Save order into database
-      try {
-        const orderResult = await pool.query(
-          `INSERT INTO orders (customer_name, customer_email, customer_phone, address, shipping, cart, total, shipping_cost, grand_total, reference, status) 
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-          [
-            customer.name,
-            customer.email,
-            customer.phone,
-            customer.address,
-            customer.shipping,
-            JSON.stringify(cart),
-            totals.total,
-            totals.shippingCost,
-            totals.grandTotal,
-            reference,
-            "paid",
-          ]
+      const orderId = orderResult.rows[0].id;
+
+      // ✅ 3. Save order items
+      for (const item of cart) {
+        await pool.query(
+          `INSERT INTO order_items (order_id, product_id, quantity, price)
+           VALUES ($1, $2, $3, $4)`,
+          [orderId, item.id, item.quantity, item.price]
         );
-        console.log("💾 Order saved:", orderResult.rows[0]);
-      } catch (dbErr) {
-        console.error("❌ Error saving order:", dbErr);
       }
 
-      return res.json({ success: true, message: "Payment verified" });
+      return res.json({ success: true, message: "Order saved successfully" });
     } else {
-      return res.json({ success: false, message: "Verification failed" });
+      return res.status(400).json({ success: false, message: "Payment verification failed" });
     }
   } catch (err) {
-    console.error("❌ Error verifying payment:", err);
-    return res.json({ success: false, message: "Error verifying payment" });
+    console.error("❌ Error saving order:", err);
+    res.status(500).json({ success: false, message: "Server error saving order" });
   }
 });
 
-// Start server
+// ================== FETCH ORDERS (ADMIN ONLY) ==================
+app.get("/api/orders", verifyAdmin, async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM orders ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("❌ Error fetching orders:", err);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
+// ================== DELETE ORDER (ADMIN ONLY) ==================
+app.delete("/api/orders/:id", verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const check = await pool.query("SELECT * FROM orders WHERE id = $1", [id]);
+    if (check.rowCount === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    await pool.query("DELETE FROM orders WHERE id = $1", [id]);
+    res.status(200).json({ success: true, message: "Order deleted successfully" });
+  } catch (err) {
+    console.error("❌ Error deleting order:", err);
+    res.status(500).json({ error: "Failed to delete order" });
+  }
+});
+
+// ================== START SERVER ==================
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

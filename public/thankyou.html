@@ -62,7 +62,7 @@
       font-size: 18px;
       color: #333;
     }
-    .back-home {
+    .back-home, .download-invoice {
       display: inline-block;
       margin-top: 20px;
       padding: 10px 20px;
@@ -70,15 +70,17 @@
       color: #fff;
       text-decoration: none;
       border-radius: 5px;
+      margin-right: 10px;
+      cursor: pointer;
     }
-    .back-home:hover {
+    .back-home:hover, .download-invoice:hover {
       background: #b02956;
     }
   </style>
 </head>
 <body>
 
-  <div class="invoice">
+  <div class="invoice" id="invoice">
     <div class="invoice-header">
       <h1>🎉 Thank You for Your Order!</h1>
       <p>Your purchase was successful.</p>
@@ -89,6 +91,7 @@
       <p><strong>Email:</strong> <span id="customer-email"></span></p>
       <p><strong>Phone:</strong> <span id="customer-phone"></span></p>
       <p><strong>Address:</strong> <span id="customer-address"></span></p>
+      <p><strong>Reference:</strong> <span id="order-reference"></span></p>
     </div>
 
     <h3>Order Summary</h3>
@@ -118,36 +121,76 @@
 
     <div style="text-align:center;">
       <a href="index.html" class="back-home">Back to Home</a>
+      <button class="download-invoice" onclick="downloadInvoice()">Download Invoice (PDF)</button>
     </div>
   </div>
 
+  <!-- jsPDF for invoice download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <script>
-    // Retrieve order details from localStorage
-    const orderData = JSON.parse(localStorage.getItem("orderData"));
+    const orderData = JSON.parse(localStorage.getItem("lastOrder"));
 
     if (orderData) {
-      document.getElementById("customer-name").textContent = orderData.name;
-      document.getElementById("customer-email").textContent = orderData.email;
-      document.getElementById("customer-phone").textContent = orderData.phone;
-      document.getElementById("customer-address").textContent = orderData.address;
-      document.getElementById("order-total").textContent = orderData.total.toLocaleString();
-      document.getElementById("order-shipping").textContent = orderData.shipping.toLocaleString();
+      document.getElementById("customer-name").textContent = orderData.customer.name;
+      document.getElementById("customer-email").textContent = orderData.customer.email;
+      document.getElementById("customer-phone").textContent = orderData.customer.phone;
+      document.getElementById("customer-address").textContent = orderData.customer.address;
+      document.getElementById("order-reference").textContent = orderData.reference;
+
+      document.getElementById("order-total").textContent = orderData.totals.grandTotal.toLocaleString();
+      document.getElementById("order-shipping").textContent = (orderData.totals.shippingCost || 0).toLocaleString();
 
       const itemsList = document.getElementById("order-items");
-      orderData.items.forEach(item => {
+      orderData.cart.forEach(item => {
         let tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${item.name}</td>
-          <td>₦${(item.price).toLocaleString()}</td>
+          <td>₦${item.price.toLocaleString()}</td>
           <td>${item.qty}</td>
-          <td>₦${(item.subtotal).toLocaleString()}</td>
+          <td>₦${(item.price * item.qty).toLocaleString()}</td>
         `;
         itemsList.appendChild(tr);
       });
-
-      // ✅ Clear order data after showing
-      localStorage.removeItem("orderData");
     }
+
+    // ✅ Download invoice as PDF
+    function downloadInvoice() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("LOFINDA Perfumes - Invoice", 20, 20);
+      doc.setFontSize(12);
+      doc.text(`Reference: ${orderData.reference}`, 20, 30);
+      doc.text(`Name: ${orderData.customer.name}`, 20, 40);
+      doc.text(`Email: ${orderData.customer.email}`, 20, 50);
+      doc.text(`Phone: ${orderData.customer.phone}`, 20, 60);
+      doc.text(`Address: ${orderData.customer.address}`, 20, 70);
+
+      let y = 90;
+      doc.text("Order Summary:", 20, y);
+      y += 10;
+
+      orderData.cart.forEach(item => {
+        doc.text(
+          `${item.name} (x${item.qty}) - ₦${(item.price * item.qty).toLocaleString()}`,
+          20,
+          y
+        );
+        y += 10;
+      });
+
+      y += 10;
+      doc.text(`Shipping: ₦${(orderData.totals.shippingCost || 0).toLocaleString()}`, 20, y);
+      y += 10;
+      doc.text(`Total Paid: ₦${orderData.totals.grandTotal.toLocaleString()}`, 20, y);
+
+      doc.save(`Invoice_${orderData.reference}.pdf`);
+    }
+
+    // ✅ Clear order data after displaying
+    localStorage.removeItem("lastOrder");
   </script>
 </body>
 </html>

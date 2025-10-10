@@ -1,4 +1,3 @@
-// app.js
 document.addEventListener("DOMContentLoaded", () => {
   // ---------------- CONTACT FORM ----------------
   const form = document.getElementById("contactForm");
@@ -76,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCartUI();
   }
 
-  // Remove item
   if (cartItemsEl) {
     cartItemsEl.addEventListener("click", (e) => {
       if (e.target.classList.contains("remove")) {
@@ -86,7 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Cart toggle
   if (cartBtn)
     cartBtn.addEventListener("click", () =>
       cartSidebar.classList.toggle("open")
@@ -98,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateCartUI();
 
-  // ---------------- FETCH PRODUCTS FROM API ----------------
+  // ---------------- FETCH PRODUCTS ----------------
   const productsContainer = document.getElementById("product-grid");
 
   async function loadProducts() {
@@ -112,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const card = document.createElement("div");
         card.className = "product-card";
         card.innerHTML = `
-          <img src="${p.image_url || "default.jpg"}" alt="${p.name}">
+          <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
           <h3>${p.name}</h3>
           <p>${p.description || ""}</p>
           <p class="price">₦${Number(p.price).toLocaleString()}</p>
@@ -142,6 +139,102 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadProducts();
 
+  // ---------------- ADMIN LOGIN ----------------
+  const adminLoginForm = document.getElementById("adminLoginForm");
+  const loginResponse = document.getElementById("loginResponse");
+
+  if (adminLoginForm) {
+    adminLoginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const password = document.getElementById("admin-password").value;
+
+      try {
+        const res = await fetch("/api/admin-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          localStorage.setItem("adminToken", data.token);
+          loginResponse.textContent = "Login successful!";
+          loginResponse.style.color = "green";
+          document.getElementById("admin-login-modal").style.display = "none";
+          document.getElementById("admin-section").style.display = "block";
+        } else {
+          loginResponse.textContent = data.message || "Login failed";
+          loginResponse.style.color = "red";
+        }
+      } catch {
+        loginResponse.textContent = "Error logging in.";
+        loginResponse.style.color = "red";
+      }
+    });
+  }
+
+  // ---------------- ADMIN ADD PRODUCT ----------------
+  const addProductForm = document.getElementById("addProductForm");
+  const productResponse = document.getElementById("productResponse");
+
+  if (addProductForm) {
+    addProductForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        productResponse.textContent = "Not authorized. Please login.";
+        productResponse.style.color = "red";
+        return;
+      }
+
+      const fileInput = document.getElementById("prod-image-file");
+      let imageUrl = "";
+
+      if (fileInput && fileInput.files.length > 0) {
+        const uploadData = new FormData();
+        uploadData.append("image", fileInput.files[0]);
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: uploadData,
+        });
+        const uploadJson = await uploadRes.json();
+        if (uploadJson.success) imageUrl = uploadJson.url;
+      }
+
+      const formData = {
+        name: document.getElementById("prod-name").value,
+        price: document.getElementById("prod-price").value,
+        image_url: imageUrl,
+      };
+
+      try {
+        const res = await fetch("/api/products", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+
+        if (data.id) {
+          productResponse.textContent = "Product added successfully!";
+          productResponse.style.color = "green";
+          addProductForm.reset();
+          loadProducts();
+        } else {
+          productResponse.textContent = data.message || "Failed to add product.";
+          productResponse.style.color = "red";
+        }
+      } catch (err) {
+        productResponse.textContent = "Error submitting form.";
+        productResponse.style.color = "red";
+      }
+    });
+  }
+
   // ---------------- CHECKOUT MODAL ----------------
   const checkoutBtn = document.getElementById("checkout-btn"),
     checkoutModal = document.getElementById("checkout-modal"),
@@ -149,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
     shippingSelect = document.getElementById("shipping"),
     checkoutForm = document.getElementById("checkout-form");
 
-  let checkoutTotals = {}; // store backend totals
+  let checkoutTotals = {};
 
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", async () => {
@@ -165,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         const data = await res.json();
         if (data.success) {
-          checkoutTotals = data; // save totals
+          checkoutTotals = data;
           checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
           checkoutModal.style.display = "flex";
         } else {
@@ -187,7 +280,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === checkoutModal) checkoutModal.style.display = "none";
   });
 
-  // Update total when shipping option changes
   if (shippingSelect) {
     shippingSelect.addEventListener("change", async (e) => {
       try {
@@ -207,7 +299,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---------------- PAYSTACK CHECKOUT ----------------
+  // ---------------- ERROR MODAL ----------------
+  function showErrorModal(message) {
+    let modal = document.createElement("div");
+    modal.id = "errorModal";
+    modal.style.position = "fixed";
+    modal.style.top = "0";
+    modal.style.left = "0";
+    modal.style.width = "100%";
+    modal.style.height = "100%";
+    modal.style.background = "rgba(0,0,0,0.5)";
+    modal.style.display = "flex";
+    modal.style.alignItems = "center";
+    modal.style.justifyContent = "center";
+    modal.style.zIndex = "9999";
+
+    modal.innerHTML = `
+      <div style="background:white; padding:20px; border-radius:12px; max-width:400px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+        <h2 style="color:#d9534f; margin-bottom:15px;">Transaction Failed</h2>
+        <p>${message}</p>
+        <button id="closeErrorModal" style="margin-top:15px; padding:10px 20px; background:#d9534f; color:white; border:none; border-radius:6px; cursor:pointer;">Close</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById("closeErrorModal").addEventListener("click", () => {
+      modal.remove();
+    });
+  }
+
+  // ---------------- PAYSTACK + VERIFY PAYMENT ----------------
   if (checkoutForm) {
     checkoutForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -218,45 +340,61 @@ document.addEventListener("DOMContentLoaded", () => {
         shipping = document.getElementById("shipping").value || "pickup";
 
       if (!checkoutTotals.success || checkoutTotals.grandTotal <= 0) {
-        return alert("Your cart is empty or totals not calculated!");
+        return showErrorModal("Your cart is empty or totals not calculated!");
       }
 
       if (!name || !email || !phone || !address) {
-        return alert("Please fill in all required fields!");
+        return showErrorModal("Please fill in all required fields!");
       }
 
       if (typeof PaystackPop === "undefined") {
-        alert("Payment system not loaded. Please refresh and try again.");
-        return;
+        return showErrorModal("Payment system not loaded. Please refresh and try again.");
       }
 
       let handler = PaystackPop.setup({
-        key: "pk_test_94839f29fb96befec516284f4acc28066435c509", // replace with live key in production
+        key: "pk_live_7fdfd2e1a880a49020422b3c6dc0f120590c6e26",
         email,
         amount: checkoutTotals.grandTotal * 100,
         currency: "NGN",
         ref: "LOFINDA-" + Date.now(),
         callback: function (res) {
-          // ✅ Save order data for thankyou.html
-          localStorage.setItem(
-            "lastOrder",
-            JSON.stringify({
+          // ✅ Call our backend to verify and save the order
+          fetch("/api/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
               reference: res.reference,
               cart,
               customer: { name, email, phone, address, shipping },
               totals: checkoutTotals,
+            }),
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              if (data.success) {
+                localStorage.setItem(
+                  "lastOrder",
+                  JSON.stringify({
+                    reference: res.reference,
+                    cart,
+                    customer: { name, email, phone, address, shipping },
+                    totals: checkoutTotals,
+                  })
+                );
+                cart = [];
+                localStorage.removeItem("cart");
+                window.location.href = "thankyou.html";
+              } else {
+                showErrorModal("❌ Payment verification failed.");
+              }
             })
-          );
-
-          // ✅ Clear cart
-          cart = [];
-          localStorage.removeItem("cart");
-
-          // Redirect to thank you page
-          window.location.href = "thankyou.html";
+            .catch((err) => {
+              console.error("Error verifying payment:", err);
+              showErrorModal("❌ Error verifying payment.");
+            });
         },
         onClose: function () {
-          alert("Transaction was not completed, payment window closed.");
+          showErrorModal("Transaction was not completed. Please try again.");
         },
       });
 
@@ -264,7 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---------------- SEARCH BAR ----------------
+  // ---------------- SEARCH ----------------
   const searchBar = document.getElementById("search-input"),
     searchBtn = document.getElementById("search-btn"),
     clearSearch = document.getElementById("clear-search");

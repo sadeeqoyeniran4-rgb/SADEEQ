@@ -1,0 +1,15 @@
+# Node.js
+node_modules/
+.env
+npm-debug.log
+admin.htmlpackage-lock.json
+@yarn.lock
+.env.local
+logs/
+*.log
+Thumbs.db
+.DS_Store
+dist/
+build/
+uploads/
+sw.js
