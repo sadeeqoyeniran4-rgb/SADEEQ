@@ -17,13 +17,13 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ================== DATABASE ==================
-const pool = new Pool({
-  user: process.env.DB_USER || "myuser",
-  host: process.env.DB_HOST || "localhost",
-  database: process.env.DB_NAME || "myshop",
-  password: process.env.DB_PASS || "mypassword",
-  port: process.env.DB_PORT || 5432,
-});
+//const pool = new Pool({
+  //user: process.env.DB_USER || "myuser",
+  //host: process.env.DB_HOST || "localhost",
+  //database: process.env.DB_NAME || "myshop",
+  //password: process.env.DB_PASS || "mypassword",
+  //port: process.env.DB_PORT || 5432,
+//});
 
 // ================== ADMIN AUTH ==================
 function verifyAdmin(req, res, next) {
