@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+const API_BASE = "https://sadeeq-backend.onrender.com";
   // ---------------- CONTACT FORM ----------------
   const form = document.getElementById("contactForm");
   const formResponse = document.getElementById("formResponse");
@@ -13,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       try {
-        const res = await fetch("/api/contact", {
+        const res = await fetch("https://lofinda-backend.onrender.com/api/contact", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -100,8 +101,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadProducts() {
     if (!productsContainer) return;
-    try {
-      const res = await fetch("/api/products");
+  try {
+  const res = await fetch("https://lofinda-backend.onrender.com/api/products");
       const products = await res.json();
 
       productsContainer.innerHTML = "";
@@ -149,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("admin-password").value;
 
       try {
-        const res = await fetch("/api/admin-login", {
+        const res = await fetch("https://lofinda-backend.onrender.com/api/admin-login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ password }),
@@ -193,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (fileInput && fileInput.files.length > 0) {
         const uploadData = new FormData();
         uploadData.append("image", fileInput.files[0]);
-        const uploadRes = await fetch("/api/upload", {
+        const uploadRes = await fetch("https://lofinda-backend.onrender.com/api/upload", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: uploadData,
@@ -209,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       try {
-        const res = await fetch("/api/products", {
+        const res = await fetch("https://lofinda-backend.onrender.com/api/products", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -251,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       try {
-        const res = await fetch("/api/checkout", {
+        const res = await fetch("https://lofinda-backend.onrender.com/api/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart }),
@@ -283,7 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (shippingSelect) {
     shippingSelect.addEventListener("change", async (e) => {
       try {
-        const res = await fetch("/api/checkout", {
+        const res = await fetch("https://lofinda-backend.onrender.com/api/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart, shipping: e.target.value }),
@@ -359,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ref: "LOFINDA-" + Date.now(),
         callback: function (res) {
           // ✅ Call our backend to verify and save the order
-          fetch("/api/verify-payment", {
+          fetch("https://lofinda-backend.onrender.com/api/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
