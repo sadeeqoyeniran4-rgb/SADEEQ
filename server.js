@@ -106,9 +106,8 @@ app.delete("/api/products/:id", verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const check = await pool.query("SELECT * FROM products WHERE id = $1", [id]);
-    if (check.rowCount === 0) {
-      return res.status(404).json({ error: "Product not found" });
-    }
+    if (check.rowCount === 0) return res.status(404).json({ error: "Product not found" });
+
     await pool.query("DELETE FROM products WHERE id = $1", [id]);
     res.status(200).json({ success: true, message: "Product deleted" });
   } catch (err) {
@@ -125,9 +124,8 @@ app.put("/api/products/:id", verifyAdmin, async (req, res) => {
       `UPDATE products SET name = $1, description = $2, price = $3, image_url = $4 WHERE id = $5 RETURNING *`,
       [name, description, price, image_url, id]
     );
-    if (result.rowCount === 0) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
+    if (result.rowCount === 0) return res.status(404).json({ success: false, message: "Product not found" });
+
     res.json({ success: true, message: "Product updated", product: result.rows[0] });
   } catch (err) {
     console.error("❌ Error updating product:", err);
@@ -145,56 +143,45 @@ app.post("/api/checkout", async (req, res) => {
 
     const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-    // ✅ Correct shipping logic
     let shippingCost = 0;
     if (shipping === "intra-state") shippingCost = 3000;
     else if (shipping === "inter-state") shippingCost = 5000;
     else if (shipping === "pickup") shippingCost = 0;
-    else shippingCost = 0; // fallback
 
     const grandTotal = total + shippingCost;
 
-    res.json({
-      success: true,
-      total,
-      shippingCost,
-      grandTotal,
-    });
+    res.json({ success: true, total, shippingCost, grandTotal });
   } catch (err) {
     console.error("❌ Checkout error:", err);
     res.status(500).json({ success: false, message: "Server error during checkout" });
   }
 });
 
-// ======================= VERIFY PAYMENT AND SAVE ORDER =======================
+// ================== VERIFY PAYMENT & SAVE ORDER ==================
 app.post("/api/verify-payment", async (req, res) => {
   const { reference, name, email, phone, address, cart, total_amount } = req.body;
 
   try {
-    // ✅ 1. Verify payment with Paystack
     const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
-      },
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` },
     });
     const data = await response.json();
 
     if (data.status && data.data.status === "success") {
-      // ✅ 2. Save the order
+      // ✅ Save order
       const orderResult = await pool.query(
-        `INSERT INTO orders (name, email, phone, address, total_amount, payment_reference)
+        `INSERT INTO orders (customer_name, email, phone, address, total_amount, payment_reference)
          VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
         [name, email, phone, address, total_amount, reference]
       );
 
       const orderId = orderResult.rows[0].id;
 
-      // ✅ 3. Save order items
       for (const item of cart) {
         await pool.query(
-          `INSERT INTO order_items (order_id, product_id, quantity, price)
+          `INSERT INTO order_items (order_id, product_name, quantity, price)
            VALUES ($1, $2, $3, $4)`,
-          [orderId, item.id, item.quantity, item.price]
+          [orderId, item.name, item.quantity, item.price]
         );
       }
 
@@ -208,25 +195,57 @@ app.post("/api/verify-payment", async (req, res) => {
   }
 });
 
-// ================== FETCH ORDERS (ADMIN ONLY) ==================
-app.get("/api/orders", verifyAdmin, async (req, res) => {
+// ================== FETCH ORDERS WITH ITEMS ==================
+app.get("/api/orders", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM orders ORDER BY id DESC");
-    res.json(result.rows);
+    // Step 1: Get all orders
+    const ordersResult = await pool.query(`
+      SELECT id, customer_name, email, address, total_amount, status, created_at
+      FROM orders
+      ORDER BY created_at DESC
+    `);
+
+    const orders = ordersResult.rows;
+
+    if (orders.length === 0) {
+      return res.json([]);
+    }
+
+    // Step 2: Get all order items with product info in one query
+    const orderIds = orders.map(o => o.id);
+    const orderItemsResult = await pool.query(`
+      SELECT 
+        oi.order_id,
+        oi.product_id,
+        oi.quantity,
+        oi.price,
+        p.name AS product_name
+      FROM order_items oi
+      JOIN products p ON oi.product_id = p.id
+      WHERE oi.order_id = ANY($1)
+    `, [orderIds]);
+
+    const orderItems = orderItemsResult.rows;
+
+    // Step 3: Group items by order
+    const ordersWithItems = orders.map(order => {
+      const itemsForOrder = orderItems.filter(item => item.order_id === order.id);
+      return { ...order, items: itemsForOrder };
+    });
+
+    res.json(ordersWithItems);
   } catch (err) {
     console.error("❌ Error fetching orders:", err);
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 });
 
-// ================== DELETE ORDER (ADMIN ONLY) ==================
+// ================== DELETE ORDER ==================
 app.delete("/api/orders/:id", verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const check = await pool.query("SELECT * FROM orders WHERE id = $1", [id]);
-    if (check.rowCount === 0) {
-      return res.status(404).json({ error: "Order not found" });
-    }
+    if (check.rowCount === 0) return res.status(404).json({ error: "Order not found" });
 
     await pool.query("DELETE FROM orders WHERE id = $1", [id]);
     res.status(200).json({ success: true, message: "Order deleted successfully" });

@@ -13,3 +13,4 @@ dist/
 build/
 uploads/
 sw.js
+.vercel

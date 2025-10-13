@@ -81,13 +81,14 @@ nav a:hover {
 
 /* Hamburger button */
 .hamburger {
-  display: none;
+  display: block;
   font-size: 26px;
   cursor: pointer;
   color: #fff;
   background: none;
   border: none;
   margin-left: auto; /* pushes hamburger to far right */
+  z-index: 2100;
 }
 
 /* ================= SEARCH BAR ================= */
@@ -182,11 +183,38 @@ nav a:hover {
   background: #e91e63;
 }
 
+/* 📱 Mobile Responsive (screens below 1024px) */
+@media (max-width: 1024px) {
+  .hero {
+    margin-top: -119px;
+    height: 50vh;
+    padding: 15px;
+    background-size: contain;
+
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;   /* smaller heading */
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .hero-content button {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+}
+
 /* 📱 Mobile Responsive (screens below 768px) */
 @media (max-width: 768px) {
   .hero {
-    min-height: 70vh;
-    background-size: cover;
+    margin-top: -119px;
+    height: 50vh;
+    padding: 15px;
+    background-size: contain;
+
   }
 
   .hero-content h1 {
@@ -206,12 +234,14 @@ nav a:hover {
 /* 📱 Very Small Devices (below 480px) */
 @media (max-width: 480px) {
   .hero {
-    min-height: 60vh;
+    margin-top: -119px;
+    height: 50vh;
     padding: 15px;
+    background-size: contain;
   }
 
   .hero-content h1 {
-    font-size: 1.5rem;
+    font-size: 1rem;
   }
 
   .hero-content p {
@@ -220,7 +250,7 @@ nav a:hover {
 
   .hero-content button {
     font-size: 0.85rem;
-    padding: 8px 16px;
+    padding: 4px 8px;
   }
 }
 
@@ -722,4 +752,39 @@ footer {
 
 .product-card button:hover {
   background: #5e3b7a;
+}
+footer {
+  background: #503c44;  /* brand color */
+  color: #fff;
+  text-align: center;
+  padding: 1.2rem 0;
+  margin-top: 3rem;
+}
+
+.footer-content p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.social-links {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.social-links a {
+  color: #fff;
+  font-size: 1.6rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.social-links a:hover {
+  transform: scale(1.2);
+  color: #f8c4d8; /* soft pink hover — matches your brand */
+}
+@media (max-width: 480px) {
+  .product-grid{
+    color: #000;
+  }
 }

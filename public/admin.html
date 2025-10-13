@@ -105,21 +105,24 @@
   </div>
 
   <!-- Orders Section -->
-  <div id="orders-section" class="container">
-    <h2>Orders</h2>
-    <table id="ordersTable">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Customer</th>
-          <th>Total (₦)</th>
-          <th>Status</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody id="ordersBody"></tbody>
-    </table>
-  </div>
+<div id="orders-section" class="container">
+  <h2>Orders</h2>
+  <table id="ordersTable">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Customer</th>
+        <th>Email</th>
+        <th>Address</th>
+        <th>Items</th>
+        <th>Total (₦)</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="ordersBody"></tbody>
+  </table>
+</div>
 
   <!-- Edit Modal -->
   <div id="edit-modal">
@@ -287,26 +290,39 @@
       }
     });
 
-    // Fetch orders
-    async function fetchOrders() {
-      const res = await fetch('/api/orders', {
-        headers: { Authorization: `Bearer ${adminToken}` }
-      });
-      const orders = await res.json();
-      const tbody = document.getElementById('ordersBody');
-      tbody.innerHTML = '';
-      orders.forEach(order => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${order.id}</td>
-          <td>${order.customer_name || 'N/A'}</td>
-          <td>₦${order.grand_total}</td>
-          <td>${order.status || 'Pending'}</td>
-          <td>${new Date(order.created_at).toLocaleString()}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+   // Fetch Orders and Display Order Items, Qty, Price
+  async function fetchOrders() {
+    const res = await fetch('/api/orders', {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const orders = await res.json();
+    const tbody = document.getElementById('ordersBody');
+    tbody.innerHTML = '';
+
+    orders.forEach(order => {
+      const tr = document.createElement('tr');
+
+      const itemsHtml = order.items && order.items.length > 0
+        ? order.items.map(item => `
+            <div>
+              ${item.product_name} (x${item.quantity}) - ₦${item.price}
+            </div>
+          `).join('')
+        : '<em>No items</em>';
+
+      tr.innerHTML = `
+        <td>${order.id}</td>
+        <td>${order.customer_name || 'N/A'}</td>
+        <td>${order.email || 'N/A'}</td>
+        <td>${order.address || 'N/A'}</td>
+        <td>${itemsHtml}</td>
+        <td>₦${order.total_amount}</td>
+        <td>${order.status || 'Pending'}</td>
+        <td>${new Date(order.created_at).toLocaleString()}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
     window.deleteProduct = deleteProduct;
     window.openEditModal = openEditModal;

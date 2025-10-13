@@ -136,18 +136,34 @@
 
   <!-- ================= FOOTER ================= -->
   <footer>
-    <p>&copy; 2025 LÓFÍNDÀ Perfumes. All rights reserved.</p>
+  <div class="footer-content">
+    <p>&copy; 2025 LÓFÍNDÀ Perfumes. All Rights Reserved.</p>
+   <div class="social-links">
+      <a href="https://instagram.com/thescentatelier" target="_blank" aria-label="Instagram">
+        <i class="fab fa-instagram"></i>
+      </a>
+      <a href="https://tiktok.com/thescentatelier" target="_blank" aria-label="TikTok">
+        <i class="fab fa-tiktok"></i>
+      </a>
+      <a href="https://x.com/thescentatelier" target="_blank" aria-label="Twitter/X">
+        <i class="fab fa-x-twitter"></i>
+      </a>
+      <a href="https://wa.me/2347068716090" target="_blank" aria-label="WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+      </a>
+    </div>
+  </div>
      <a href="admin.html" style="color: white; text-decoration: none;" id="adminLink">@</a>
   </footer>
 
   <script>
-    const hamburger = document.getElementById("hamburger");
-    const navLinks = document.getElementById("nav-links");
+    const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
 
-    // Toggle menu
-    hamburger.addEventListener("click", () => {
-      navLinks.classList.toggle("open");
-    });
+hamburger.addEventListener('click', () => {
+  navLinks.classList.toggle('open');
+});
+
 
     // Close menu when clicking a link
     document.querySelectorAll("#nav-links a").forEach(link => {
@@ -392,32 +408,55 @@
     document.getElementById(id).style.display = "none";
   }
 
-  // In your admin login JS
-const res = await fetch("/api/admin-login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ password: enteredPassword })
-});
-const data = await res.json();
-if (data.success) {
-  localStorage.setItem("adminToken", data.token);
-  // show admin form
+  async function handleAdminLogin(enteredPassword) {
+  const res = await fetch("/api/admin-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password: enteredPassword })
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    localStorage.setItem("adminToken", data.token);
+    // show admin form
+  } else {
+    alert("Invalid password");
+  }
 }
 
 const token = localStorage.getItem("adminToken");
-await fetch("/api/products", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  },
-  body: JSON.stringify(product)
-});
 
+async function addProduct(product, token) {
+  try {
+    const res = await fetch("/api/products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(product)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      console.log("✅ Product added successfully:", data);
+      alert("Product added successfully!");
+      // You can also refresh product list here
+    } else {
+      console.error("❌ Failed to add product:", data);
+      alert("Failed to add product. Please try again.");
+    }
+  } catch (err) {
+    console.error("⚠️ Error adding product:", err);
+    alert("An error occurred. Please try again.");
+  }
+}
 </script>
 <!-- ================= SCRIPTS ================= -->
   <script src="https://js.paystack.co/v1/inline.js"></script>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
+
 
 </body>
 </html>
