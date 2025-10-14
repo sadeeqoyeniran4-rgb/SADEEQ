@@ -13,8 +13,8 @@ const API_BASE = "https://sadeeq-backend.onrender.com";
         message: document.getElementById("message").value,
       };
 
-      try {
-        const res = await fetch("https://lofinda-backend.onrender.com/api/contact", {
+        try {
+          const res = await fetch(`${window.API_BASE}/api/contact`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -101,8 +101,8 @@ const API_BASE = "https://sadeeq-backend.onrender.com";
 
   async function loadProducts() {
     if (!productsContainer) return;
-  try {
-  const res = await fetch("https://lofinda-backend.onrender.com/api/products");
+      try {
+        const res = await fetch(`${window.API_BASE}/api/products`);
       const products = await res.json();
 
       productsContainer.innerHTML = "";
@@ -194,7 +194,7 @@ const API_BASE = "https://sadeeq-backend.onrender.com";
       if (fileInput && fileInput.files.length > 0) {
         const uploadData = new FormData();
         uploadData.append("image", fileInput.files[0]);
-        const uploadRes = await fetch("https://lofinda-backend.onrender.com/api/upload", {
+          const uploadRes = await fetch(`${window.API_BASE}/api/upload`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: uploadData,
@@ -210,7 +210,7 @@ const API_BASE = "https://sadeeq-backend.onrender.com";
       };
 
       try {
-        const res = await fetch("https://lofinda-backend.onrender.com/api/products", {
+          const res = await fetch(`${window.API_BASE}/api/products`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -252,7 +252,7 @@ const API_BASE = "https://sadeeq-backend.onrender.com";
         return;
       }
       try {
-        const res = await fetch("https://lofinda-backend.onrender.com/api/checkout", {
+          const res = await fetch(`${window.API_BASE}/api/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart }),
@@ -352,15 +352,15 @@ const API_BASE = "https://sadeeq-backend.onrender.com";
         return showErrorModal("Payment system not loaded. Please refresh and try again.");
       }
 
-      let handler = PaystackPop.setup({
-        key: "pk_live_7fdfd2e1a880a49020422b3c6dc0f120590c6e26",
+        let handler = PaystackPop.setup({
+          key: window.PAYSTACK_KEY,
         email,
         amount: checkoutTotals.grandTotal * 100,
         currency: "NGN",
         ref: "LOFINDA-" + Date.now(),
         callback: function (res) {
           // ✅ Call our backend to verify and save the order
-          fetch("https://lofinda-backend.onrender.com/api/verify-payment", {
+            fetch(`${window.API_BASE}/api/verify-payment`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

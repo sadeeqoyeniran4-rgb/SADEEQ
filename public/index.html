@@ -156,6 +156,7 @@
      <a href="admin.html" style="color: white; text-decoration: none;" id="adminLink">@</a>
   </footer>
 
+  <script src="config.js"></script>
   <script>
     const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
@@ -334,24 +335,29 @@ hamburger.addEventListener('click', () => {
 
 <script>
   // ------------------ LOGIN CHECK ------------------
+  // Admin login is handled by the backend. This client-side helper opens the modal.
   function openAdminLogin() {
-    if (!localStorage.getItem("isAdmin")) {
-      showModal("admin-login-modal");
-    } else {
-      document.getElementById("admin").style.display = "block";
-    }
+    showModal("admin-login-modal");
   }
 
-  function checkAdminLogin() {
+  async function checkAdminLogin() {
     const enteredPassword = document.getElementById("adminPassword").value;
-    
-    // ✅ Replace "supersecret" with your own password
-    if (enteredPassword === "sadeeq123") {
-      localStorage.setItem("isAdmin", "true");
-      closeModal("admin-login-modal");
-      document.getElementById("admin").style.display = "block";
-    } else {
-      document.getElementById("loginResponse").textContent = "❌ Wrong password!";
+    try {
+      const res = await fetch(`${window.API_BASE}/admin-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: enteredPassword })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('adminToken', data.token);
+        closeModal('admin-login-modal');
+        document.getElementById('admin').style.display = 'block';
+      } else {
+        document.getElementById('loginResponse').textContent = '❌ Wrong password!';
+      }
+    } catch (err) {
+      document.getElementById('loginResponse').textContent = '❌ Login error';
     }
   }
 
