@@ -24,9 +24,9 @@ const pool = new Pool(
     ? { connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' }
     : {
         user: process.env.DB_USER || 'myuser',
-        host: process.env.DB_HOST || 'localhost',
-        database: process.env.DB_NAME || 'myshop',
-        password: process.env.DB_PASS || 'mypassword',
+        host: process.env.DB_HOST || 'dpg-d3mk9p9gv73c73fqo8mg-a.oregon-postgres.render.com',
+        database: process.env.DB_NAME || 'myshop_b7tq',
+        password: process.env.DB_PASS || 'L3bAK4taBNGSvDs2rAM6iWnYMHu4uefr',
         port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
       }
 );
@@ -35,7 +35,7 @@ const pool = new Pool(
 try {
   const dbHost = process.env.DATABASE_URL
     ? new URL(process.env.DATABASE_URL).hostname
-    : (process.env.DB_HOST || 'localhost');
+    : (process.env.DB_HOST || 'dpg-d3mk9p9gv73c73fqo8mg-a.oregon-postgres.render.com');
   console.log(`🔍 DB host resolved as: ${dbHost}`);
 } catch (e) {
   console.log('🔍 DB host could not be parsed from DATABASE_URL');
