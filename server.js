@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 
 const app = express();
-const API_BASE = "https://sadeeq-backend.onrender.com";
+const API_BASE = "https://lofinda-backend.onrender.com";
 const PORT = process.env.PORT || 3000;
 
 // ================== MIDDLEWARE ==================
