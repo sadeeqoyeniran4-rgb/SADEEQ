@@ -156,7 +156,7 @@
       e.preventDefault();
       const password = document.getElementById('admin-password').value;
 
-      const res = await fetch('/api/admin-login', {
+      const res = await fetch('https://lofinda-backend.onrender.com/api/admin-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
@@ -188,7 +188,7 @@
       const imgData = new FormData();
       imgData.append("image", imageFile);
 
-      const uploadRes = await fetch('/api/upload', {
+      const uploadRes = await fetch('https://lofinda-backend.onrender.com/api/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${adminToken}` },
         body: imgData
@@ -200,7 +200,7 @@
       }
 
       // Step 2: Add product
-      const res = await fetch('/api/products', {
+      const res = await fetch('https://lofinda-backend.onrender.com/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +225,7 @@
 
     // Fetch products
     async function fetchProducts() {
-      const res = await fetch('/api/products');
+    const res = await fetch('https://lofinda-backend.onrender.com/api/products');
       const products = await res.json();
       const tbody = document.getElementById('productTableBody');
       tbody.innerHTML = '';
@@ -292,7 +292,7 @@
 
    // Fetch Orders and Display Order Items, Qty, Price
   async function fetchOrders() {
-    const res = await fetch('/api/orders', {
+    const res = await fetch('https://lofinda-backend.onrender.com/api/orders', {
       headers: { Authorization: `Bearer ${adminToken}` }
     });
     const orders = await res.json();

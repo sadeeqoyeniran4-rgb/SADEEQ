@@ -380,7 +380,7 @@ hamburger.addEventListener('click', () => {
     };
 
     try {
-      const res = await fetch("/api/products", {
+      const res = await fetch("https://lofinda-backend.onrender.com/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product)
@@ -409,7 +409,7 @@ hamburger.addEventListener('click', () => {
   }
 
   async function handleAdminLogin(enteredPassword) {
-  const res = await fetch("/api/admin-login", {
+  const res = await fetch("https://lofinda-backend.onrender.com/api/admin-login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password: enteredPassword })
@@ -428,7 +428,7 @@ const token = localStorage.getItem("adminToken");
 
 async function addProduct(product, token) {
   try {
-    const res = await fetch("/api/products", {
+    const res = await fetch("https://lofinda-backend.onrender.com/api/products", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
