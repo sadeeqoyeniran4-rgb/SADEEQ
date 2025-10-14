@@ -22,7 +22,8 @@ header {
   position: sticky;
   top: 0;
   left: 0;
-  justify-content: space-between;
+  display: flex;
+  justify-content: center; /* center header content by default */
   align-items: center;
   z-index: 1000;
 }
@@ -36,8 +37,8 @@ header {
 
 nav {
   display: flex;
-  justify-content: space-between; /* logo left, links/hamburger right */
   align-items: center;
+  gap: 1rem;
   padding: 5px 15px;
   height: 60px;
   position: relative;
@@ -81,7 +82,7 @@ nav a:hover {
 
 /* Hamburger button */
 .hamburger {
-  display: block;
+  display: none; /* hidden by default, will show on small screens */
   font-size: 26px;
   cursor: pointer;
   color: #fff;
@@ -89,6 +90,37 @@ nav a:hover {
   border: none;
   margin-left: auto; /* pushes hamburger to far right */
   z-index: 2100;
+}
+
+/* Make header content centered: logo + nav */
+nav .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ensure nav-links and search align nicely */
+.nav-search {
+  flex: 1 1 300px;
+  min-width: 120px;
+}
+
+/* On larger screens make header layout horizontal and spaced */
+@media (min-width: 769px) {
+  header {
+    padding: 0.8rem 2rem;
+  }
+
+  nav {
+    width: 100%;
+    max-width: 1200px;
+    justify-content: space-between;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+  }
 }
 
 /* ================= SEARCH BAR ================= */
@@ -229,6 +261,56 @@ nav a:hover {
     font-size: 0.9rem;
     padding: 10px 20px;
   }
+
+  /* Show hamburger only on small screens */
+  .hamburger {
+    display: block;
+  }
+
+  /* Center logo and nav on small screens */
+  nav {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo img {
+    height: 80px; /* reduce logo size */
+  }
+
+  /* Collapse nav links into full-width vertical menu when open */
+  .nav-links {
+    display: none; /* hidden by default on mobile */
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: #503c44;
+    padding: 1rem 0;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .nav-links.open {
+    display: flex !important;
+  }
+
+  .nav-links li a {
+    display: block;
+    padding: 10px 0;
+    font-size: 16px;
+  }
+
+  /* Make search take full width below nav when menu is closed */
+  .nav-search {
+    order: 3;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .nav-search input {
+    width: 100%;
+  }
 }
 
 /* 📱 Very Small Devices (below 480px) */
@@ -251,6 +333,15 @@ nav a:hover {
   .hero-content button {
     font-size: 0.85rem;
     padding: 4px 8px;
+  }
+
+  /* further reduce logo on very small devices */
+  .logo img {
+    height: 60px;
+  }
+
+  nav {
+    padding: 8px 10px;
   }
 }
 
