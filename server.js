@@ -3,13 +3,13 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const { Pool } = require("pg");
+const fs = require('fs');
 const cors = require("cors");
 const fetch = require("node-fetch"); // npm install node-fetch@2
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 
 const app = express();
-const API_BASE = "https://lofinda-backend.onrender.com";
 const PORT = process.env.PORT || 3000;
 
 // ================== MIDDLEWARE ==================
@@ -80,9 +80,20 @@ app.post("/api/admin-login", (req, res) => {
 });
 
 // ================== IMAGE UPLOAD ==================
+// Ensure uploads directory exists (helps avoid multer errors)
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('📁 Created uploads directory:', uploadsDir);
+  }
+} catch (err) {
+  console.warn('⚠️ Could not create uploads directory:', err && err.message ? err.message : err);
+}
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, "public/uploads")),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
 });
 const upload = multer({ storage });
 

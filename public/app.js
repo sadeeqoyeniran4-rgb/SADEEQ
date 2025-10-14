@@ -40,8 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     checkoutTotalEl = document.getElementById("checkout-total");
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
-  const calcTotal = () =>
-    cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   function updateCartUI() {
     if (!cartItemsEl) return;

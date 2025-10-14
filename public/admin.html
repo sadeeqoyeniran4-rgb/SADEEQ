@@ -242,17 +242,34 @@
       }
 
       // Step 1: Upload image
+      if (!imageFile) {
+        document.getElementById('productResponse').textContent = '❌ Please select an image to upload.';
+        addBtn.disabled = false;
+        addBtn.textContent = originalText;
+        return;
+      }
+
       const imgData = new FormData();
       imgData.append("image", imageFile);
 
-      const uploadRes = await fetch(`${window.API_BASE}/upload`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${adminToken}` },
-        body: imgData
-      });
-      const uploadData = await uploadRes.json();
-      if (!uploadData.success) {
-        document.getElementById('productResponse').textContent = '❌ Image upload failed: ' + (uploadData.message || uploadRes.statusText);
+      let uploadData;
+      try {
+        const uploadRes = await fetch(`${window.API_BASE}/upload`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${adminToken}` },
+          body: imgData
+        });
+        uploadData = await uploadRes.json().catch(() => null);
+        if (!uploadRes.ok || !uploadData || !uploadData.success) {
+          const errMsg = uploadData && uploadData.message ? uploadData.message : (uploadRes.statusText || 'Upload failed');
+          document.getElementById('productResponse').textContent = '❌ Image upload failed: ' + errMsg;
+          addBtn.disabled = false;
+          addBtn.textContent = originalText;
+          return;
+        }
+      } catch (err) {
+        console.error('Upload error:', err);
+        document.getElementById('productResponse').textContent = '❌ Network error during image upload. Check your connection.';
         addBtn.disabled = false;
         addBtn.textContent = originalText;
         return;

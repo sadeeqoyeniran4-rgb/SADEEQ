@@ -1,7 +1,7 @@
 // Centralized client configuration (do NOT store secrets here for private keys)
 // Replace PAYSTACK_KEY value in CI or serve a real key via secure mechanism
 // Detect local development and switch API_BASE to localhost for easier testing
-;(function () {
+(function () {
 	const host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
 	if (host === 'localhost' || host === '127.0.0.1') {
 		window.API_BASE = 'http://localhost:3000/api';
