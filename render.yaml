@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: lofinda-backend
+    env: node
+    plan: free
+    repo: https://github.com/sadeeqoyeniran4-rgb/SADEEQ
+    branch: master
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
