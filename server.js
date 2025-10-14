@@ -31,6 +31,16 @@ const pool = new Pool(
       }
 );
 
+// Debug: print which DB host the server will attempt to use (no credentials shown)
+try {
+  const dbHost = process.env.DATABASE_URL
+    ? new URL(process.env.DATABASE_URL).hostname
+    : (process.env.DB_HOST || 'localhost');
+  console.log(`🔍 DB host resolved as: ${dbHost}`);
+} catch (e) {
+  console.log('🔍 DB host could not be parsed from DATABASE_URL');
+}
+
 // Quick DB connectivity check (non-blocking). Logs success or a helpful warning.
 pool
   .connect()
