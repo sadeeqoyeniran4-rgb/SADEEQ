@@ -1,4 +1,13 @@
 // Centralized client configuration (do NOT store secrets here for private keys)
 // Replace PAYSTACK_KEY value in CI or serve a real key via secure mechanism
-window.API_BASE = 'https://lofinda-backend.onrender.com/api';
-window.PAYSTACK_KEY = 'REPLACE_WITH_PAYSTACK_KEY';
+// Detect local development and switch API_BASE to localhost for easier testing
+;(function () {
+	const host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
+	if (host === 'localhost' || host === '127.0.0.1') {
+		window.API_BASE = 'http://localhost:3000/api';
+	} else {
+		window.API_BASE = 'https://lofinda-backend.onrender.com/api';
+	}
+	// Put a placeholder for the Paystack public key. Replace in deployment.
+	window.PAYSTACK_KEY = window.PAYSTACK_KEY || 'REPLACE_WITH_PAYSTACK_KEY';
+})();

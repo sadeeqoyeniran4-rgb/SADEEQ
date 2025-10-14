@@ -193,10 +193,23 @@
     // Add product
     document.getElementById('addProductForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = document.getElementById('prod-name').value;
-      const desc = document.getElementById('prod-desc').value;
-      const price = document.getElementById('prod-price').value;
+      const addBtn = document.getElementById('addProductBtn');
+      addBtn.disabled = true;
+      const originalText = addBtn.textContent;
+      addBtn.textContent = 'Uploading...';
+
+      const name = document.getElementById('prod-name').value.trim();
+      const desc = document.getElementById('prod-desc').value.trim();
+      const priceRaw = document.getElementById('prod-price').value;
+      const price = parseFloat(priceRaw);
       const imageFile = document.getElementById('prod-image-file').files[0];
+
+      if (!name || isNaN(price)) {
+        document.getElementById('productResponse').textContent = '❌ Name and valid price are required.';
+        addBtn.disabled = false;
+        addBtn.textContent = originalText;
+        return;
+      }
 
       // Step 1: Upload image
       const imgData = new FormData();
@@ -210,6 +223,8 @@
       const uploadData = await uploadRes.json();
       if (!uploadData.success) {
         document.getElementById('productResponse').textContent = '❌ Image upload failed: ' + (uploadData.message || uploadRes.statusText);
+        addBtn.disabled = false;
+        addBtn.textContent = originalText;
         return;
       }
 
@@ -235,6 +250,9 @@
       } else {
         document.getElementById('productResponse').textContent = '❌ Error adding product: ' + (addResult && addResult.message ? addResult.message : res.statusText);
       }
+
+      addBtn.disabled = false;
+      addBtn.textContent = originalText;
     });
 
     // Fetch products
