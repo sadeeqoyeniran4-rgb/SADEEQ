@@ -229,19 +229,12 @@ app.get("/api/orders", async (req, res) => {
       return res.json([]);
     }
 
-    // Step 2: Get all order items with product info in one query
+    // Step 2: Get order items (use product_name stored in order_items to avoid join errors)
     const orderIds = orders.map(o => o.id);
-    const orderItemsResult = await pool.query(`
-      SELECT 
-        oi.order_id,
-        oi.product_id,
-        oi.quantity,
-        oi.price,
-        p.name AS product_name
-      FROM order_items oi
-      JOIN products p ON oi.product_id = p.id
-      WHERE oi.order_id = ANY($1)
-    `, [orderIds]);
+    const orderItemsResult = await pool.query(
+      `SELECT order_id, product_name, quantity, price FROM order_items WHERE order_id = ANY($1)`,
+      [orderIds]
+    );
 
     const orderItems = orderItemsResult.rows;
 

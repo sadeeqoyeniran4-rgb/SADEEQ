@@ -285,26 +285,45 @@
       addBtn.textContent = originalText;
     });
 
-    // Fetch products
+    // Fetch products (defensive)
     async function fetchProducts() {
-    const res = await fetch(`${window.API_BASE}/products`);
-      const products = await res.json();
-      const tbody = document.getElementById('productTableBody');
-      tbody.innerHTML = '';
-      products.forEach(prod => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${prod.id}</td>
-          <td><img src="${prod.image_url}" alt="${prod.name}"></td>
-          <td>${prod.name}</td>
-          <td>₦${prod.price}</td>
-          <td>
-            <button class="edit-btn" onclick="openEditModal(${prod.id}, '${prod.name}', '${prod.description}', ${prod.price})">Edit</button>
-            <button class="delete-btn" onclick="deleteProduct(${prod.id})">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+      try {
+        const res = await fetch(`${window.API_BASE}/products`);
+        if (!res.ok) {
+          let errText = res.statusText;
+          try { const errJson = await res.json(); errText = errJson && errJson.message ? errJson.message : JSON.stringify(errJson); } catch(e){}
+          document.getElementById('productTableBody').innerHTML = `<tr><td colspan="5">Error loading products: ${errText}</td></tr>`;
+          console.error('Server error fetching products:', errText);
+          return;
+        }
+
+        const products = await res.json();
+        if (!Array.isArray(products)) {
+          document.getElementById('productTableBody').innerHTML = `<tr><td colspan="5">Unexpected product data format</td></tr>`;
+          console.error('Unexpected products response:', products);
+          return;
+        }
+
+        const tbody = document.getElementById('productTableBody');
+        tbody.innerHTML = '';
+        products.forEach(prod => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${prod.id}</td>
+            <td><img src="${prod.image_url}" alt="${prod.name}"></td>
+            <td>${prod.name}</td>
+            <td>₦${prod.price}</td>
+            <td>
+              <button class="edit-btn" onclick="openEditModal(${prod.id}, '${prod.name}', '${prod.description}', ${prod.price})">Edit</button>
+              <button class="delete-btn" onclick="deleteProduct(${prod.id})">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('Network/error fetching products:', err);
+        document.getElementById('productTableBody').innerHTML = `<tr><td colspan="5">Network error: ${err.message}</td></tr>`;
+      }
     }
 
     // Delete product
@@ -354,36 +373,55 @@
 
    // Fetch Orders and Display Order Items, Qty, Price
   async function fetchOrders() {
-    const res = await fetch(`${window.API_BASE}/orders`, {
-      headers: { Authorization: `Bearer ${adminToken}` }
-    });
-    const orders = await res.json();
-    const tbody = document.getElementById('ordersBody');
-    tbody.innerHTML = '';
+    try {
+      const res = await fetch(`${window.API_BASE}/orders`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      if (!res.ok) {
+        let errText = res.statusText;
+        try { const errJson = await res.json(); errText = errJson && errJson.message ? errJson.message : JSON.stringify(errJson); } catch(e){}
+        document.getElementById('ordersBody').innerHTML = `<tr><td colspan="8">Error loading orders: ${errText}</td></tr>`;
+        console.error('Server error fetching orders:', errText);
+        return;
+      }
 
-    orders.forEach(order => {
-      const tr = document.createElement('tr');
+      const orders = await res.json();
+      if (!Array.isArray(orders)) {
+        document.getElementById('ordersBody').innerHTML = `<tr><td colspan="8">Unexpected order data format</td></tr>`;
+        console.error('Unexpected orders response:', orders);
+        return;
+      }
 
-      const itemsHtml = order.items && order.items.length > 0
-        ? order.items.map(item => `
-            <div>
-              ${item.product_name} (x${item.quantity}) - ₦${item.price}
-            </div>
-          `).join('')
-        : '<em>No items</em>';
+      const tbody = document.getElementById('ordersBody');
+      tbody.innerHTML = '';
 
-      tr.innerHTML = `
-        <td>${order.id}</td>
-        <td>${order.customer_name || 'N/A'}</td>
-        <td>${order.email || 'N/A'}</td>
-        <td>${order.address || 'N/A'}</td>
-        <td>${itemsHtml}</td>
-        <td>₦${order.total_amount}</td>
-        <td>${order.status || 'Pending'}</td>
-        <td>${new Date(order.created_at).toLocaleString()}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+      orders.forEach(order => {
+        const tr = document.createElement('tr');
+
+        const itemsHtml = order.items && order.items.length > 0
+          ? order.items.map(item => `
+              <div>
+                ${item.product_name} (x${item.quantity}) - ₦${item.price}
+              </div>
+            `).join('')
+          : '<em>No items</em>';
+
+        tr.innerHTML = `
+          <td>${order.id}</td>
+          <td>${order.customer_name || 'N/A'}</td>
+          <td>${order.email || 'N/A'}</td>
+          <td>${order.address || 'N/A'}</td>
+          <td>${itemsHtml}</td>
+          <td>₦${order.total_amount}</td>
+          <td>${order.status || 'Pending'}</td>
+          <td>${new Date(order.created_at).toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error('Network/error fetching orders:', err);
+      document.getElementById('ordersBody').innerHTML = `<tr><td colspan="8">Network error: ${err.message}</td></tr>`;
+    }
   }
 
     window.deleteProduct = deleteProduct;
