@@ -295,6 +295,19 @@ nav .logo {
     display: flex !important;
   }
 
+  /* slide-down animation for mobile menu */
+  .nav-links {
+    transition: max-height 0.28s ease, opacity 0.2s ease;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .nav-links.open {
+    max-height: 320px; /* allow menu to expand */
+    opacity: 1;
+  }
+
   .nav-links li a {
     display: block;
     padding: 10px 0;

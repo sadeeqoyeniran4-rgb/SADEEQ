@@ -58,9 +58,30 @@
   </style>
 </head>
 <body>
+  <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
+
+  <!-- Shared Header/Nav -->
   <header>
-    <h1>Admin Dashboard</h1>
+    <nav>
+      <div class="logo">
+        <img src="lofinda2.png" alt="LOFINDA Logo">
+      </div>
+
+      <div class="nav-search">
+        <!-- keep admin simple: small placeholder search (optional) -->
+      </div>
+
+      <ul class="nav-links" id="nav-links-admin">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="admin.html">Dashboard</a></li>
+        <li><a href="#product-list-section">Products</a></li>
+        <li><a href="#orders-section">Orders</a></li>
+      </ul>
+
+      <!-- Hamburger toggle -->
+      <div class="hamburger" id="hamburger-admin">☰</div>
+    </nav>
   </header>
 
   <!-- Login Modal -->
@@ -142,6 +163,15 @@
   </div>
 
   <script>
+    // Hook hamburger for admin page
+    const hamburgerAdmin = document.getElementById('hamburger-admin');
+    const navLinksAdmin = document.getElementById('nav-links-admin');
+    if (hamburgerAdmin) {
+      hamburgerAdmin.addEventListener('click', () => {
+        navLinksAdmin.classList.toggle('open');
+      });
+    }
+
     // Read token from localStorage so admin remains logged in across reloads
     let adminToken = localStorage.getItem('adminToken') || null;
 
