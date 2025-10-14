@@ -36,6 +36,7 @@ header {
 }
 
 nav {
+    justify-content: space-between; /* logo left, search center, controls right */
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -45,7 +46,7 @@ nav {
 }
 
 nav ul {
-  display: flex;
+    margin: 0; /* reset margin */
   gap: 15px;
   font-size: 14px;
   list-style: none;
@@ -67,6 +68,7 @@ nav a:hover {
   display: flex;
   gap: 1.5rem;
   list-style: none;
+  order: 3; /* nav links order */
 }
 .nav-links.open {
   display: flex !important;
@@ -88,7 +90,8 @@ nav a:hover {
   color: #fff;
   background: none;
   border: none;
-  margin-left: auto; /* pushes hamburger to far right */
+  margin: 0;
+  order: 4; /* hamburger order */
   z-index: 2100;
 }
 
@@ -99,10 +102,13 @@ nav .logo {
   justify-content: center;
 }
 
+.logo { order: 1; }
+
 /* ensure nav-links and search align nicely */
 .nav-search {
   flex: 1 1 300px;
   min-width: 120px;
+  order: 2; /* search order */
 }
 
 /* On larger screens make header layout horizontal and spaced */
