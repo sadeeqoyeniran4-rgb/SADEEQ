@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 
 const app = express();
+const API_BASE = "https://sadeeq-backend.onrender.com";
 const PORT = process.env.PORT || 3000;
 
 // ================== MIDDLEWARE ==================
@@ -17,13 +18,30 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ================== DATABASE ==================
-//const pool = new Pool({
-  //user: process.env.DB_USER || "myuser",
-  //host: process.env.DB_HOST || "localhost",
-  //database: process.env.DB_NAME || "myshop",
-  //password: process.env.DB_PASS || "mypassword",
-  //port: process.env.DB_PORT || 5432,
-//});
+// Initialize Postgres pool. Prefer DATABASE_URL (Heroku/Render style). Falls back to individual env vars.
+const pool = new Pool(
+  process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' }
+    : {
+        user: process.env.DB_USER || 'myuser',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || 'myshop',
+        password: process.env.DB_PASS || 'mypassword',
+        port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
+      }
+);
+
+// Quick DB connectivity check (non-blocking). Logs success or a helpful warning.
+pool
+  .connect()
+  .then((client) => {
+    client.release();
+    console.log('✅ Database connected');
+  })
+  .catch((err) => {
+    console.warn('⚠️  Database not connected — check your DATABASE_URL or DB_* env vars');
+    console.warn(err && err.message ? err.message : err);
+  });
 
 // ================== ADMIN AUTH ==================
 function verifyAdmin(req, res, next) {
