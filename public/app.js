@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (fileInput && fileInput.files.length > 0) {
         const uploadData = new FormData();
         uploadData.append("image", fileInput.files[0]);
-                    const uploadRes = await fetch(`${window.API_BASE}/upload`, {
+                    const uploadRes = await fetch(`${window.API_BASE}/api/upload`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: uploadData,
