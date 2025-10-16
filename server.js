@@ -19,18 +19,14 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ================== DATABASE ==================
 // Initialize Postgres pool. Prefer DATABASE_URL (Heroku/Render style). Falls back to individual env vars.
-const pool = new Pool(
-  process.env.DATABASE_URL
-    ? { connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' }
-    : {
-        user: process.env.DB_USER || 'myuser',
-        host: process.env.DB_HOST || 'dpg-d3mk9p9gv73c73fqo8mg-a.oregon-postgres.render.com',
-        database: process.env.DB_NAME || 'myshop_b7tq',
-        password: process.env.DB_PASS || 'L3bAK4taBNGSvDs2rAM6iWnYMHu4uefr',
-        port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
-      }
-);
-
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASS,
+  port: 5432,
+  ssl: { rejectUnauthorized: false }
+});
 // Debug: print which DB host the server will attempt to use (no credentials shown)
 try {
   const dbHost = process.env.DATABASE_URL
@@ -68,11 +64,11 @@ function verifyAdmin(req, res, next) {
 
 app.post("/api/admin-login", (req, res) => {
   const { password } = req.body;
-  const ADMIN_PASS = process.env.ADMIN_PASS || "sadeeq123";
+  const ADMIN_PASS = process.env.ADMIN_PASS;
 
   if (password === ADMIN_PASS) {
     const token = jwt.sign({ role: "admin" }, process.env.JWT_SECRET || "jwtsecretkey", {
-      expiresIn: "2h",
+      expiresIn: "1h",
     });
     return res.json({ success: true, token });
   }
