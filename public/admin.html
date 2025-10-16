@@ -279,7 +279,7 @@
       }
 
       // Step 2: Add product
-      const res = await fetch(`${window.API_BASE}/products`, {
+      const res = await fetch(`${window.API_BASE}/api/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -308,7 +308,7 @@
     // Fetch products (defensive)
     async function fetchProducts() {
       try {
-        const res = await fetch(`${window.API_BASE}/products`);
+        const res = await fetch(`${window.API_BASE}/api/products`);
         if (!res.ok) {
           let errText = res.statusText;
           try { const errJson = await res.json(); errText = errJson && errJson.message ? errJson.message : JSON.stringify(errJson); } catch(e){}
@@ -376,7 +376,7 @@
       const desc = document.getElementById('edit-desc').value;
       const price = document.getElementById('edit-price').value;
 
-      const res = await fetch(`${window.API_BASE}/products/${id}`, {
+      const res = await fetch(`${window.API_BASE}/api/products/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -394,7 +394,7 @@
    // Fetch Orders and Display Order Items, Qty, Price
   async function fetchOrders() {
     try {
-      const res = await fetch(`${window.API_BASE}/orders`, {
+      const res = await fetch(`${window.API_BASE}/api/orders`, {
         headers: { Authorization: `Bearer ${adminToken}` }
       });
       if (!res.ok) {
