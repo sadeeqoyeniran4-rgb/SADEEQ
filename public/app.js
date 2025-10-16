@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
         try {
-    const res = await fetch(`${window.API_BASE}/contact`, {
+    const res = await fetch(`${window.API_BASE}/api/contact`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadProducts() {
     if (!productsContainer) return;
       try {
-  const res = await fetch(`${window.API_BASE}/products`);
+  const res = await fetch(`${window.API_BASE}/api/products`);
       const products = await res.json();
 
       productsContainer.innerHTML = "";
@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("admin-password").value;
 
       try {
-  const res = await fetch(`${window.API_BASE}/admin-login`, {
+  const res = await fetch(`${window.API_BASE}/api/admin-login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ password }),
@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       try {
-          const res = await fetch(`${window.API_BASE}/products`, {
+          const res = await fetch(`${window.API_BASE}/api/products`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       try {
-                    const res = await fetch(`${window.API_BASE}/checkout`, {
+        const res = await fetch(`${window.API_BASE}/api/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart }),
@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (shippingSelect) {
     shippingSelect.addEventListener("change", async (e) => {
       try {
-  const res = await fetch(`${window.API_BASE}/checkout`, {
+  const res = await fetch(`${window.API_BASE}/api/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart, shipping: e.target.value }),
@@ -357,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ref: "LOFINDA-" + Date.now(),
         callback: function (res) {
           // ✅ Call our backend to verify and save the order
-            fetch(`${window.API_BASE}/verify-payment`, {
+            fetch(`${window.API_BASE}/api/verify-payment`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
