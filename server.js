@@ -93,7 +93,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-app.post("/api/upload", verifyAdmin, upload.single("image"), (req, res) => {
+app.post("/api/upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
   const fileUrl = `/uploads/${req.file.filename}`;
   res.json({ success: true, url: fileUrl });
@@ -120,7 +120,7 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-app.post("/api/products", verifyAdmin, async (req, res) => {
+app.post("/api/products", async (req, res) => {
   const { name, description, price, image_url } = req.body;
   if (!name || !price) {
     return res.status(400).json({ success: false, message: "Name and price are required." });
@@ -137,7 +137,7 @@ app.post("/api/products", verifyAdmin, async (req, res) => {
   }
 });
 
-app.delete("/api/products/:id", verifyAdmin, async (req, res) => {
+app.delete("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const check = await pool.query("SELECT * FROM products WHERE id = $1", [id]);
@@ -151,7 +151,7 @@ app.delete("/api/products/:id", verifyAdmin, async (req, res) => {
   }
 });
 
-app.put("/api/products/:id", verifyAdmin, async (req, res) => {
+app.put("/api/products/:id", async (req, res) => {
   const { id } = req.params;
   const { name, description, price, image_url } = req.body;
   try {
@@ -269,7 +269,7 @@ app.get("/api/orders", async (req, res) => {
 });
 
 // ================== DELETE ORDER ==================
-app.delete("/api/orders/:id", verifyAdmin, async (req, res) => {
+app.delete("/api/orders/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const check = await pool.query("SELECT * FROM orders WHERE id = $1", [id]);

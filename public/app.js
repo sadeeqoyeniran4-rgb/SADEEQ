@@ -137,102 +137,129 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadProducts();
 
-  // ---------------- ADMIN LOGIN ----------------
-  const adminLoginForm = document.getElementById("adminLoginForm");
-  const loginResponse = document.getElementById("loginResponse");
+// 🔐 ADMIN LOGIN
+// ============================
+/*const adminLoginForm = document.getElementById("adminLoginForm");
+const loginResponse = document.getElementById("loginResponse");
+const adminSection = document.getElementById("admin-section");
+const adminLoginModal = document.getElementById("admin-login-modal");
 
-  if (adminLoginForm) {
-    adminLoginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const password = document.getElementById("admin-password").value;
+// If token exists, show admin section automatically
+const savedToken = localStorage.getItem("adminToken");
+if (savedToken) {
+  adminSection.style.display = "block";
+  adminLoginModal.style.display = "none";
+}
 
-      try {
-  const res = await fetch(`${window.API_BASE}/api/admin-login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password }),
-        });
-        const data = await res.json();
+if (adminLoginForm) {
+  adminLoginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const password = document.getElementById("admin-password").value;
 
-        if (data.success) {
-          localStorage.setItem("adminToken", data.token);
-          loginResponse.textContent = "Login successful!";
-          loginResponse.style.color = "green";
-          document.getElementById("admin-login-modal").style.display = "none";
-          document.getElementById("admin-section").style.display = "block";
-        } else {
-          loginResponse.textContent = data.message || "Login failed";
-          loginResponse.style.color = "red";
-        }
-      } catch {
-        loginResponse.textContent = "Error logging in.";
+    try {
+      const res = await fetch(`${window.API_BASE}/api/admin-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.token) {
+        localStorage.setItem("adminToken", data.token);
+        loginResponse.textContent = "Login successful!";
+        loginResponse.style.color = "green";
+        adminSection.style.display = "block";
+        adminLoginModal.style.display = "none";
+      } else {
+        loginResponse.textContent = data.error || "Invalid password";
         loginResponse.style.color = "red";
       }
-    });
-  }
+    } catch (err) {
+      console.error("Login failed:", err);
+      loginResponse.textContent = "Error connecting to server";
+      loginResponse.style.color = "red";
+    }
+  });
+}
+
 
   // ---------------- ADMIN ADD PRODUCT ----------------
-  const addProductForm = document.getElementById("addProductForm");
-  const productResponse = document.getElementById("productResponse");
+  // ============================
+// 🛍️ PRODUCT UPLOAD
+// ============================
+const productForm = document.getElementById("productForm");
 
-  if (addProductForm) {
-    addProductForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const token = localStorage.getItem("adminToken");
-      if (!token) {
-        productResponse.textContent = "Not authorized. Please login.";
-        productResponse.style.color = "red";
+if (productForm) {
+  productForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      alert("You must log in first.");
+      return;
+    }
+
+    // 1️⃣ Upload Image First
+    const imageFile = document.getElementById("productImage").files[0];
+    if (!imageFile) {
+      alert("Please select an image.");
+      return;
+    }
+
+    const uploadData = new FormData();
+    uploadData.append("image", imageFile);
+
+    try {
+      const uploadRes = await fetch(`${window.API_BASE}/api/upload`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: uploadData,
+      });
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        console.error("Image upload failed:", errText);
+        alert("❌ Image upload failed");
         return;
       }
 
-      const fileInput = document.getElementById("prod-image-file");
-      let imageUrl = "";
+      const uploadResult = await uploadRes.json();
+      const imageUrl = uploadResult.imageUrl;
 
-      if (fileInput && fileInput.files.length > 0) {
-        const uploadData = new FormData();
-        uploadData.append("image", fileInput.files[0]);
-                    const uploadRes = await fetch(`${window.API_BASE}/api/upload`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: uploadData,
-        });
-        const uploadJson = await uploadRes.json();
-        if (uploadJson.success) imageUrl = uploadJson.url;
+      // 2️⃣ Upload Product Info
+      const name = document.getElementById("productName").value;
+      const price = document.getElementById("productPrice").value;
+      const description = document.getElementById("productDescription").value;
+
+      const productData = { name, price, description, image: imageUrl };
+
+      const res = await fetch(`${window.API_BASE}/api/products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(productData),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Product creation failed:", errorText);
+        alert("❌ Failed to create product.");
+        return;
       }
 
-      const formData = {
-        name: document.getElementById("prod-name").value,
-        price: document.getElementById("prod-price").value,
-        image_url: imageUrl,
-      };
-
-      try {
-          const res = await fetch(`${window.API_BASE}/api/products`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        });
-        const data = await res.json();
-
-        if (data.id) {
-          productResponse.textContent = "Product added successfully!";
-          productResponse.style.color = "green";
-          addProductForm.reset();
-          loadProducts();
-        } else {
-          productResponse.textContent = data.message || "Failed to add product.";
-          productResponse.style.color = "red";
-        }
-      } catch (err) {
-        productResponse.textContent = "Error submitting form.";
-        productResponse.style.color = "red";
-      }
-    });
-  }
-
+      alert("✅ Product created successfully!");
+      productForm.reset();
+      loadProducts(); // refresh product list
+    } catch (err) {
+      console.error("Error uploading product:", err);
+      alert("❌ Error uploading product.");
+    }
+  });
+}
+*/
   // ---------------- CHECKOUT MODAL ----------------
   const checkoutBtn = document.getElementById("checkout-btn"),
     checkoutModal = document.getElementById("checkout-modal"),

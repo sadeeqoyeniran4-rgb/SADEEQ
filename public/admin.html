@@ -4,26 +4,20 @@
   <meta charset="UTF-8" />
   <title>Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f9; }
     header { background: #333; color: #fff; padding: 1rem; text-align: center; }
     .container {
-      max-width: 950px;
-      margin: 2rem auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      display: none;
+      max-width: 950px; margin: 2rem auto; background: white;
+      padding: 2rem; border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none;
     }
-    h2 { margin-top: 0; }
     input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
     button { background: #333; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
     button:hover { background: #555; }
-    #productResponse, #loginResponse { margin-top: 10px; font-weight: bold; }
     #admin-login-modal {
       display: flex; justify-content: center; align-items: center;
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -38,15 +32,8 @@
     th { background: #333; color: white; }
     tr:nth-child(even) { background: #f9f9f9; }
     img { max-width: 80px; height: auto; display: block; }
-    .delete-btn {
-      background: red; color: white; border: none;
-      padding: 6px 10px; border-radius: 5px; cursor: pointer;
-    }
-    .edit-btn {
-      background: #007bff; color: white; border: none;
-      padding: 6px 10px; border-radius: 5px; cursor: pointer;
-      margin-right: 5px;
-    }
+    .delete-btn { background: red; color: white; padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; }
+    .edit-btn { background: #007bff; color: white; padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px; }
     .delete-btn:hover { background: darkred; }
     .edit-btn:hover { background: #0056b3; }
     #edit-modal {
@@ -60,34 +47,27 @@
     }
   </style>
 </head>
+
 <body>
-  <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
 
-  <!-- Shared Header/Nav -->
+  <!-- HEADER -->
   <header>
     <nav>
       <div class="logo">
         <img src="lofinda2.png" alt="LOFINDA Logo">
       </div>
-
-      <div class="nav-search">
-        <!-- keep admin simple: small placeholder search (optional) -->
-      </div>
-
       <ul class="nav-links" id="nav-links-admin">
         <li><a href="index.html">Home</a></li>
         <li><a href="admin.html">Dashboard</a></li>
         <li><a href="#product-list-section">Products</a></li>
         <li><a href="#orders-section">Orders</a></li>
       </ul>
-
-      <!-- Hamburger toggle -->
       <div class="hamburger" id="hamburger-admin">☰</div>
     </nav>
   </header>
 
-  <!-- Login Modal -->
+  <!-- LOGIN MODAL -->
   <div id="admin-login-modal">
     <div class="modal-content">
       <h2>🔑 Admin Login</h2>
@@ -99,7 +79,7 @@
     </div>
   </div>
 
-  <!-- Add Product Section -->
+  <!-- ADD PRODUCT -->
   <div id="admin-section" class="container">
     <h2>Add New Product</h2>
     <form id="addProductForm">
@@ -112,7 +92,7 @@
     <p id="productResponse"></p>
   </div>
 
-  <!-- Product List Section -->
+  <!-- PRODUCT LIST -->
   <div id="product-list-section" class="container">
     <h2>All Products</h2>
     <table>
@@ -129,27 +109,27 @@
     </table>
   </div>
 
-  <!-- Orders Section -->
-<div id="orders-section" class="container">
-  <h2>Orders</h2>
-  <table id="ordersTable">
-    <thead>
-      <tr>
-        <th>Order ID</th>
-        <th>Customer</th>
-        <th>Email</th>
-        <th>Address</th>
-        <th>Items</th>
-        <th>Total (₦)</th>
-        <th>Status</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody id="ordersBody"></tbody>
-  </table>
-</div>
+  <!-- ORDERS -->
+  <div id="orders-section" class="container">
+    <h2>Orders</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Address</th>
+          <th>Items</th>
+          <th>Total (₦)</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="ordersBody"></tbody>
+    </table>
+  </div>
 
-  <!-- Edit Modal -->
+  <!-- EDIT MODAL -->
   <div id="edit-modal">
     <div class="modal-box">
       <h2>Edit Product</h2>
@@ -165,287 +145,7 @@
     </div>
   </div>
 
-  <script>
-    // Hook hamburger for admin page
-    const hamburgerAdmin = document.getElementById('hamburger-admin');
-    const navLinksAdmin = document.getElementById('nav-links-admin');
-    if (hamburgerAdmin) {
-      hamburgerAdmin.addEventListener('click', () => {
-        navLinksAdmin.classList.toggle('open');
-      });
-    }
-
-    // Read token from localStorage so admin remains logged in across reloads
-    let adminToken = localStorage.getItem('adminToken') || null;
-
-    const adminLoginForm = document.getElementById('adminLoginForm');
-    const adminModal = document.getElementById('admin-login-modal');
-    const adminSection = document.getElementById('admin-section');
-    const productListSection = document.getElementById('product-list-section');
-    const ordersSection = document.getElementById('orders-section');
-    const loginResponse = document.getElementById('loginResponse');
-    const editModal = document.getElementById('edit-modal');
-
-    // If token exists, show admin sections
-    if (adminToken) {
-      adminModal.style.display = 'none';
-      adminSection.style.display = 'block';
-      productListSection.style.display = 'block';
-      ordersSection.style.display = 'block';
-      fetchProducts();
-      fetchOrders();
-    }
-
-    // Admin Login
-    adminLoginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const password = document.getElementById('admin-password').value;
-
-      const res = await fetch(`${window.API_BASE}/admin-login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        adminToken = data.token;
-        // persist token so page reloads keep the admin logged in
-        localStorage.setItem('adminToken', adminToken);
-        adminModal.style.display = 'none';
-        adminSection.style.display = 'block';
-        productListSection.style.display = 'block';
-        ordersSection.style.display = 'block';
-        fetchProducts();
-        fetchOrders();
-      } else {
-        loginResponse.textContent = '❌ Incorrect password';
-      }
-    });
-
-    // Add product
-    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const addBtn = document.getElementById('addProductBtn');
-      addBtn.disabled = true;
-      const originalText = addBtn.textContent;
-      addBtn.textContent = 'Uploading...';
-
-      const name = document.getElementById('prod-name').value.trim();
-      const desc = document.getElementById('prod-desc').value.trim();
-      const priceRaw = document.getElementById('prod-price').value;
-      const price = parseFloat(priceRaw);
-      const imageFile = document.getElementById('prod-image-file').files[0];
-
-      if (!name || isNaN(price)) {
-        document.getElementById('productResponse').textContent = '❌ Name and valid price are required.';
-        addBtn.disabled = false;
-        addBtn.textContent = originalText;
-        return;
-      }
-
-      // Step 1: Upload image
-      if (!imageFile) {
-        document.getElementById('productResponse').textContent = '❌ Please select an image to upload.';
-        addBtn.disabled = false;
-        addBtn.textContent = originalText;
-        return;
-      }
-
-      const imgData = new FormData();
-      imgData.append("image", imageFile);
-
-      let uploadData;
-      try {
-        const uploadRes = await fetch(`${window.API_BASE}/api/upload`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${adminToken}` },
-          body: imgData
-        });
-        uploadData = await uploadRes.json().catch(() => null);
-        if (!uploadRes.ok || !uploadData || !uploadData.success) {
-          const errMsg = uploadData && uploadData.message ? uploadData.message : (uploadRes.statusText || 'Upload failed');
-          document.getElementById('productResponse').textContent = '❌ Image upload failed: ' + errMsg;
-          addBtn.disabled = false;
-          addBtn.textContent = originalText;
-          return;
-        }
-      } catch (err) {
-        console.error('Upload error:', err);
-        document.getElementById('productResponse').textContent = '❌ Network error during image upload. Check your connection.';
-        addBtn.disabled = false;
-        addBtn.textContent = originalText;
-        return;
-      }
-
-      // Step 2: Add product
-      const res = await fetch(`${window.API_BASE}/api/products`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminToken}`
-        },
-        body: JSON.stringify({
-          name: name,
-          description: desc,
-          price: price,
-          image_url: uploadData.url
-        })
-      });
-      const addResult = await res.json().catch(() => null);
-      if (res.ok) {
-        document.getElementById('productResponse').textContent = '✅ Product added!';
-        document.getElementById('addProductForm').reset();
-        fetchProducts();
-      } else {
-        document.getElementById('productResponse').textContent = '❌ Error adding product: ' + (addResult && addResult.message ? addResult.message : res.statusText);
-      }
-
-      addBtn.disabled = false;
-      addBtn.textContent = originalText;
-    });
-
-    // Fetch products (defensive)
-    async function fetchProducts() {
-      try {
-        const res = await fetch(`${window.API_BASE}/api/products`);
-        if (!res.ok) {
-          let errText = res.statusText;
-          try { const errJson = await res.json(); errText = errJson && errJson.message ? errJson.message : JSON.stringify(errJson); } catch(e){}
-          document.getElementById('productTableBody').innerHTML = `<tr><td colspan="5">Error loading products: ${errText}</td></tr>`;
-          console.error('Server error fetching products:', errText);
-          return;
-        }
-
-        const products = await res.json();
-        if (!Array.isArray(products)) {
-          document.getElementById('productTableBody').innerHTML = `<tr><td colspan="5">Unexpected product data format</td></tr>`;
-          console.error('Unexpected products response:', products);
-          return;
-        }
-
-        const tbody = document.getElementById('productTableBody');
-        tbody.innerHTML = '';
-        products.forEach(prod => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${prod.id}</td>
-            <td><img src="${prod.image_url}" alt="${prod.name}"></td>
-            <td>${prod.name}</td>
-            <td>₦${prod.price}</td>
-            <td>
-              <button class="edit-btn" onclick="openEditModal(${prod.id}, '${prod.name}', '${prod.description}', ${prod.price})">Edit</button>
-              <button class="delete-btn" onclick="deleteProduct(${prod.id})">Delete</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error('Network/error fetching products:', err);
-        document.getElementById('productTableBody').innerHTML = `<tr><td colspan="5">Network error: ${err.message}</td></tr>`;
-      }
-    }
-
-    // Delete product
-    async function deleteProduct(id) {
-      if (!confirm('Are you sure you want to delete this product?')) return;
-      const res = await fetch(`${window.API_BASE}/products/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${adminToken}` }
-      });
-      if (res.ok) fetchProducts();
-    }
-
-    // Edit modal
-    function openEditModal(id, name, description, price) {
-      document.getElementById('edit-id').value = id;
-      document.getElementById('edit-name').value = name;
-      document.getElementById('edit-desc').value = description;
-      document.getElementById('edit-price').value = price;
-      editModal.style.display = 'flex';
-    }
-    function closeEditModal() {
-      editModal.style.display = 'none';
-    }
-
-    // Save edit
-    document.getElementById('editProductForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('edit-id').value;
-      const name = document.getElementById('edit-name').value;
-      const desc = document.getElementById('edit-desc').value;
-      const price = document.getElementById('edit-price').value;
-
-      const res = await fetch(`${window.API_BASE}/api/products/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminToken}`
-        },
-        body: JSON.stringify({ name, description: desc, price })
-      });
-
-      if (res.ok) {
-        fetchProducts();
-        closeEditModal();
-      }
-    });
-
-   // Fetch Orders and Display Order Items, Qty, Price
-  async function fetchOrders() {
-    try {
-      const res = await fetch(`${window.API_BASE}/api/orders`, {
-        headers: { Authorization: `Bearer ${adminToken}` }
-      });
-      if (!res.ok) {
-        let errText = res.statusText;
-        try { const errJson = await res.json(); errText = errJson && errJson.message ? errJson.message : JSON.stringify(errJson); } catch(e){}
-        document.getElementById('ordersBody').innerHTML = `<tr><td colspan="8">Error loading orders: ${errText}</td></tr>`;
-        console.error('Server error fetching orders:', errText);
-        return;
-      }
-
-      const orders = await res.json();
-      if (!Array.isArray(orders)) {
-        document.getElementById('ordersBody').innerHTML = `<tr><td colspan="8">Unexpected order data format</td></tr>`;
-        console.error('Unexpected orders response:', orders);
-        return;
-      }
-
-      const tbody = document.getElementById('ordersBody');
-      tbody.innerHTML = '';
-
-      orders.forEach(order => {
-        const tr = document.createElement('tr');
-
-        const itemsHtml = order.items && order.items.length > 0
-          ? order.items.map(item => `
-              <div>
-                ${item.product_name} (x${item.quantity}) - ₦${item.price}
-              </div>
-            `).join('')
-          : '<em>No items</em>';
-
-        tr.innerHTML = `
-          <td>${order.id}</td>
-          <td>${order.customer_name || 'N/A'}</td>
-          <td>${order.email || 'N/A'}</td>
-          <td>${order.address || 'N/A'}</td>
-          <td>${itemsHtml}</td>
-          <td>₦${order.total_amount}</td>
-          <td>${order.status || 'Pending'}</td>
-          <td>${new Date(order.created_at).toLocaleString()}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    } catch (err) {
-      console.error('Network/error fetching orders:', err);
-      document.getElementById('ordersBody').innerHTML = `<tr><td colspan="8">Network error: ${err.message}</td></tr>`;
-    }
-  }
-
-    window.deleteProduct = deleteProduct;
-    window.openEditModal = openEditModal;
-  </script>
+  <!-- JS -->
+  <script src="admin.js"></script>
 </body>
 </html>
