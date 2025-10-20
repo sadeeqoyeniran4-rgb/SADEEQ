@@ -1,7 +1,7 @@
 // ===============================
 // ✅ CONFIG
 // ===============================
-/*const ADMIN_PASSWORD = "sadeeq123"; // change this to your password*/
+const ADMIN_PASSWORD = "sadeeq123"; // change this to your password
 const API_BASE = window.API_BASE || "https://sadeeq-too1.onrender.com";
 
 // ===============================
