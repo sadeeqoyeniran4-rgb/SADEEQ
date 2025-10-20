@@ -15,7 +15,7 @@ const adminSection = document.getElementById("admin-section");
 loginForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const inputPassword = document.getElementById("admin-password").value.trim();
-  if (inputPassword === ADMIN_PASS) {
+  if (inputPassword === ADMIN_PASSWORD) {
     loginResponse.textContent = "✅ Login successful";
     loginResponse.style.color = "green";
     localStorage.setItem("isAdmin", "true");
