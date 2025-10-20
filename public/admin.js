@@ -65,18 +65,32 @@ addProductForm.addEventListener("submit", async (e) => {
   }
 
   try {
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("price", price);
-    formData.append("image", imageFile);
+    // 1️⃣ Upload image first
+    const imgData = new FormData();
+    imgData.append("image", imageFile);
 
-    const res = await fetch(`${API_BASE}/api/products`, {
+    const imgRes = await fetch(`${window.API_BASE}/api/upload`, {
       method: "POST",
-      body: formData
+      body: imgData,
     });
 
-    if (!res.ok) throw new Error("Upload failed");
+    if (!imgRes.ok) throw new Error("Image upload failed");
+    const imgJson = await imgRes.json();
+    const imageUrl = imgJson.url;
+
+    // 2️⃣ Then add product to DB
+    const productRes = await fetch(`${window.API_BASE}/api/products`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        description,
+        price,
+        image_url: imageUrl
+      }),
+    });
+
+    if (!productRes.ok) throw new Error("Product upload failed");
     productResponse.textContent = "✅ Product added successfully";
     productResponse.style.color = "green";
     addProductForm.reset();
