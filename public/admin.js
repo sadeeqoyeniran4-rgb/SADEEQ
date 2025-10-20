@@ -1,41 +1,49 @@
 // ===============================
 // ✅ CONFIG
 // ===============================
-const ADMIN_PASSWORD = "sadeeq123"; // change this to your password
 const API_BASE = window.API_BASE || "https://sadeeq-too1.onrender.com";
 
 // ===============================
 // 🧑 ADMIN LOGIN
 // ===============================
-const loginModal = document.getElementById("admin-login-modal");
-const loginForm = document.getElementById("adminLoginForm");
+// admin.js
+
+// ✅ Set your admin password (you can later move to .env)
+const ADMIN_PASSWORD = "sadeeq123"; // change to your password
+
+const adminLoginForm = document.getElementById("adminLoginForm");
 const loginResponse = document.getElementById("loginResponse");
+const adminModal = document.getElementById("admin-login-modal");
 const adminSection = document.getElementById("admin-section");
 
-loginForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const inputPassword = document.getElementById("admin-password").value.trim();
-  if (inputPassword === ADMIN_PASSWORD) {
-    loginResponse.textContent = "✅ Login successful";
-    loginResponse.style.color = "green";
-    localStorage.setItem("isAdmin", "true");
-    loginModal.style.display = "none";
+// ✅ Check if already logged in (keeps session after refresh)
+window.addEventListener("DOMContentLoaded", () => {
+  const isAdmin = localStorage.getItem("isAdmin");
+  if (isAdmin === "true") {
+    adminModal.style.display = "none";
     adminSection.style.display = "block";
-    loadProducts();
-    fetchOrders();
-  } else {
-    loginResponse.textContent = "❌ Invalid password";
-    loginResponse.style.color = "red";
   }
 });
 
-// Auto-login if already authenticated
-if (localStorage.getItem("isAdmin") === "true") {
-  loginModal.style.display = "none";
-  adminSection.style.display = "block";
-  loadProducts();
-  fetchOrders();
+if (adminLoginForm) {
+  adminLoginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const password = document.getElementById("admin-password").value;
+
+    if (password === ADMIN_PASSWORD) {
+      loginResponse.textContent = "✅ Login successful!";
+      loginResponse.style.color = "green";
+
+      localStorage.setItem("isAdmin", "true");
+      adminModal.style.display = "none";
+      adminSection.style.display = "block";
+    } else {
+      loginResponse.textContent = "❌ Invalid password";
+      loginResponse.style.color = "red";
+    }
+  });
 }
+
 
 // ===============================
 // 🛍️ ADD PRODUCT
