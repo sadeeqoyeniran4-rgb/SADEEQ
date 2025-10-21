@@ -3,14 +3,35 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const { Pool } = require("pg");
-const fs = require('fs');
+const fs = require("fs");
 const cors = require("cors");
 const fetch = require("node-fetch"); // npm install node-fetch@2
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
+const { v2: cloudinary } = require("cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ================== CLOUDINARY CONFIG ==================
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,  // e.g. "lofinda"
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "lofinda_products",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+    transformation: [{ width: 500, height: 500, crop: "fill" }],
+  },
+});
+
+const upload = multer({ storage });
+
 
 // ================== MIDDLEWARE ==================
 app.use(cors());
@@ -76,7 +97,7 @@ app.post("/api/admin-login", (req, res) => {
 });
 
 // ================== IMAGE UPLOAD ==================
-// Ensure uploads directory exists (helps avoid multer errors)
+/* Ensure uploads directory exists (helps avoid multer errors)
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 try {
   if (!fs.existsSync(uploadsDir)) {
@@ -97,6 +118,16 @@ app.post("/api/upload", upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
   const fileUrl = `/uploads/${req.file.filename}`;
   res.json({ success: true, url: fileUrl });
+});*/
+
+// ================== IMAGE UPLOAD (CLOUDINARY) ==================
+app.post("/api/upload", upload.single("image"), (req, res) => {
+  if (!req.file || !req.file.path) {
+    return res.status(400).json({ success: false, message: "No image uploaded" });
+  }
+
+  // Cloudinary returns a public URL in req.file.path
+  return res.json({ success: true, url: req.file.path });
 });
 
 // ================== CONTACT FORM ==================
