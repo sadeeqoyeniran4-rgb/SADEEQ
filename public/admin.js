@@ -118,7 +118,7 @@ async function loadProducts() {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${prod.id}</td>
-        <td><img src="${prod.image}" alt="${prod.name}"></td>
+        <td><img src="${prod.image_url}" alt="${prod.name}" width="80" height="80" style="object-fit:cover; border-radius:8px;"></td>
         <td>${prod.name}</td>
         <td>₦${prod.price}</td>
         <td>
