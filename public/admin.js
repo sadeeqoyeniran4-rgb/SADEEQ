@@ -2,7 +2,7 @@
 // ✅ CONFIGURATION
 // ===============================
 const API_BASE = window.API_BASE || "https://lofinda.onrender.com";
-const ADMIN_PASSWORD = "lofinda_admin_2025"; // Change for better security!
+const ADMIN_PASSWORD = "Ogunleye1960."; // Change for better security!
 
 // ===============================
 // 🔐 ADMIN LOGIN
@@ -12,7 +12,7 @@ const loginResponse = document.getElementById("loginResponse");
 const adminModal = document.getElementById("admin-login-modal");
 const adminSection = document.getElementById("admin-section");
 
-// Keep admin logged in after refresh
+/* Keep admin logged in after refresh
 window.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("isAdmin") === "true") {
     adminModal.style.display = "none";
@@ -20,7 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
     loadProducts();
     loadOrders();
   }
-});
+}); */
 
 if (adminLoginForm) {
   adminLoginForm.addEventListener("submit", (e) => {
