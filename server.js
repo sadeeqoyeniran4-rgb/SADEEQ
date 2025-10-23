@@ -3,7 +3,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const { Pool } = require("pg");
-const fs = require("fs");
 const cors = require("cors");
 const fetch = require("node-fetch"); // npm install node-fetch@2
 const jwt = require("jsonwebtoken");
@@ -32,15 +31,14 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-
 // ================== MIDDLEWARE ==================
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ================== DATABASE ==================
-// Initialize Postgres pool. Prefer DATABASE_URL (Heroku/Render style). Falls back to individual env vars.
+// ================== DATABASE CONFIG ==================
 const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || undefined,
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
@@ -48,27 +46,10 @@ const pool = new Pool({
   port: 5432,
   ssl: { rejectUnauthorized: false }
 });
-// Debug: print which DB host the server will attempt to use (no credentials shown)
-try {
-  const dbHost = process.env.DATABASE_URL
-    ? new URL(process.env.DATABASE_URL).hostname
-    : (process.env.DB_HOST || 'dpg-d3mk9p9gv73c73fqo8mg-a.oregon-postgres.render.com');
-  console.log(`🔍 DB host resolved as: ${dbHost}`);
-} catch (e) {
-  console.log('🔍 DB host could not be parsed from DATABASE_URL');
-}
 
-// Quick DB connectivity check (non-blocking). Logs success or a helpful warning.
-pool
-  .connect()
-  .then((client) => {
-    client.release();
-    console.log('✅ Database connected');
-  })
-  .catch((err) => {
-    console.warn('⚠️  Database not connected — check your DATABASE_URL or DB_* env vars');
-    console.warn(err && err.message ? err.message : err);
-  });
+pool.connect()
+  .then(() => console.log("✅ Database connected"))
+  .catch(err => console.warn("⚠️ Database not connected:", err.message));
 
 // ================== ADMIN AUTH ==================
 function verifyAdmin(req, res, next) {
@@ -85,9 +66,7 @@ function verifyAdmin(req, res, next) {
 
 app.post("/api/admin-login", (req, res) => {
   const { password } = req.body;
-  const ADMIN_PASS = process.env.ADMIN_PASS;
-
-  if (password === ADMIN_PASS) {
+  if (password === process.env.ADMIN_PASS) {
     const token = jwt.sign({ role: "admin" }, process.env.JWT_SECRET || "jwtsecretkey", {
       expiresIn: "1h",
     });
@@ -96,38 +75,12 @@ app.post("/api/admin-login", (req, res) => {
   return res.status(401).json({ success: false, message: "Invalid password" });
 });
 
-// ================== IMAGE UPLOAD ==================
-/* Ensure uploads directory exists (helps avoid multer errors)
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-try {
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log('📁 Created uploads directory:', uploadsDir);
-  }
-} catch (err) {
-  console.warn('⚠️ Could not create uploads directory:', err && err.message ? err.message : err);
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
-});
-const upload = multer({ storage });
-
-app.post("/api/upload", upload.single("image"), (req, res) => {
-  if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({ success: true, url: fileUrl });
-});*/
-
 // ================== IMAGE UPLOAD (CLOUDINARY) ==================
 app.post("/api/upload", upload.single("image"), (req, res) => {
   if (!req.file || !req.file.path) {
     return res.status(400).json({ success: false, message: "No image uploaded" });
   }
-
-  // Cloudinary returns a public URL in req.file.path
-  return res.json({ success: true, url: req.file.path });
+  res.json({ success: true, url: req.file.path });
 });
 
 // ================== CONTACT FORM ==================
@@ -223,61 +176,70 @@ app.post("/api/checkout", async (req, res) => {
   }
 });
 
-// ================== VERIFY PAYMENT & SAVE ORDER ==================
+// ================== VERIFY PAYMENT (FIXED) ==================
 app.post("/api/verify-payment", async (req, res) => {
-  const { reference, name, email, phone, address, cart, total_amount } = req.body;
-
   try {
+    const { reference, cart, customer, totals } = req.body;
+
+    if (!reference) {
+      return res.status(400).json({ success: false, message: "Missing payment reference" });
+    }
+
+    // ✅ Verify payment with Paystack
     const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` },
     });
     const data = await response.json();
 
-    if (data.status && data.data.status === "success") {
-      // ✅ Save order
-      const orderResult = await pool.query(
-        `INSERT INTO orders (customer_name, email, phone, address, total_amount, payment_reference)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-        [name, email, phone, address, total_amount, reference]
-      );
-
-      const orderId = orderResult.rows[0].id;
-
-      for (const item of cart) {
-        await pool.query(
-          `INSERT INTO order_items (order_id, product_name, quantity, price)
-           VALUES ($1, $2, $3, $4)`,
-          [orderId, item.name, item.quantity, item.price]
-        );
-      }
-
-      return res.json({ success: true, message: "Order saved successfully" });
-    } else {
+    if (!data.status || data.data.status !== "success") {
       return res.status(400).json({ success: false, message: "Payment verification failed" });
     }
+
+    // ✅ Save order
+    const totalAmount = totals?.grandTotal || data.data.amount / 100;
+
+    const orderResult = await pool.query(
+      `INSERT INTO orders (customer_name, email, phone, address, total_amount, payment_reference)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [
+        customer?.name || "N/A",
+        customer?.email || "N/A",
+        customer?.phone || "N/A",
+        customer?.address || "N/A",
+        totalAmount,
+        reference,
+      ]
+    );
+
+    const orderId = orderResult.rows[0].id;
+
+    for (const item of cart) {
+      await pool.query(
+        `INSERT INTO order_items (order_id, product_name, quantity, price)
+         VALUES ($1, $2, $3, $4)`,
+        [orderId, item.name, item.quantity || item.qty || 1, item.price]
+      );
+    }
+
+    res.json({ success: true, message: "✅ Payment verified and order saved!" });
   } catch (err) {
-    console.error("❌ Error saving order:", err);
-    res.status(500).json({ success: false, message: "Server error saving order" });
+    console.error("❌ Verify payment error:", err);
+    res.status(500).json({ success: false, message: "Server error verifying payment" });
   }
 });
 
-// ================== FETCH ORDERS WITH ITEMS ==================
+// ================== FETCH ORDERS ==================
 app.get("/api/orders", async (req, res) => {
   try {
-    // Step 1: Get all orders
     const ordersResult = await pool.query(`
-      SELECT id, customer_name, email, address, total_amount, status, created_at
+      SELECT id, customer_name, email, address, total_amount, status, created_at, payment_reference
       FROM orders
       ORDER BY created_at DESC
     `);
 
     const orders = ordersResult.rows;
+    if (orders.length === 0) return res.json([]);
 
-    if (orders.length === 0) {
-      return res.json([]);
-    }
-
-    // Step 2: Get order items (use product_name stored in order_items to avoid join errors)
     const orderIds = orders.map(o => o.id);
     const orderItemsResult = await pool.query(
       `SELECT order_id, product_name, quantity, price FROM order_items WHERE order_id = ANY($1)`,
@@ -286,7 +248,6 @@ app.get("/api/orders", async (req, res) => {
 
     const orderItems = orderItemsResult.rows;
 
-    // Step 3: Group items by order
     const ordersWithItems = orders.map(order => {
       const itemsForOrder = orderItems.filter(item => item.order_id === order.id);
       return { ...order, items: itemsForOrder };
