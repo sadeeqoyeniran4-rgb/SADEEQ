@@ -9,5 +9,5 @@
 		window.API_BASE = 'https://lofinda.onrender.com';
 	}
 	// Put a placeholder for the Paystack public key. Replace in deployment.
-	window.PAYSTACK_KEY = window.PAYSTACK_KEY || 'pk_live_1e8f4e3f1e5b6e3c8b5e3d4a8b7c9d0e1f2g3h4i';
+	window.PAYSTACK_KEY = window.PAYSTACK_KEY || 'pk_live_7fdfd2e1a880a49020422b3c6dc0f120590c6e26';
 })();
