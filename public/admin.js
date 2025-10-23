@@ -1,27 +1,20 @@
 // ===============================
 // ✅ CONFIG
 // ===============================
-const API_BASE = window.API_BASE || "https://sadeeq-too1.onrender.com";
+const API_BASE = window.API_BASE || "https://lofinda.onrender.com";
+const ADMIN_PASSWORD = "sadeeq123"; // change to your password
+
+// Elements
+const adminLoginForm = document.getElementById("adminLoginForm");
+const loginResponse = document.getElementById("loginResponse");
+const adminModal = document.getElementById("admin-login-modal");
 
 // ===============================
 // 🧑 ADMIN LOGIN
 // ===============================
-// admin.js
-
-// ✅ Set your admin password (you can later move to .env)
-const ADMIN_PASSWORD = "sadeeq123"; // change to your password
-
-const adminLoginForm = document.getElementById("adminLoginForm");
-const loginResponse = document.getElementById("loginResponse");
-const adminModal = document.getElementById("admin-login-modal");
-const adminSection = document.getElementById("admin-section");
-
-// ✅ Check if already logged in (keeps session after refresh)
 window.addEventListener("DOMContentLoaded", () => {
-  const isAdmin = localStorage.getItem("isAdmin");
-  if (isAdmin === "true") {
-    adminModal.style.display = "none";
-    adminSection.style.display = "block";
+  if (localStorage.getItem("isAdmin") === "true") {
+    showAdminPanel();
   }
 });
 
@@ -33,10 +26,8 @@ if (adminLoginForm) {
     if (password === ADMIN_PASSWORD) {
       loginResponse.textContent = "✅ Login successful!";
       loginResponse.style.color = "green";
-
       localStorage.setItem("isAdmin", "true");
-      adminModal.style.display = "none";
-      adminSection.style.display = "block";
+      showAdminPanel();
     } else {
       loginResponse.textContent = "❌ Invalid password";
       loginResponse.style.color = "red";
@@ -44,6 +35,12 @@ if (adminLoginForm) {
   });
 }
 
+function showAdminPanel() {
+  adminModal.style.display = "none";
+  document.querySelectorAll(".container").forEach(c => c.style.display = "block");
+  loadProducts();
+  fetchOrders();
+}
 
 // ===============================
 // 🛍️ ADD PRODUCT
@@ -51,56 +48,51 @@ if (adminLoginForm) {
 const addProductForm = document.getElementById("addProductForm");
 const productResponse = document.getElementById("productResponse");
 
-addProductForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = document.getElementById("prod-name").value;
-  const description = document.getElementById("prod-desc").value;
-  const price = document.getElementById("prod-price").value;
-  const imageFile = document.getElementById("prod-image-file").files[0];
+if (addProductForm) {
+  addProductForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("prod-name").value;
+    const description = document.getElementById("prod-desc").value;
+    const price = document.getElementById("prod-price").value;
+    const imageFile = document.getElementById("prod-image-file").files[0];
 
-  if (!name || !price || !imageFile) {
-    productResponse.textContent = "⚠️ All required fields must be filled";
-    productResponse.style.color = "red";
-    return;
-  }
+    if (!name || !price || !imageFile) {
+      productResponse.textContent = "⚠️ All required fields must be filled";
+      productResponse.style.color = "red";
+      return;
+    }
 
-  try {
-    // 1️⃣ Upload image first
-    const imgData = new FormData();
-    imgData.append("image", imageFile);
+    try {
+      // Upload image first
+      const imgData = new FormData();
+      imgData.append("image", imageFile);
+      const imgRes = await fetch(`${API_BASE}/api/upload`, {
+        method: "POST",
+        body: imgData,
+      });
+      if (!imgRes.ok) throw new Error("Image upload failed");
+      const imgJson = await imgRes.json();
+      const imageUrl = imgJson.url;
 
-    const imgRes = await fetch(`${window.API_BASE}/api/upload`, {
-      method: "POST",
-      body: imgData,
-    });
+      // Add product to DB
+      const productRes = await fetch(`${API_BASE}/api/products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description, price, image_url: imageUrl }),
+      });
 
-    if (!imgRes.ok) throw new Error("Image upload failed");
-    const imgJson = await imgRes.json();
-    const imageUrl = imgJson.url;
-
-    // 2️⃣ Then add product to DB
-    const productRes = await fetch(`${window.API_BASE}/api/products`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        description,
-        price,
-        image_url: imageUrl
-      }),
-    });
-
-    if (!productRes.ok) throw new Error("Product upload failed");
-    productResponse.textContent = "✅ Product added successfully";
-    productResponse.style.color = "green";
-    addProductForm.reset();
-    loadProducts();
-  } catch (err) {
-    console.error("Upload error:", err);
-    productResponse.textContent = "❌ Error uploading product";
-    productResponse.style.color = "red";
-  }
-});
+      if (!productRes.ok) throw new Error("Product upload failed");
+      productResponse.textContent = "✅ Product added successfully";
+      productResponse.style.color = "green";
+      addProductForm.reset();
+      loadProducts();
+    } catch (err) {
+      console.error("Upload error:", err);
+      productResponse.textContent = "❌ Error uploading product";
+      productResponse.style.color = "red";
+    }
+  });
+}
 
 // ===============================
 // 🛒 FETCH & DISPLAY PRODUCTS
@@ -139,7 +131,6 @@ async function loadProducts() {
 // ===============================
 async function deleteProduct(id) {
   if (!confirm("Are you sure you want to delete this product?")) return;
-
   try {
     const res = await fetch(`${API_BASE}/api/products/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Failed to delete");
@@ -167,32 +158,34 @@ function closeEditModal() {
   editModal.style.display = "none";
 }
 
-editForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const id = document.getElementById("edit-id").value;
-  const name = document.getElementById("edit-name").value;
-  const description = document.getElementById("edit-desc").value;
-  const price = document.getElementById("edit-price").value;
-  const imageFile = document.getElementById("edit-image-file").files[0];
+if (editForm) {
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("edit-id").value;
+    const name = document.getElementById("edit-name").value;
+    const description = document.getElementById("edit-desc").value;
+    const price = document.getElementById("edit-price").value;
+    const imageFile = document.getElementById("edit-image-file").files[0];
 
-  const formData = new FormData();
-  formData.append("name", name);
-  formData.append("description", description);
-  formData.append("price", price);
-  if (imageFile) formData.append("image", imageFile);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("price", price);
+    if (imageFile) formData.append("image", imageFile);
 
-  try {
-    const res = await fetch(`${API_BASE}/api/products/${id}`, {
-      method: "PUT",
-      body: formData
-    });
-    if (!res.ok) throw new Error("Update failed");
-    closeEditModal();
-    loadProducts();
-  } catch (err) {
-    console.error("Edit error:", err);
-  }
-});
+    try {
+      const res = await fetch(`${API_BASE}/api/products/${id}`, {
+        method: "PUT",
+        body: formData
+      });
+      if (!res.ok) throw new Error("Update failed");
+      closeEditModal();
+      loadProducts();
+    } catch (err) {
+      console.error("Edit error:", err);
+    }
+  });
+}
 
 // ===============================
 // 📦 FETCH ORDERS
@@ -220,14 +213,25 @@ async function fetchOrders() {
       `;
       ordersBody.appendChild(row);
     });
-
   } catch (err) {
     console.error("❌ Error fetching orders:", err);
   }
 }
 
 // ===============================
-// 🏃 LOGOUT FUNCTION (optional)
+// 🍔 HAMBURGER MENU TOGGLE
+// ===============================
+const hamburger = document.getElementById("hamburger-admin");
+const navLinks = document.getElementById("nav-links-admin");
+
+if (hamburger && navLinks) {
+  hamburger.addEventListener("click", () => {
+    navLinks.classList.toggle("active");
+  });
+}
+
+// ===============================
+// 🏃 LOGOUT FUNCTION
 // ===============================
 window.logoutAdmin = () => {
   localStorage.removeItem("isAdmin");
