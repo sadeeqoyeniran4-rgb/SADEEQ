@@ -275,6 +275,24 @@ app.delete("/api/orders/:id", async (req, res) => {
   }
 });
 
+// ✅ Update order status (Confirm / Delivered)
+app.put("/api/orders/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const result = await pool.query(
+      "UPDATE orders SET status = $1 WHERE id = $2 RETURNING *",
+      [status, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error updating order status:", err);
+    res.status(500).json({ error: "Failed to update order status" });
+  }
+});
+
 // ================== START SERVER ==================
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
