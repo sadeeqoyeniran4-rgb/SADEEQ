@@ -210,8 +210,8 @@ app.post("/api/checkout", async (req, res) => {
     const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
     let shippingCost = 0;
-    if (shipping === "intra-state") shippingCost = 3000;
-    else if (shipping === "inter-state") shippingCost = 5000;
+    if (shipping === "intra-state") shippingCost = 1000;
+    else if (shipping === "inter-state") shippingCost = 3000;
     else if (shipping === "pickup") shippingCost = 0;
 
     const grandTotal = total + shippingCost;
