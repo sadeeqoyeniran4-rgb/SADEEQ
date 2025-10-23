@@ -1,31 +1,35 @@
 // ===============================
-// ✅ CONFIGURATION
+// ✅ CONFIG
 // ===============================
 const API_BASE = window.API_BASE || "https://lofinda.onrender.com";
-const ADMIN_PASSWORD = "Ogunleye1960."; // Change for better security!
 
 // ===============================
-// 🔐 ADMIN LOGIN
+// 🧑 ADMIN LOGIN
 // ===============================
+const ADMIN_PASSWORD = "sadeeq123"; // change to your password
+
 const adminLoginForm = document.getElementById("adminLoginForm");
 const loginResponse = document.getElementById("loginResponse");
 const adminModal = document.getElementById("admin-login-modal");
 const adminSection = document.getElementById("admin-section");
+const ordersBody = document.getElementById("ordersBody");
 
-/* Keep admin logged in after refresh
+// ✅ Keep login after refresh
 window.addEventListener("DOMContentLoaded", () => {
-  if (localStorage.getItem("isAdmin") === "true") {
+  const isAdmin = localStorage.getItem("isAdmin");
+  if (isAdmin === "true") {
     adminModal.style.display = "none";
     adminSection.style.display = "block";
     loadProducts();
     loadOrders();
   }
-}); */
+});
 
 if (adminLoginForm) {
   adminLoginForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const password = document.getElementById("admin-password").value.trim();
+    const password = document.getElementById("admin-password").value;
+
     if (password === ADMIN_PASSWORD) {
       loginResponse.textContent = "✅ Login successful!";
       loginResponse.style.color = "green";
@@ -35,25 +39,10 @@ if (adminLoginForm) {
       loadProducts();
       loadOrders();
     } else {
-      loginResponse.textContent = "❌ Incorrect password";
+      loginResponse.textContent = "❌ Invalid password";
       loginResponse.style.color = "red";
     }
   });
-}
-
-// Logout
-window.logoutAdmin = () => {
-  localStorage.removeItem("isAdmin");
-  location.reload();
-};
-
-// ===============================
-// 🍔 NAVBAR TOGGLE
-// ===============================
-const hamburger = document.getElementById("hamburger-admin");
-const navLinks = document.getElementById("nav-links-admin");
-if (hamburger && navLinks) {
-  hamburger.addEventListener("click", () => navLinks.classList.toggle("active"));
 }
 
 // ===============================
@@ -65,10 +54,9 @@ const productResponse = document.getElementById("productResponse");
 if (addProductForm) {
   addProductForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    const name = document.getElementById("prod-name").value.trim();
-    const description = document.getElementById("prod-desc").value.trim();
-    const price = document.getElementById("prod-price").value.trim();
+    const name = document.getElementById("prod-name").value;
+    const description = document.getElementById("prod-desc").value;
+    const price = document.getElementById("prod-price").value;
     const imageFile = document.getElementById("prod-image-file").files[0];
 
     if (!name || !price || !imageFile) {
@@ -78,6 +66,7 @@ if (addProductForm) {
     }
 
     try {
+      // Upload image
       const imgData = new FormData();
       imgData.append("image", imageFile);
 
@@ -88,7 +77,8 @@ if (addProductForm) {
       if (!imgRes.ok) throw new Error("Image upload failed");
       const imgJson = await imgRes.json();
 
-      const res = await fetch(`${API_BASE}/api/products`, {
+      // Add product
+      const productRes = await fetch(`${API_BASE}/api/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -99,7 +89,7 @@ if (addProductForm) {
         }),
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!productRes.ok) throw new Error("Product upload failed");
       productResponse.textContent = "✅ Product added successfully";
       productResponse.style.color = "green";
       addProductForm.reset();
@@ -113,10 +103,11 @@ if (addProductForm) {
 }
 
 // ===============================
-// 📦 LOAD PRODUCTS
+// 🛒 LOAD PRODUCTS
 // ===============================
+const productTableBody = document.getElementById("productTableBody");
+
 async function loadProducts() {
-  const productTableBody = document.getElementById("productTableBody");
   try {
     const res = await fetch(`${API_BASE}/api/products`);
     const products = await res.json();
@@ -130,8 +121,8 @@ async function loadProducts() {
         <td>${prod.name}</td>
         <td>₦${prod.price}</td>
         <td>
-          <button onclick="openEditModal(${prod.id}, '${prod.name}', '${prod.description || ""}', ${prod.price})">✏️ Edit</button>
-          <button class="delete-btn" onclick="deleteProduct(${prod.id})">🗑️ Delete</button>
+          <button class="edit-btn" onclick="openEditModal(${prod.id}, '${prod.name}', '${prod.description}', ${prod.price})">Edit</button>
+          <button class="delete-btn" onclick="deleteProduct(${prod.id})">Delete</button>
         </td>
       `;
       productTableBody.appendChild(row);
@@ -179,9 +170,9 @@ if (editForm) {
   editForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("edit-id").value;
-    const name = document.getElementById("edit-name").value.trim();
-    const description = document.getElementById("edit-desc").value.trim();
-    const price = document.getElementById("edit-price").value.trim();
+    const name = document.getElementById("edit-name").value;
+    const description = document.getElementById("edit-desc").value;
+    const price = document.getElementById("edit-price").value;
     const imageFile = document.getElementById("edit-image-file").files[0];
 
     const formData = new FormData();
@@ -208,10 +199,10 @@ if (editForm) {
 // 📦 LOAD ORDERS
 // ===============================
 async function loadOrders() {
-  const ordersBody = document.getElementById("ordersBody");
   try {
     const res = await fetch(`${API_BASE}/api/orders`);
     const orders = await res.json();
+    const ordersBody = document.getElementById("ordersBody");
     ordersBody.innerHTML = "";
 
     if (!orders.length) {
@@ -220,20 +211,23 @@ async function loadOrders() {
     }
 
     orders.forEach((order) => {
-      const itemsList = Array.isArray(order.items)
-        ? order.items.map(i => `${i.product_name || i.name} (${i.quantity})`).join("<br>")
-        : order.items;
+      const itemsList = order.items
+        .map(
+          (item) =>
+            `${item.product_name} (${item.quantity} × ₦${item.price})`
+        )
+        .join("<br>");
 
       const row = `
         <tr>
           <td>${order.customer_name}</td>
-          <td>${order.phone || "—"}</td>
+          <td>${order.phone || "N/A"}</td>
           <td>${order.email}</td>
           <td>${order.address}</td>
           <td>${itemsList}</td>
           <td>₦${order.total_amount}</td>
           <td>
-            <span class="status ${order.status.toLowerCase()}">${order.status}</span>
+            <span class="status ${order.status}">${order.status}</span>
           </td>
           <td>
             ${
@@ -247,20 +241,25 @@ async function loadOrders() {
       ordersBody.insertAdjacentHTML("beforeend", row);
     });
 
-    // Handle Confirm/Delete buttons
+    // confirm order
     document.querySelectorAll(".confirm-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        await fetch(`${API_BASE}/api/orders/${id}/confirm`, { method: "PUT" });
+        const id = btn.getAttribute("data-id");
+        await fetch(`${API_BASE}/api/orders/${id}/confirm`, {
+          method: "PUT",
+        });
         loadOrders();
       });
     });
 
+    // delete order
     document.querySelectorAll(".delete-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
+        const id = btn.getAttribute("data-id");
         if (!confirm("Delete this order?")) return;
-        await fetch(`${API_BASE}/api/orders/${id}`, { method: "DELETE" });
+        await fetch(`${API_BASE}/api/orders/${id}`, {
+          method: "DELETE",
+        });
         loadOrders();
       });
     });
@@ -270,15 +269,21 @@ async function loadOrders() {
 }
 
 // ===============================
-// 🔍 SEARCH ORDERS
+// 🍔 HAMBURGER MENU
 // ===============================
-const searchOrders = document.getElementById("searchOrders");
-if (searchOrders) {
-  searchOrders.addEventListener("input", function () {
-    const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#ordersBody tr");
-    rows.forEach((r) => {
-      r.style.display = r.textContent.toLowerCase().includes(filter) ? "" : "none";
-    });
+const hamburger = document.getElementById("hamburger-admin");
+const navLinks = document.getElementById("nav-links-admin");
+
+if (hamburger && navLinks) {
+  hamburger.addEventListener("click", () => {
+    navLinks.classList.toggle("active");
   });
 }
+
+// ===============================
+// 🚪 LOGOUT
+// ===============================
+window.logoutAdmin = () => {
+  localStorage.removeItem("isAdmin");
+  location.reload();
+};
