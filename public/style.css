@@ -16,7 +16,7 @@ body {
 /* ================= HEADER / NAVBAR ================= */
 header {
   width: 99%;
-  background: #503c44;
+  background: black;
   color: #fff;
   padding: 0.8rem 1.5rem;
   position: sticky;
@@ -666,7 +666,7 @@ button:hover {
 /* ================= FOOTER ================= */
 footer {
   width: 100vw;
-  background: #503c44;
+  background: black;
   color: white;
   text-align: center;
   padding: 1rem;
