@@ -13,13 +13,8 @@ const adminModal = document.getElementById("admin-login-modal");
 const adminSection = document.getElementById("admin-section");
 
 window.addEventListener("DOMContentLoaded", () => {
-  const isAdmin = localStorage.getItem("isAdmin");
-  if (isAdmin === "true") {
-    adminModal.style.display = "none";
-    adminSection.style.display = "block";
-    loadProducts();
-    loadOrders();
-  }
+  adminModal.style.display = "block";
+  adminSection.style.display = "none";
 });
 
 if (adminLoginForm) {
@@ -30,7 +25,6 @@ if (adminLoginForm) {
     if (password === ADMIN_PASSWORD) {
       loginResponse.textContent = "✅ Login successful!";
       loginResponse.style.color = "green";
-      localStorage.setItem("isAdmin", "true");
       adminModal.style.display = "none";
       adminSection.style.display = "block";
       loadProducts();
