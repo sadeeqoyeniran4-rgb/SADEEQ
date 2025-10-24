@@ -16,7 +16,7 @@ body {
 /* ================= HEADER / NAVBAR ================= */
 header {
   width: 99%;
-  background: plum;
+  background: rgb(77, 74, 74);
   color: #fff;
   padding: 0.8rem 1.5rem;
   position: sticky;
