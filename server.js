@@ -232,7 +232,7 @@ app.post("/api/verify-payment", async (req, res) => {
 app.get("/api/orders", async (req, res) => {
   try {
     const ordersResult = await pool.query(`
-      SELECT id, customer_name, email, address, total_amount, status, created_at, payment_reference
+      SELECT id, customer_name, phone, email, address, total_amount, status, created_at, payment_reference
       FROM orders
       ORDER BY created_at DESC
     `);
