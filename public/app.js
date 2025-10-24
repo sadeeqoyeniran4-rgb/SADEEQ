@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateCartUI();
 
-  // ---------------- FETCH PRODUCTS + CATEGORY FILTER ----------------
+ // ---------------- FETCH PRODUCTS + CATEGORY FILTER ----------------
 const productsContainer = document.getElementById("product-grid");
 const categoryButtons = document.querySelectorAll(".filter-btn");
 
@@ -107,9 +107,9 @@ async function loadProducts() {
     productsContainer.innerHTML = "";
 
     products.forEach((p) => {
-      // Normalize description to use as category key
+      // Normalize category based on product description
       const category =
-        (p.description || "uncategorized").toLowerCase().replace(/\s+/g, "-");
+        (p.description || "uncategorized").toLowerCase().replace(/\s+|\/+/g, "-");
 
       const card = document.createElement("div");
       card.className = "product-card";
@@ -129,7 +129,7 @@ async function loadProducts() {
       productsContainer.appendChild(card);
     });
 
-    // Add cart functionality for buttons
+    // Add cart functionality
     document.querySelectorAll(".add-to-cart").forEach((btn) =>
       btn.addEventListener("click", () => {
         const product = {
@@ -141,7 +141,7 @@ async function loadProducts() {
       })
     );
 
-    // Activate category filtering
+    // Category filtering
     if (categoryButtons.length) {
       categoryButtons.forEach((button) => {
         button.addEventListener("click", () => {
