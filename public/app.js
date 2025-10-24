@@ -93,49 +93,79 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateCartUI();
 
-  // ---------------- FETCH PRODUCTS ----------------
-  const productsContainer = document.getElementById("product-grid");
+  // ---------------- FETCH PRODUCTS + CATEGORY FILTER ----------------
+const productsContainer = document.getElementById("product-grid");
+const categoryButtons = document.querySelectorAll(".filter-btn");
 
-  async function loadProducts() {
-    if (!productsContainer) return;
-      try {
-  const res = await fetch(`${window.API_BASE}/api/products`);
-      const products = await res.json();
+async function loadProducts() {
+  if (!productsContainer) return;
 
-      productsContainer.innerHTML = "";
-      products.forEach((p) => {
-        const card = document.createElement("div");
-        card.className = "product-card";
-        card.innerHTML = `
-          <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
-          <h3>${p.name}</h3>
-          <p>${p.description || ""}</p>
-          <p class="price">₦${Number(p.price).toLocaleString()}</p>
-          <button class="add-to-cart" 
-            data-id="${p.id}" 
-            data-name="${p.name}" 
-            data-price="${p.price}">Add to Cart</button>
-        `;
-        productsContainer.appendChild(card);
+  try {
+    const res = await fetch(`${window.API_BASE}/api/products`);
+    const products = await res.json();
+
+    productsContainer.innerHTML = "";
+
+    products.forEach((p) => {
+      // Normalize description to use as category key
+      const category =
+        (p.description || "uncategorized").toLowerCase().replace(/\s+/g, "-");
+
+      const card = document.createElement("div");
+      card.className = "product-card";
+      card.dataset.category = category;
+
+      card.innerHTML = `
+        <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
+        <h3>${p.name}</h3>
+        <p>${p.description || ""}</p>
+        <p class="price">₦${Number(p.price).toLocaleString()}</p>
+        <button class="add-to-cart" 
+          data-id="${p.id}" 
+          data-name="${p.name}" 
+          data-price="${p.price}">Add to Cart</button>
+      `;
+
+      productsContainer.appendChild(card);
+    });
+
+    // Add cart functionality for buttons
+    document.querySelectorAll(".add-to-cart").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const product = {
+          id: +btn.dataset.id,
+          name: btn.dataset.name,
+          price: +btn.dataset.price,
+        };
+        addToCart(product);
+      })
+    );
+
+    // Activate category filtering
+    if (categoryButtons.length) {
+      categoryButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          categoryButtons.forEach((btn) => btn.classList.remove("active"));
+          button.classList.add("active");
+
+          const selected = button.dataset.category;
+          document.querySelectorAll(".product-card").forEach((card) => {
+            if (selected === "all" || card.dataset.category === selected) {
+              card.style.display = "flex";
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
       });
-
-      document.querySelectorAll(".add-to-cart").forEach((btn) =>
-        btn.addEventListener("click", () => {
-          const product = {
-            id: +btn.dataset.id,
-            name: btn.dataset.name,
-            price: +btn.dataset.price,
-          };
-          addToCart(product);
-        })
-      );
-    } catch (err) {
-      console.error("❌ Error loading products:", err);
-      productsContainer.innerHTML = "<p>Failed to load products.</p>";
     }
+  } catch (err) {
+    console.error("❌ Error loading products:", err);
+    productsContainer.innerHTML = "<p>Failed to load products.</p>";
   }
+}
 
-  loadProducts();
+loadProducts();
 
 // 🔐 ADMIN LOGIN
 // ============================
