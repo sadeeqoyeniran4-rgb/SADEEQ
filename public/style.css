@@ -193,9 +193,9 @@ nav .logo {
   background: url('hero.png') center/cover no-repeat;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: left;
   text-align: center;
-  color: white;
+  color: black;
   padding: 20px;
   position: relative;
   margin: 0;
@@ -376,7 +376,7 @@ nav .logo {
     height: 50vh;
     padding: 15px;
     background-size: contain;
-    margin-bottom: -30px;
+    margin-bottom: -90px;
   }
 
   .hero-content h1 {
