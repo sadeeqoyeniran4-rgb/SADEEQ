@@ -376,6 +376,7 @@ nav .logo {
     height: 50vh;
     padding: 15px;
     background-size: contain;
+    margin-bottom: -30px;
   }
 
   .hero-content h1 {
