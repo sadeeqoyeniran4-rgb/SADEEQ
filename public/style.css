@@ -286,7 +286,9 @@ nav .logo {
   .hero {
     margin-top: -119px;
     height: 50vh;
-    background-size: contain;}
+    padding: 0px;
+    background-size: contain;
+  }
 
   .hero-content h1 {
     font-size: 2rem;   /* smaller heading */
