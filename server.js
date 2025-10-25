@@ -208,7 +208,6 @@ app.post("/api/verify-payment", async (req, res) => {
         customer?.address || "N/A",
         totalAmount,
         reference,
-        JSON.stringify(cart)
       ]
     );
 
