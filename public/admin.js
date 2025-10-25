@@ -1,192 +1,298 @@
-// ====== CONFIG ======
-const API_BASE = "https://lofinda.onrender.com"; // Your backend API base URL
+// ===============================
+// ✅ CONFIG
+// ===============================
+const API_BASE = "https://lofinda.onrender.com";
+const ADMIN_PASSWORD = "sadeeq123"; // ⚠️ Change this to a secure password
 
-// ====== LOGIN FUNCTIONALITY ======
-document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const password = document.getElementById("admin-password").value.trim();
-  const responseText = document.getElementById("loginResponse");
+// ===============================
+// 🔐 ADMIN LOGIN HANDLING
+// ===============================
+const adminLoginForm = document.getElementById("adminLoginForm");
+const loginResponse = document.getElementById("loginResponse");
+const adminModal = document.getElementById("admin-login-modal");
+const adminSection = document.getElementById("admin-section");
+const loadingIndicator = document.getElementById("loading-indicator");
 
-  if (password === "admin123") {
-    responseText.textContent = "✅ Login successful!";
-    document.getElementById("admin-login-modal").style.display = "none";
-
-    // Show dashboard sections
-    document.getElementById("admin-section").style.display = "block";
-    document.getElementById("product-list").style.display = "block";
-    document.getElementById("order-list").style.display = "block";
-
-    fetchProducts();
-    fetchOrders();
-  } else {
-    responseText.textContent = "❌ Incorrect password!";
-  }
+// Hide admin section by default
+window.addEventListener("DOMContentLoaded", () => {
+  adminModal.style.display = "flex";
+  adminSection.style.display = "none";
+  loadingIndicator.style.display = "none";
 });
 
-// ====== ADD NEW PRODUCT ======
-document.getElementById("addProductForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = document.getElementById("prod-name").value.trim();
-  const desc = document.getElementById("prod-desc").value.trim();
-  const price = document.getElementById("prod-price").value;
-  const imageFile = document.getElementById("prod-image-file").files[0];
-  const responseText = document.getElementById("productResponse");
+// Handle login
+if (adminLoginForm) {
+  adminLoginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const password = document.getElementById("admin-password").value.trim();
 
-  if (!imageFile) {
-    responseText.textContent = "❌ Please select an image.";
-    return;
-  }
+    if (password === ADMIN_PASSWORD) {
+      loginResponse.textContent = "✅ Login successful!";
+      loginResponse.style.color = "green";
+      localStorage.setItem("isAdmin", "true");
 
-  const formData = new FormData();
-  formData.append("name", name);
-  formData.append("description", desc);
-  formData.append("price", price);
-  formData.append("image", imageFile);
-
-  try {
-    responseText.textContent = "⏳ Uploading product...";
-    const res = await fetch(`${API_BASE}/products`, {
-      method: "POST",
-      body: formData,
-    });
-
-    if (res.ok) {
-      responseText.textContent = "✅ Product added successfully!";
-      document.getElementById("addProductForm").reset();
-      fetchProducts();
+      setTimeout(() => {
+        adminModal.style.display = "none";
+        adminSection.style.display = "block";
+        initializeDashboard();
+      }, 600);
     } else {
-      responseText.textContent = "❌ Failed to add product. Check API.";
+      loginResponse.textContent = "❌ Invalid password";
+      loginResponse.style.color = "red";
     }
-  } catch (err) {
-    console.error("Error adding product:", err);
-    responseText.textContent = "⚠️ Network or server error.";
-  }
-});
+  });
+}
 
-// ====== FETCH PRODUCTS ======
-async function fetchProducts() {
+// Auto-login if already logged in
+if (localStorage.getItem("isAdmin") === "true") {
+  adminModal.style.display = "none";
+  adminSection.style.display = "block";
+  initializeDashboard();
+}
+
+// ===============================
+// 🧭 INITIAL DASHBOARD SETUP
+// ===============================
+async function initializeDashboard() {
   try {
-    const res = await fetch(`${API_BASE}/products`);
+    loadingIndicator.style.display = "flex";
+    await Promise.all([loadProducts(), loadOrders()]);
+  } catch (err) {
+    console.error("❌ Dashboard initialization error:", err);
+  } finally {
+    loadingIndicator.style.display = "none";
+  }
+}
+
+// ===============================
+// 🛍️ ADD PRODUCT
+// ===============================
+const addProductForm = document.getElementById("addProductForm");
+const productResponse = document.getElementById("productResponse");
+
+if (addProductForm) {
+  addProductForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("prod-name").value.trim();
+    const description = document.getElementById("prod-desc").value.trim();
+    const price = document.getElementById("prod-price").value.trim();
+    const imageFile = document.getElementById("prod-image-file").files[0];
+
+    if (!name || !price || !imageFile) {
+      productResponse.textContent = "⚠️ Please fill in all required fields.";
+      productResponse.style.color = "red";
+      return;
+    }
+
+    try {
+      loadingIndicator.style.display = "flex";
+
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      const imgRes = await fetch(`${API_BASE}/api/upload`, { method: "POST", body: formData });
+      if (!imgRes.ok) throw new Error("Image upload failed");
+      const imgData = await imgRes.json();
+
+      const newProduct = { name, description, price, image_url: imgData.url };
+
+      const res = await fetch(`${API_BASE}/api/products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProduct),
+      });
+
+      if (!res.ok) throw new Error("Product upload failed");
+      productResponse.textContent = "✅ Product added successfully!";
+      productResponse.style.color = "green";
+      addProductForm.reset();
+      loadProducts();
+    } catch (err) {
+      console.error("❌ Product upload error:", err);
+      productResponse.textContent = "❌ Error adding product.";
+      productResponse.style.color = "red";
+    } finally {
+      loadingIndicator.style.display = "none";
+    }
+  });
+}
+
+// ===============================
+// 🛒 LOAD PRODUCTS
+// ===============================
+const productTableBody = document.getElementById("productTableBody");
+
+async function loadProducts() {
+  try {
+    const res = await fetch(`${API_BASE}/api/products`);
+    if (!res.ok) throw new Error("Failed to load products");
     const products = await res.json();
 
-    const tbody = document.getElementById("productTableBody");
-    tbody.innerHTML = "";
-
-    if (products.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5">No products found</td></tr>`;
-      return;
-    }
-
-    products.forEach(prod => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${prod.id}</td>
-        <td><img src="${prod.image_url || 'placeholder.jpg'}" alt="${prod.name}" /></td>
-        <td>${prod.name}</td>
-        <td>₦${prod.price}</td>
-        <td>
-          <button class="confirm-btn" onclick="openEditModal(${prod.id})">Edit</button>
-          <button class="delete-btn" onclick="deleteProduct(${prod.id})">Delete</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    productTableBody.innerHTML = products.length
+      ? products
+          .map(
+            (p) => `
+        <tr>
+          <td>${p.id}</td>
+          <td><img src="${p.image_url}" alt="${p.name}" width="80" height="80" style="object-fit:cover;border-radius:8px;"></td>
+          <td>${p.name}</td>
+          <td>₦${Number(p.price).toLocaleString()}</td>
+          <td>
+            <button class="edit-btn" onclick="openEditModal(${p.id}, '${p.name}', '${p.description || ""}', ${p.price})">Edit</button>
+            <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
+          </td>
+        </tr>`
+          )
+          .join("")
+      : `<tr><td colspan="5">No products found</td></tr>`;
   } catch (err) {
-    console.error("Error fetching products:", err);
+    console.error("❌ Error loading products:", err);
+    productTableBody.innerHTML = `<tr><td colspan="5">Error loading products.</td></tr>`;
   }
 }
 
-// ====== FETCH ORDERS ======
-async function fetchOrders() {
+// ===============================
+// 🗑️ DELETE PRODUCT
+// ===============================
+async function deleteProduct(id) {
+  if (!confirm("Delete this product?")) return;
   try {
-    const res = await fetch(`${API_BASE}/orders`);
+    loadingIndicator.style.display = "flex";
+    const res = await fetch(`${API_BASE}/api/products/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Failed to delete product");
+    loadProducts();
+  } catch (err) {
+    console.error("❌ Delete error:", err);
+  } finally {
+    loadingIndicator.style.display = "none";
+  }
+}
+
+// ===============================
+// ✏️ EDIT PRODUCT
+// ===============================
+const editModal = document.getElementById("edit-modal");
+const editForm = document.getElementById("editProductForm");
+
+function openEditModal(id, name, desc, price) {
+  document.getElementById("edit-id").value = id;
+  document.getElementById("edit-name").value = name;
+  document.getElementById("edit-desc").value = desc;
+  document.getElementById("edit-price").value = price;
+  editModal.style.display = "flex";
+}
+
+function closeEditModal() {
+  editModal.style.display = "none";
+}
+
+if (editForm) {
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("edit-id").value;
+    const name = document.getElementById("edit-name").value;
+    const description = document.getElementById("edit-desc").value;
+    const price = document.getElementById("edit-price").value;
+    const imageFile = document.getElementById("edit-image-file").files[0];
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("price", price);
+    if (imageFile) formData.append("image", imageFile);
+
+    try {
+      loadingIndicator.style.display = "flex";
+      const res = await fetch(`${API_BASE}/api/products/${id}`, { method: "PUT", body: formData });
+      if (!res.ok) throw new Error("Update failed");
+      closeEditModal();
+      loadProducts();
+    } catch (err) {
+      console.error("Edit error:", err);
+    } finally {
+      loadingIndicator.style.display = "none";
+    }
+  });
+}
+
+// ===============================
+// 📦 LOAD ORDERS
+// ===============================
+async function loadOrders() {
+  try {
+    const res = await fetch(`${API_BASE}/api/orders`);
+    if (!res.ok) throw new Error("Failed to fetch orders");
     const orders = await res.json();
 
-    const tbody = document.getElementById("ordersBody");
-    tbody.innerHTML = "";
+    const ordersBody = document.getElementById("ordersBody");
+    const totalCount = document.getElementById("totalCount");
+    const pendingCount = document.getElementById("pendingCount");
+    const confirmedCount = document.getElementById("confirmedCount");
+    const deliveredCount = document.getElementById("deliveredCount");
 
-    if (orders.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="10">No orders yet</td></tr>`;
+    if (!orders.length) {
+      ordersBody.innerHTML = `<tr><td colspan="10">No orders yet</td></tr>`;
+      totalCount.textContent = pendingCount.textContent = confirmedCount.textContent = deliveredCount.textContent = 0;
       return;
     }
 
-    // Count stats
-    let pending = 0, confirmed = 0, delivered = 0;
-    orders.forEach(order => {
-      if (order.status === "pending") pending++;
-      if (order.status === "confirmed") confirmed++;
-      if (order.status === "delivered") delivered++;
-    });
+    totalCount.textContent = orders.length;
+    pendingCount.textContent = orders.filter((o) => o.status === "pending").length;
+    confirmedCount.textContent = orders.filter((o) => o.status === "confirmed").length;
+    deliveredCount.textContent = orders.filter((o) => o.status === "delivered").length;
 
-    document.getElementById("totalCount").textContent = orders.length;
-    document.getElementById("pendingCount").textContent = pending;
-    document.getElementById("confirmedCount").textContent = confirmed;
-    document.getElementById("deliveredCount").textContent = delivered;
+    ordersBody.innerHTML = orders
+      .map((o) => {
+        const items = o.items.map((i) => `${i.product_name} (${i.quantity} × ₦${i.price})`).join("<br>");
+        return `
+          <tr>
+            <td>${o.id}</td>
+            <td>${o.customer_name}</td>
+            <td>${o.phone || "N/A"}</td>
+            <td>${o.email || ""}</td>
+            <td>${o.address}</td>
+            <td>${items}</td>
+            <td>₦${Number(o.total_amount).toLocaleString()}</td>
+            <td><span class="status ${o.status}">${o.status}</span></td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+            <td>
+              ${
+                o.status === "pending"
+                  ? `<button class="confirm-btn" data-id="${o.id}">Confirm</button>`
+                  : `<button class="delete-btn" data-id="${o.id}">Delete</button>`
+              }
+            </td>
+          </tr>`;
+      })
+      .join("");
 
-    // Display orders
-    orders.forEach(order => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${order.id}</td>
-        <td>${order.customer_name}</td>
-        <td>${order.phone}</td>
-        <td>${order.email || "-"}</td>
-        <td>${order.address}</td>
-        <td>${order.items || "-"}</td>
-        <td>₦${order.total}</td>
-        <td class="status ${order.status}">${order.status}</td>
-        <td>${new Date(order.created_at).toLocaleString()}</td>
-        <td>
-          <button class="confirm-btn" onclick="updateOrderStatus(${order.id}, 'confirmed')">Confirm</button>
-          <button class="delete-btn" onclick="deleteOrder(${order.id})">Delete</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+    // Add confirm/delete actions
+    document.querySelectorAll(".confirm-btn").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        await fetch(`${API_BASE}/api/orders/${id}/confirm`, { method: "PUT" });
+        loadOrders();
+      })
+    );
+
+    document.querySelectorAll(".delete-btn").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        if (!confirm("Delete this order?")) return;
+        await fetch(`${API_BASE}/api/orders/${id}`, { method: "DELETE" });
+        loadOrders();
+      })
+    );
   } catch (err) {
-    console.error("Error fetching orders:", err);
+    console.error("❌ Error fetching orders:", err);
   }
 }
 
-// ====== PRODUCT ACTIONS ======
-async function deleteProduct(id) {
-  if (!confirm("Are you sure you want to delete this product?")) return;
-  try {
-    await fetch(`${API_BASE}/products/${id}`, { method: "DELETE" });
-    alert("Product deleted successfully!");
-    fetchProducts();
-  } catch (err) {
-    console.error("Error deleting product:", err);
-  }
-}
-
-// ====== ORDER ACTIONS ======
-async function updateOrderStatus(id, status) {
-  try {
-    await fetch(`${API_BASE}/orders/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    alert(`Order marked as ${status}`);
-    fetchOrders();
-  } catch (err) {
-    console.error("Error updating order:", err);
-  }
-}
-
-async function deleteOrder(id) {
-  if (!confirm("Are you sure you want to delete this order?")) return;
-  try {
-    await fetch(`${API_BASE}/orders/${id}`, { method: "DELETE" });
-    alert("Order deleted successfully!");
-    fetchOrders();
-  } catch (err) {
-    console.error("Error deleting order:", err);
-  }
-}
-
-// ====== NAVBAR TOGGLE ======
-document.getElementById("hamburger-admin").addEventListener("click", () => {
-  document.getElementById("nav-links-admin").classList.toggle("active");
-});
+// ===============================
+// 🚪 LOGOUT
+// ===============================
+window.logoutAdmin = () => {
+  localStorage.removeItem("isAdmin");
+  location.reload();
+};
