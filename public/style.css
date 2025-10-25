@@ -287,7 +287,7 @@ nav .logo {
   .hero {
     margin-top: -119px;
     height: 50vh;
-    padding: 0px;
+    padding: px;
     background-size: contain;
   }
 
@@ -488,79 +488,86 @@ button:hover {
   background: #ddd;
 }
 
-/* ================= CART MODAL STYLES ================= */
-.cart-modal {
-  display: none;
+/* Cart Sidebar */
+#cart-sidebar {
   position: fixed;
-  z-index: 10000;
-  left: 0;
+  right: -400px; /* hidden by default */
   top: 0;
-  width: 100%;
+  width: 350px;
   height: 100%;
-  background: rgba(0,0,0,0.6);
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-}
-
-.cart-modal.open {
-  display: flex;
-}
-
-.cart-modal-content {
   background: #fff;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 420px;
-  padding: 20px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-  position: relative;
+  box-shadow: -4px 0 12px rgba(0,0,0,0.15);
+  transition: right 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  animation: fadeIn 0.3s ease;
+  z-index: 1000;
 }
 
-.cart-modal-content h2 {
+#cart-sidebar.open {
+  right: 0;
+}
+
+/* Header */
+#cart-sidebar h2 {
+  background: #2f1e3d;
+  color: #fff;
+  margin: 0;
+  padding: 15px;
+  font-size: 18px;
   text-align: center;
-  margin-top: 0;
+  border-radius: 0 0 12px 12px;
 }
 
-.cart-total-section {
+/* Cart Items */
+#cart-items {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.cart-item {
   display: flex;
   justify-content: space-between;
-  font-size: 1.1rem;
-  margin-top: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
 }
 
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  font-size: 1.5rem;
-  background: none;
+.cart-item .remove {
+  background: transparent;
   border: none;
+  color: #d9534f;
+  font-size: 18px;
   cursor: pointer;
+
 }
 
-.checkout-btn {
-  background: #6a0dad;
-  color: #fff;
+/* Cart Footer */
+.cart-footer {
+  padding: 15px;
+  border-top: 1px solid #eee;
+}
+
+#cart-total {
+  font-weight: bold;
+  font-size: 16px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+#checkout-btn {
+  width: 100%;
+  padding: 12px;
+  background: #503c44;
   border: none;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 1rem;
+  color: white;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  font-size: 16px;
 }
 
-.checkout-btn:hover {
-  background: #500b9a;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+#checkout-btn:hover {
+  background: #5e3b7a;
 }
 
 /* ================= CHECKOUT MODAL ================= */
