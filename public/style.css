@@ -16,7 +16,7 @@ body {
 /* ================= HEADER / NAVBAR ================= */
 header {
   width: 99%;
-  background: rgb(77, 74, 74);
+  background: rgb(39, 38, 38);
   color: #fff;
   padding: 0.8rem 1.5rem;
   position: sticky;
@@ -26,6 +26,23 @@ header {
   justify-content: center; /* center header content by default */
   align-items: center;
   z-index: 1000;
+}
+
+/* 📱 Mobile Responsive (screens below 468px) */
+@media (max-width: 468px) {
+  .header {
+width: 99%;
+  background: rgb(39, 38, 38);
+  color: #fff;
+  padding: 0.8rem 1.5rem;
+  position: sticky;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center; /* center header content by default */
+  align-items: center;
+  z-index: 1000;
+  }
 }
 
 .logo img {
@@ -256,6 +273,27 @@ nav .logo {
   }
 
   .hero-content h1 {
+    font-size: 1.5rem;   /* smaller heading */
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .hero-content button {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+}
+/* 📱 Mobile Responsive (screens below 468px) */
+@media (max-width: 468px) {
+  .hero {
+    margin-top: -119px;
+    height: 50vh;
+    padding: 15px;
+    background-size: contain;}
+
+  .hero-content h1 {
     font-size: 2rem;   /* smaller heading */
   }
 
@@ -267,6 +305,7 @@ nav .logo {
     font-size: 0.9rem;
     padding: 10px 20px;
   }
+
 
   /* Show hamburger only on small screens */
   .hamburger {
