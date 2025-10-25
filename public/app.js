@@ -35,9 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
     cartTotalEl = document.getElementById("cart-total"),
     cartCountEl = document.getElementById("cart-count"),
     cartBtn = document.getElementById("cartBtn"),
-    cartSidebar = document.getElementById("cart-sidebar"),
-    closeCart = document.getElementById("close-cart"),
-    checkoutTotalEl = document.getElementById("checkout-total");
+   cartModal = document.getElementById("cart-modal"),
+   closeCart = document.getElementById("close-cart");
+   checkoutTotalEl = document.getElementById("checkout-total");
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
 
@@ -83,13 +83,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (cartBtn)
-    cartBtn.addEventListener("click", () =>
-      cartSidebar.classList.toggle("open")
-    );
-  if (closeCart)
-    closeCart.addEventListener("click", () =>
-      cartSidebar.classList.remove("open")
-    );
+  cartBtn.addEventListener("click", () => cartModal.classList.add("open"));
+
+if (closeCart)
+  closeCart.addEventListener("click", () => cartModal.classList.remove("open"));
+
+window.addEventListener("click", (e) => {
+  if (e.target === cartModal) cartModal.classList.remove("open");
+});
 
   updateCartUI();
 
