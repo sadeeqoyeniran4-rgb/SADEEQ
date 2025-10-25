@@ -34,6 +34,8 @@ if (adminLoginForm) {
       setTimeout(() => {
         adminModal.style.display = "none";
         adminSection.style.display = "block";
+        document.getElementById("product-list").style.display = "block";
+        document.getElementById("order-list").style.display = "block";
         initializeDashboard();
       }, 600);
     } else {
@@ -47,6 +49,8 @@ if (adminLoginForm) {
 if (localStorage.getItem("isAdmin") === "true") {
   adminModal.style.display = "none";
   adminSection.style.display = "block";
+  document.getElementById("product-list").style.display = "block";
+  document.getElementById("order-list").style.display = "block";
   initializeDashboard();
 }
 
