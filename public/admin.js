@@ -1,306 +1,192 @@
-// ===============================
-// ✅ CONFIG
-// ===============================
-const API_BASE = window.API_BASE || "https://lofinda.onrender.com";
-const ADMIN_PASSWORD = "sadeeq123"; // ⚠️ Change this to your secure admin password
+// ====== CONFIG ======
+const API_BASE = "https://lofinda.onrender.com"; // Your backend API base URL
 
-// ===============================
-// 🔐 ADMIN LOGIN
-// ===============================
-const adminLoginForm = document.getElementById("adminLoginForm");
-const loginResponse = document.getElementById("loginResponse");
-const adminModal = document.getElementById("admin-login-modal");
-const adminSection = document.getElementById("admin-section");
+// ====== LOGIN FUNCTIONALITY ======
+document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const password = document.getElementById("admin-password").value.trim();
+  const responseText = document.getElementById("loginResponse");
 
-window.addEventListener("DOMContentLoaded", () => {
-  adminModal.style.display = "block";
-  adminSection.style.display = "none";
+  if (password === "admin123") {
+    responseText.textContent = "✅ Login successful!";
+    document.getElementById("admin-login-modal").style.display = "none";
+
+    // Show dashboard sections
+    document.getElementById("admin-section").style.display = "block";
+    document.getElementById("product-list").style.display = "block";
+    document.getElementById("order-list").style.display = "block";
+
+    fetchProducts();
+    fetchOrders();
+  } else {
+    responseText.textContent = "❌ Incorrect password!";
+  }
 });
 
-if (adminLoginForm) {
-  adminLoginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const password = document.getElementById("admin-password").value;
+// ====== ADD NEW PRODUCT ======
+document.getElementById("addProductForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("prod-name").value.trim();
+  const desc = document.getElementById("prod-desc").value.trim();
+  const price = document.getElementById("prod-price").value;
+  const imageFile = document.getElementById("prod-image-file").files[0];
+  const responseText = document.getElementById("productResponse");
 
-    if (password === ADMIN_PASSWORD) {
-      loginResponse.textContent = "✅ Login successful!";
-      loginResponse.style.color = "green";
-      adminModal.style.display = "none";
-      adminSection.style.display = "block";
-      loadProducts();
-      loadOrders();
+  if (!imageFile) {
+    responseText.textContent = "❌ Please select an image.";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("description", desc);
+  formData.append("price", price);
+  formData.append("image", imageFile);
+
+  try {
+    responseText.textContent = "⏳ Uploading product...";
+    const res = await fetch(`${API_BASE}/products`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.ok) {
+      responseText.textContent = "✅ Product added successfully!";
+      document.getElementById("addProductForm").reset();
+      fetchProducts();
     } else {
-      loginResponse.textContent = "❌ Invalid password";
-      loginResponse.style.color = "red";
+      responseText.textContent = "❌ Failed to add product. Check API.";
     }
-  });
-}
+  } catch (err) {
+    console.error("Error adding product:", err);
+    responseText.textContent = "⚠️ Network or server error.";
+  }
+});
 
-// ===============================
-// 🛍️ ADD PRODUCT
-// ===============================
-const addProductForm = document.getElementById("addProductForm");
-const productResponse = document.getElementById("productResponse");
+// ====== FETCH PRODUCTS ======
+async function fetchProducts() {
+  try {
+    const res = await fetch(`${API_BASE}/products`);
+    const products = await res.json();
 
-if (addProductForm) {
-  addProductForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.getElementById("prod-name").value.trim();
-    const description = document.getElementById("prod-desc").value.trim();
-    const price = document.getElementById("prod-price").value.trim();
-    const imageFile = document.getElementById("prod-image-file").files[0];
+    const tbody = document.getElementById("productTableBody");
+    tbody.innerHTML = "";
 
-    if (!name || !price || !imageFile) {
-      productResponse.textContent = "⚠️ All required fields must be filled.";
-      productResponse.style.color = "red";
+    if (products.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5">No products found</td></tr>`;
       return;
     }
 
-    try {
-      const imgData = new FormData();
-      imgData.append("image", imageFile);
-
-      const imgRes = await fetch(`${API_BASE}/api/upload`, { method: "POST", body: imgData });
-      if (!imgRes.ok) throw new Error("Image upload failed");
-      const imgJson = await imgRes.json();
-
-      const productRes = await fetch(`${API_BASE}/api/products`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, price, image_url: imgJson.url }),
-      });
-
-      if (!productRes.ok) throw new Error("Product upload failed");
-      productResponse.textContent = "✅ Product added successfully!";
-      productResponse.style.color = "green";
-      addProductForm.reset();
-      loadProducts();
-    } catch (err) {
-      console.error("❌ Upload error:", err);
-      productResponse.textContent = "❌ Error uploading product.";
-      productResponse.style.color = "red";
-    }
-  });
-}
-
-// ===============================
-// 🛒 LOAD PRODUCTS
-// ===============================
-const productTableBody = document.getElementById("productTableBody");
-
-async function loadProducts() {
-  try {
-    const res = await fetch(`${API_BASE}/api/products`);
-    if (!res.ok) throw new Error("Failed to load products");
-    const products = await res.json();
-
-    productTableBody.innerHTML = products
-      .map(
-        (prod) => `
-        <tr>
-          <td>${prod.id}</td>
-          <td><img src="${prod.image_url}" alt="${prod.name}" width="80" height="80" style="object-fit:cover;border-radius:8px;"></td>
-          <td>${prod.name}</td>
-          <td>₦${Number(prod.price).toLocaleString()}</td>
-          <td>
-            <button class="edit-btn" onclick="openEditModal(${prod.id}, '${prod.name}', '${prod.description || ""}', ${prod.price})">Edit</button>
-            <button class="delete-btn" onclick="deleteProduct(${prod.id})">Delete</button>
-          </td>
-        </tr>`
-      )
-      .join("");
+    products.forEach(prod => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${prod.id}</td>
+        <td><img src="${prod.image_url || 'placeholder.jpg'}" alt="${prod.name}" /></td>
+        <td>${prod.name}</td>
+        <td>₦${prod.price}</td>
+        <td>
+          <button class="confirm-btn" onclick="openEditModal(${prod.id})">Edit</button>
+          <button class="delete-btn" onclick="deleteProduct(${prod.id})">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   } catch (err) {
-    console.error("❌ Error loading products:", err);
+    console.error("Error fetching products:", err);
   }
 }
 
-// ===============================
-// 🗑️ DELETE PRODUCT
-// ===============================
+// ====== FETCH ORDERS ======
+async function fetchOrders() {
+  try {
+    const res = await fetch(`${API_BASE}/orders`);
+    const orders = await res.json();
+
+    const tbody = document.getElementById("ordersBody");
+    tbody.innerHTML = "";
+
+    if (orders.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10">No orders yet</td></tr>`;
+      return;
+    }
+
+    // Count stats
+    let pending = 0, confirmed = 0, delivered = 0;
+    orders.forEach(order => {
+      if (order.status === "pending") pending++;
+      if (order.status === "confirmed") confirmed++;
+      if (order.status === "delivered") delivered++;
+    });
+
+    document.getElementById("totalCount").textContent = orders.length;
+    document.getElementById("pendingCount").textContent = pending;
+    document.getElementById("confirmedCount").textContent = confirmed;
+    document.getElementById("deliveredCount").textContent = delivered;
+
+    // Display orders
+    orders.forEach(order => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${order.id}</td>
+        <td>${order.customer_name}</td>
+        <td>${order.phone}</td>
+        <td>${order.email || "-"}</td>
+        <td>${order.address}</td>
+        <td>${order.items || "-"}</td>
+        <td>₦${order.total}</td>
+        <td class="status ${order.status}">${order.status}</td>
+        <td>${new Date(order.created_at).toLocaleString()}</td>
+        <td>
+          <button class="confirm-btn" onclick="updateOrderStatus(${order.id}, 'confirmed')">Confirm</button>
+          <button class="delete-btn" onclick="deleteOrder(${order.id})">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Error fetching orders:", err);
+  }
+}
+
+// ====== PRODUCT ACTIONS ======
 async function deleteProduct(id) {
   if (!confirm("Are you sure you want to delete this product?")) return;
   try {
-    const res = await fetch(`${API_BASE}/api/products/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Failed to delete product");
-    loadProducts();
+    await fetch(`${API_BASE}/products/${id}`, { method: "DELETE" });
+    alert("Product deleted successfully!");
+    fetchProducts();
   } catch (err) {
-    console.error("Delete error:", err);
+    console.error("Error deleting product:", err);
   }
 }
 
-// ===============================
-// ✏️ EDIT PRODUCT
-// ===============================
-const editModal = document.getElementById("edit-modal");
-const editForm = document.getElementById("editProductForm");
-
-function openEditModal(id, name, desc, price) {
-  document.getElementById("edit-id").value = id;
-  document.getElementById("edit-name").value = name;
-  document.getElementById("edit-desc").value = desc;
-  document.getElementById("edit-price").value = price;
-  editModal.style.display = "flex";
-}
-
-function closeEditModal() {
-  editModal.style.display = "none";
-}
-
-if (editForm) {
-  editForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("edit-id").value;
-    const name = document.getElementById("edit-name").value;
-    const description = document.getElementById("edit-desc").value;
-    const price = document.getElementById("edit-price").value;
-    const imageFile = document.getElementById("edit-image-file").files[0];
-
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("price", price);
-    if (imageFile) formData.append("image", imageFile);
-
-    try {
-      const res = await fetch(`${API_BASE}/api/products/${id}`, { method: "PUT", body: formData });
-      if (!res.ok) throw new Error("Update failed");
-      closeEditModal();
-      loadProducts();
-    } catch (err) {
-      console.error("Edit error:", err);
-    }
-  });
-}
-
-// ===============================
-// 📦 LOAD ORDERS
-// ===============================
-async function loadOrders() {
+// ====== ORDER ACTIONS ======
+async function updateOrderStatus(id, status) {
   try {
-    const res = await fetch(`${API_BASE}/api/orders`);
-    if (!res.ok) throw new Error("Failed to fetch orders");
-    const orders = await res.json();
-    const ordersBody = document.getElementById("ordersBody");
-    const totalCount = document.getElementById("totalCount");
-    const pendingCount = document.getElementById("pendingCount");
-    const confirmedCount = document.getElementById("confirmedCount");
-    const deliveredCount = document.getElementById("deliveredCount");
-
-    ordersBody.innerHTML = "";
-
-    if (!orders.length) {
-      ordersBody.innerHTML = `<tr><td colspan="10">No orders yet</td></tr>`;
-      return;
-    }
-
-    // Stats
-    totalCount.textContent = orders.length;
-    pendingCount.textContent = orders.filter((o) => o.status === "pending").length;
-    confirmedCount.textContent = orders.filter((o) => o.status === "confirmed").length;
-    deliveredCount.textContent = orders.filter((o) => o.status === "delivered").length;
-
-    orders.forEach((order) => {
-      const itemsList = order.items
-        .map((item) => `${item.product_name} (${item.quantity} × ₦${item.price})`)
-        .join("<br>");
-
-      const row = `
-        <tr>
-          <td>${order.id}</td>
-          <td>${order.customer_name}</td>
-          <td>${order.phone || "N/A"}</td>
-          <td>${order.email || ""}</td>
-          <td>${order.address}</td>
-          <td>${itemsList}</td>
-          <td>₦${Number(order.total_amount).toLocaleString()}</td>
-          <td><span class="status ${order.status}">${order.status}</span></td>
-          <td>${new Date(order.created_at).toLocaleDateString()}</td>
-          <td>
-            ${
-              order.status === "pending"
-                ? `<button class="confirm-btn" data-id="${order.id}">Confirm</button>`
-                : `<button class="delete-btn" data-id="${order.id}">Delete</button>`
-            }
-          </td>
-        </tr>`;
-      ordersBody.insertAdjacentHTML("beforeend", row);
+    await fetch(`${API_BASE}/orders/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
     });
-
-    // Confirm & Delete actions
-    document.querySelectorAll(".confirm-btn").forEach((btn) =>
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        await fetch(`${API_BASE}/api/orders/${id}/confirm`, { method: "PUT" });
-        loadOrders();
-      })
-    );
-
-    document.querySelectorAll(".delete-btn").forEach((btn) =>
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        if (!confirm("Delete this order?")) return;
-        await fetch(`${API_BASE}/api/orders/${id}`, { method: "DELETE" });
-        loadOrders();
-      })
-    );
+    alert(`Order marked as ${status}`);
+    fetchOrders();
   } catch (err) {
-    console.error("❌ Error fetching orders:", err);
+    console.error("Error updating order:", err);
   }
 }
 
-// ===============================
-// 🔍 SEARCH ORDERS
-// ===============================
-const searchInput = document.getElementById("searchOrders");
-if (searchInput) {
-  searchInput.addEventListener("input", async (e) => {
-    const q = e.target.value.toLowerCase();
-    const res = await fetch(`${API_BASE}/api/orders`);
-    const orders = await res.json();
-
-    const filtered = orders.filter(
-      (o) =>
-        o.customer_name.toLowerCase().includes(q) ||
-        (o.phone && o.phone.includes(q)) ||
-        (o.email && o.email.toLowerCase().includes(q))
-    );
-
-    const ordersBody = document.getElementById("ordersBody");
-    ordersBody.innerHTML = "";
-    filtered.forEach((order) => {
-      const itemsList = order.items
-        .map((item) => `${item.product_name} (${item.quantity} × ₦${item.price})`)
-        .join("<br>");
-      const row = `
-        <tr>
-          <td>${order.id}</td>
-          <td>${order.customer_name}</td>
-          <td>${order.phone || "N/A"}</td>
-          <td>${order.email || ""}</td>
-          <td>${order.address}</td>
-          <td>${itemsList}</td>
-          <td>₦${Number(order.total_amount).toLocaleString()}</td>
-          <td><span class="status ${order.status}">${order.status}</span></td>
-          <td>${new Date(order.created_at).toLocaleDateString()}</td>
-        </tr>`;
-      ordersBody.insertAdjacentHTML("beforeend", row);
-    });
-  });
+async function deleteOrder(id) {
+  if (!confirm("Are you sure you want to delete this order?")) return;
+  try {
+    await fetch(`${API_BASE}/orders/${id}`, { method: "DELETE" });
+    alert("Order deleted successfully!");
+    fetchOrders();
+  } catch (err) {
+    console.error("Error deleting order:", err);
+  }
 }
 
-// ===============================
-// 🍔 HAMBURGER MENU
-// ===============================
-const hamburger = document.getElementById("hamburger-admin");
-const navLinks = document.getElementById("nav-links-admin");
-if (hamburger && navLinks) {
-  hamburger.addEventListener("click", () => navLinks.classList.toggle("active"));
-}
-
-// ===============================
-// 🚪 LOGOUT
-// ===============================
-window.logoutAdmin = () => {
-  localStorage.removeItem("isAdmin");
-  location.reload();
-};
+// ====== NAVBAR TOGGLE ======
+document.getElementById("hamburger-admin").addEventListener("click", () => {
+  document.getElementById("nav-links-admin").classList.toggle("active");
+});
