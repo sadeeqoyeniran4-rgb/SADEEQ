@@ -208,6 +208,7 @@ app.post("/api/verify-payment", async (req, res) => {
         customer?.address || "N/A",
         totalAmount,
         reference,
+        JSON.stringify(cart)
       ]
     );
 
@@ -229,34 +230,28 @@ app.post("/api/verify-payment", async (req, res) => {
 });
 
 // ================== FETCH ORDERS ==================
+// ✅ Get all orders with items
 app.get("/api/orders", async (req, res) => {
   try {
-    const ordersResult = await pool.query(`
-      SELECT id, customer_name, phone, email, address, total_amount, status, created_at, payment_reference
-      FROM orders
-      ORDER BY created_at DESC
-    `);
+    const ordersResult = await pool.query("SELECT * FROM orders ORDER BY id DESC");
 
-    const orders = ordersResult.rows;
-    if (orders.length === 0) return res.json([]);
+    const ordersWithItems = [];
+    for (const order of ordersResult.rows) {
+      const itemsResult = await pool.query(
+        "SELECT product_name, quantity, price FROM order_items WHERE order_id = $1",
+        [order.id]
+      );
 
-    const orderIds = orders.map(o => o.id);
-    const orderItemsResult = await pool.query(
-      `SELECT order_id, product_name, quantity, price FROM order_items WHERE order_id = ANY($1)`,
-      [orderIds]
-    );
+      ordersWithItems.push({
+        ...order,
+        items: itemsResult.rows,
+      });
+    }
 
-    const orderItems = orderItemsResult.rows;
-
-    const ordersWithItems = orders.map(order => {
-      const itemsForOrder = orderItems.filter(item => item.order_id === order.id);
-      return { ...order, items: itemsForOrder };
-    });
-
-    res.json(ordersWithItems);
+    res.json({ success: true, orders: ordersWithItems });
   } catch (err) {
     console.error("❌ Error fetching orders:", err);
-    res.status(500).json({ error: "Failed to fetch orders" });
+    res.status(500).json({ success: false, message: "Error fetching orders" });
   }
 });
 

@@ -225,69 +225,42 @@ if (editForm) {
 // ===============================
 async function loadOrders() {
   try {
-    const res = await fetch(`${API_BASE}/api/orders`);
-    if (!res.ok) throw new Error("Failed to fetch orders");
-    const orders = await res.json();
+    const res = await fetch("https://lofinda.onrender.com/api/orders");
+    const data = await res.json();
 
-    const ordersBody = document.getElementById("ordersBody");
-    const totalCount = document.getElementById("totalCount");
-    const pendingCount = document.getElementById("pendingCount");
-    const confirmedCount = document.getElementById("confirmedCount");
-    const deliveredCount = document.getElementById("deliveredCount");
-
-    if (!orders.length) {
-      ordersBody.innerHTML = `<tr><td colspan="10">No orders yet</td></tr>`;
-      totalCount.textContent = pendingCount.textContent = confirmedCount.textContent = deliveredCount.textContent = 0;
-      return;
+    if (!data.success) {
+      throw new Error("Failed to fetch orders");
     }
 
-    totalCount.textContent = orders.length;
-    pendingCount.textContent = orders.filter((o) => o.status === "pending").length;
-    confirmedCount.textContent = orders.filter((o) => o.status === "confirmed").length;
-    deliveredCount.textContent = orders.filter((o) => o.status === "delivered").length;
+    const ordersBody = document.getElementById("ordersBody");
+    ordersBody.innerHTML = "";
 
-    ordersBody.innerHTML = orders
-      .map((o) => {
-        const items = o.items.map((i) => `${i.product_name} (${i.quantity} × ₦${i.price})`).join("<br>");
-        return `
-          <tr>
-            <td>${o.id}</td>
-            <td>${o.customer_name}</td>
-            <td>${o.phone || "N/A"}</td>
-            <td>${o.email || ""}</td>
-            <td>${o.address}</td>
-            <td>${items}</td>
-            <td>₦${Number(o.total_amount).toLocaleString()}</td>
-            <td><span class="status ${o.status}">${o.status}</span></td>
-            <td>${new Date(o.created_at).toLocaleDateString()}</td>
-            <td>
-              ${
-                o.status === "pending"
-                  ? `<button class="confirm-btn" data-id="${o.id}">Confirm</button>`
-                  : `<button class="delete-btn" data-id="${o.id}">Delete</button>`
-              }
-            </td>
-          </tr>`;
-      })
-      .join("");
+    data.orders.forEach((order) => {
+      const itemsList = order.items
+        .map(
+          (item) =>
+            `<li>${item.product_name} (${item.quantity} × ₦${item.price})</li>`
+        )
+        .join("");
 
-    // Add confirm/delete actions
-    document.querySelectorAll(".confirm-btn").forEach((btn) =>
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        await fetch(`${API_BASE}/api/orders/${id}/confirm`, { method: "PUT" });
-        loadOrders();
-      })
-    );
-
-    document.querySelectorAll(".delete-btn").forEach((btn) =>
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        if (!confirm("Delete this order?")) return;
-        await fetch(`${API_BASE}/api/orders/${id}`, { method: "DELETE" });
-        loadOrders();
-      })
-    );
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${order.id}</td>
+        <td>${order.customer_name}</td>
+        <td>${order.phone}</td>
+        <td>${order.email}</td>
+        <td>${order.address}</td>
+        <td><ul class="order-items">${itemsList}</ul></td>
+        <td>₦${order.total_amount}</td>
+        <td>${order.status || "Pending"}</td>
+        <td>${new Date(order.created_at).toLocaleString()}</td>
+        <td>
+          <button class="confirm-btn" onclick="updateOrderStatus(${order.id}, 'Confirmed')">Confirm</button>
+          <button class="deliver-btn" onclick="updateOrderStatus(${order.id}, 'Delivered')">Deliver</button>
+        </td>
+      `;
+      ordersBody.appendChild(row);
+    });
   } catch (err) {
     console.error("❌ Error fetching orders:", err);
   }
