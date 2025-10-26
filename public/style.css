@@ -24,7 +24,7 @@ header {
   left: 0;
   display: flex;
   justify-content: center; /* center header content by default */
-  align-items: center;
+  align-items: left;
   z-index: 1000;
 }
 
