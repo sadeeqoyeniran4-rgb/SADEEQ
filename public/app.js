@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cartTotalEl = document.getElementById("cart-total");
   const cartCountEl = document.getElementById("cart-count");
   const cartBtn = document.getElementById("cartBtn");
-  const cartModal = document.getElementById("cart-sidebar");
+  const cartModal = document.getElementById("cart-modal");
   const closeCart = document.getElementById("close-cart");
   const checkoutTotalEl = document.getElementById("checkout-total");
 
