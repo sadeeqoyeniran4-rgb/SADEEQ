@@ -31,7 +31,6 @@
         <li><a href="#">Home</a></li>
         <li><a href="#" id="aboutBtn">About</a></li>
         <li><a href="#" id="contactBtn">Contact</a></li>
-        <li><a href="#" id="cartBtn">Cart <span id="cart-count">0</span></a></li>
       </ul>
 
        <div class="cart-icon-wrapper">
@@ -103,18 +102,19 @@
   <div class="cart-content">
     <div class="cart-header">
       <h3>Your Cart</h3>
-      <button id="close-cart" class="close-cart">&times;</button>
+      <button id="close-cart" class="close-cart" type="button">&times;</button>
     </div>
+
     <div id="cart-items" class="cart-items"></div>
+
     <div class="cart-footer">
       <p>Total: <span id="cart-total">₦0</span></p>
-      <button class="checkout-btn" onclick="window.location.href='checkout.html'">
+      <button id="checkout-btn" class="checkout-btn" type="button">
         Proceed to Checkout
       </button>
     </div>
   </div>
-</div>
-    <!-- ================= CHECKOUT MODAL ================= -->
+</div>    <!-- ================= CHECKOUT MODAL ================= -->
     <div id="checkout-modal" class="modal">
       <div class="modal-box">
         <span class="close" id="checkout-close">&times;</span>

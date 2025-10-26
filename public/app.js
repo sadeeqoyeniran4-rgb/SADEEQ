@@ -30,72 +30,96 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------------- CART SYSTEM ----------------
+  document.addEventListener("DOMContentLoaded", () => {
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
-const cartItemsEl = document.getElementById("cart-items"),
-  cartTotalEl = document.getElementById("cart-total"),
-  cartCountEl = document.getElementById("cart-count"),
-  cartBtn = document.getElementById("cartBtn"),
-  cartModal = document.getElementById("cart-modal"),
-  closeCart = document.getElementById("close-cart"),
-  checkoutTotalEl = document.getElementById("checkout-total");
 
-const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
+  const cartItemsEl = document.getElementById("cart-items");
+  const cartTotalEl = document.getElementById("cart-total");
+  const cartCountEl = document.getElementById("cart-count");
+  const cartBtn = document.getElementById("cartBtn");
+  const cartModal = document.getElementById("cart-modal");
+  const closeCart = document.getElementById("close-cart");
+  const checkoutBtn = document.getElementById("checkout-btn");
+  const checkoutTotalEl = document.getElementById("checkout-total");
 
-function updateCartUI() {
-  if (!cartItemsEl) return;
-  cartItemsEl.innerHTML = "";
-  let total = 0,
-    count = 0;
+  const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
 
-  cart.forEach((item, i) => {
-    total += item.price * item.qty;
-    count += item.qty;
-    const div = document.createElement("div");
-    div.className = "cart-item";
-    div.innerHTML = `
-      <span>${item.name} × ${item.qty} — ₦${(
-      item.price * item.qty
-    ).toLocaleString()}</span>
-      <button class="remove" data-i="${i}">×</button>`;
-    cartItemsEl.appendChild(div);
+  function updateCartUI() {
+    if (!cartItemsEl) return;
+    cartItemsEl.innerHTML = "";
+    let total = 0,
+      count = 0;
+
+    cart.forEach((item, i) => {
+      total += item.price * item.qty;
+      count += item.qty;
+      const div = document.createElement("div");
+      div.className = "cart-item";
+      div.innerHTML = `
+        <span>${item.name} × ${item.qty} — ₦${(
+        item.price * item.qty
+      ).toLocaleString()}</span>
+        <button class="remove" data-i="${i}">×</button>`;
+      cartItemsEl.appendChild(div);
+    });
+
+    cartTotalEl.textContent = `₦${total.toLocaleString()}`;
+    if (checkoutTotalEl)
+      checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
+    if (cartCountEl) cartCountEl.textContent = count;
+    saveCart();
+  }
+
+  function addToCart(product) {
+    const found = cart.find((i) => i.id === product.id);
+    found ? found.qty++ : cart.push({ ...product, qty: 1 });
+    updateCartUI();
+  }
+
+  // ✅ Remove item
+  if (cartItemsEl) {
+    cartItemsEl.addEventListener("click", (e) => {
+      if (e.target.classList.contains("remove")) {
+        cart.splice(e.target.dataset.i, 1);
+        updateCartUI();
+      }
+    });
+  }
+
+  // ✅ Toggle cart modal
+  if (cartBtn)
+    cartBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      cartModal.classList.add("open");
+    });
+
+  if (closeCart)
+    closeCart.addEventListener("click", (e) => {
+      e.preventDefault();
+      cartModal.classList.remove("open");
+    });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === cartModal) cartModal.classList.remove("open");
   });
 
-  cartTotalEl.textContent = `₦${total.toLocaleString()}`;
-  if (checkoutTotalEl)
-    checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
-  if (cartCountEl) cartCountEl.textContent = count;
-  saveCart();
-}
+  // ✅ Proceed to Checkout
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      cartModal.classList.remove("open");
+      window.location.href = "checkout.html";
+    });
+  }
 
-function addToCart(product) {
-  const found = cart.find((i) => i.id === product.id);
-  found ? found.qty++ : cart.push({ ...product, qty: 1 });
   updateCartUI();
-}
 
-if (cartItemsEl) {
-  cartItemsEl.addEventListener("click", (e) => {
-    if (e.target.classList.contains("remove")) {
-      cart.splice(e.target.dataset.i, 1);
-      updateCartUI();
-    }
-  });
-}
-
-if (cartBtn)
-  cartBtn.addEventListener("click", () => cartModal.classList.add("open"));
-
-if (closeCart)
-  closeCart.addEventListener("click", () => cartModal.classList.remove("open"));
-
-window.addEventListener("click", (e) => {
-  if (e.target === cartModal) cartModal.classList.remove("open");
+  // Optional: expose addToCart globally
+  window.addToCart = addToCart;
 });
 
-updateCartUI();
 
-
- // ---------------- FETCH PRODUCTS + CATEGORY FILTER ----------------
+// ====================== PRODUCT LOADER ======================
 const productsContainer = document.getElementById("product-grid");
 const categoryButtons = document.querySelectorAll(".filter-btn");
 
@@ -131,7 +155,7 @@ async function loadProducts() {
       productsContainer.appendChild(card);
     });
 
-    // Add cart functionality
+    // ✅ Add cart functionality to each button
     document.querySelectorAll(".add-to-cart").forEach((btn) =>
       btn.addEventListener("click", () => {
         const product = {
@@ -139,33 +163,33 @@ async function loadProducts() {
           name: btn.dataset.name,
           price: +btn.dataset.price,
         };
-        addToCart(product);
+        addToCart(product); // ✅ call from your modal cart logic
       })
     );
 
-    // Category filtering
-    if (categoryButtons.length) {
-      categoryButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          categoryButtons.forEach((btn) => btn.classList.remove("active"));
-          button.classList.add("active");
-
-          const selected = button.dataset.category;
-          document.querySelectorAll(".product-card").forEach((card) => {
-            if (selected === "all" || card.dataset.category === selected) {
-              card.style.display = "flex";
-            } else {
-              card.style.display = "none";
-            }
-          });
-        });
-      });
-    }
   } catch (err) {
     console.error("❌ Error loading products:", err);
-    productsContainer.innerHTML = "<p>Failed to load products.</p>";
+    productsContainer.innerHTML =
+      "<p class='error-msg'>Unable to load products at the moment.</p>";
   }
 }
+
+// ====================== CATEGORY FILTERING ======================
+categoryButtons.forEach((btn) =>
+  btn.addEventListener("click", () => {
+    const selected = btn.dataset.category;
+    document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    document.querySelectorAll(".product-card").forEach((card) => {
+      if (selected === "all" || card.dataset.category.includes(selected)) {
+        card.style.display = "block";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  })
+);
 
 loadProducts();
 
@@ -292,69 +316,88 @@ if (productForm) {
   });
 }
 */
-  // ---------------- CHECKOUT MODAL ----------------
+// ---------------- CHECKOUT MODAL ----------------
+document.addEventListener("DOMContentLoaded", () => {
   const checkoutBtn = document.getElementById("checkout-btn"),
     checkoutModal = document.getElementById("checkout-modal"),
     checkoutClose = document.getElementById("checkout-close"),
     shippingSelect = document.getElementById("shipping"),
-    checkoutForm = document.getElementById("checkout-form");
+    checkoutForm = document.getElementById("checkout-form"),
+    checkoutTotalEl = document.getElementById("checkout-total"),
+    cartModal = document.getElementById("cart-modal");
 
   let checkoutTotals = {};
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
+  // ✅ Handle Proceed to Checkout (from cart modal)
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", async () => {
       if (cart.length === 0) {
         alert("Your cart is empty!");
         return;
       }
+
       try {
         const res = await fetch(`${window.API_BASE}/api/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart }),
         });
+
         const data = await res.json();
+
         if (data.success) {
           checkoutTotals = data;
-          checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
-          checkoutModal.style.display = "flex";
+          if (checkoutTotalEl)
+            checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
+          
+          // Hide the cart modal & open checkout modal
+          cartModal.classList.remove("open");
+          if (checkoutModal) checkoutModal.style.display = "flex";
         } else {
           alert("Error calculating total");
         }
-      } catch {
-        alert("Checkout error");
+      } catch (err) {
+        console.error("Checkout error:", err);
+        alert("Checkout error — please try again.");
       }
-      cartSidebar.classList.remove("open");
     });
   }
 
-  if (checkoutClose)
-    checkoutClose.addEventListener(
-      "click",
-      () => (checkoutModal.style.display = "none")
-    );
+  // ✅ Close checkout modal
+  if (checkoutClose) {
+    checkoutClose.addEventListener("click", () => {
+      checkoutModal.style.display = "none";
+    });
+  }
+
   window.addEventListener("click", (e) => {
     if (e.target === checkoutModal) checkoutModal.style.display = "none";
   });
 
+  // ✅ Handle shipping change dynamically
   if (shippingSelect) {
     shippingSelect.addEventListener("change", async (e) => {
       try {
-  const res = await fetch(`${window.API_BASE}/api/checkout`, {
+        const res = await fetch(`${window.API_BASE}/api/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart, shipping: e.target.value }),
         });
+
         const { success, grandTotal, total, shippingCost } = await res.json();
+
         if (success) {
           checkoutTotals = { grandTotal, total, shippingCost, success: true };
-          checkoutTotalEl.textContent = `₦${grandTotal.toLocaleString()}`;
+          if (checkoutTotalEl)
+            checkoutTotalEl.textContent = `₦${grandTotal.toLocaleString()}`;
         }
-      } catch {
-        console.error("Error updating total with shipping");
+      } catch (err) {
+        console.error("Error updating total with shipping:", err);
       }
     });
   }
+});
 
   // ---------------- ERROR MODAL ----------------
   function showErrorModal(message) {
