@@ -24,7 +24,7 @@ header {
   left: 0;
   display: flex;
   justify-content: center; /* center header content by default */
-  align-items: left;
+  align-items: center;
   z-index: 1000;
 }
 
@@ -192,9 +192,9 @@ nav .logo {
   height: 100vh;
   background: url('hero.png') center/cover no-repeat;
   display: flex;
-  align-items: center;
+  align-items: left;
   justify-content: center;
-  text-align: center;
+  text-align: left;
   color: black;
   padding: 20px;
   position: relative;
