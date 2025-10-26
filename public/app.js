@@ -301,14 +301,16 @@ document.addEventListener("DOMContentLoaded", () => {
     shippingSelect = document.getElementById("shipping"),
     checkoutForm = document.getElementById("checkout-form"),
     checkoutTotalEl = document.getElementById("checkout-total"),
-    cartModal = document.getElementById("cart-modal");
+    cartSidebar = document.getElementById("cart-sidebar");
 
   let checkoutTotals = {};
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-  // ✅ Handle Proceed to Checkout (from cart modal)
+  // ✅ Proceed to Checkout (open modal)
   if (checkoutBtn) {
-    checkoutBtn.addEventListener("click", async () => {
+    checkoutBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+
       if (cart.length === 0) {
         alert("Your cart is empty!");
         return;
@@ -320,17 +322,13 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart }),
         });
-
         const data = await res.json();
 
         if (data.success) {
           checkoutTotals = data;
-          if (checkoutTotalEl)
-            checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
-          
-          // Hide the cart modal & open checkout modal
-          cartModal.classList.remove("open");
-          if (checkoutModal) checkoutModal.style.display = "flex";
+          checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
+          cartSidebar.classList.remove("open");
+          checkoutModal.style.display = "flex";
         } else {
           alert("Error calculating total");
         }
@@ -341,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ Close checkout modal
+  // ✅ Close modal
   if (checkoutClose) {
     checkoutClose.addEventListener("click", () => {
       checkoutModal.style.display = "none";
@@ -352,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === checkoutModal) checkoutModal.style.display = "none";
   });
 
-  // ✅ Handle shipping change dynamically
+  // ✅ Update total on shipping change
   if (shippingSelect) {
     shippingSelect.addEventListener("change", async (e) => {
       try {
@@ -361,21 +359,17 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cart, shipping: e.target.value }),
         });
-
         const { success, grandTotal, total, shippingCost } = await res.json();
 
         if (success) {
           checkoutTotals = { grandTotal, total, shippingCost, success: true };
-          if (checkoutTotalEl)
-            checkoutTotalEl.textContent = `₦${grandTotal.toLocaleString()}`;
+          checkoutTotalEl.textContent = `₦${grandTotal.toLocaleString()}`;
         }
       } catch (err) {
         console.error("Error updating total with shipping:", err);
       }
     });
   }
-});
-
   // ---------------- ERROR MODAL ----------------
   function showErrorModal(message) {
     let modal = document.createElement("div");
@@ -549,3 +543,4 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === contactModal) contactModal.style.display = "none";
     });
   }
+});
