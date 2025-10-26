@@ -16,7 +16,7 @@ body {
 /* ================= HEADER / NAVBAR ================= */
 header {
   width: 99%;
-  background: rgb(39, 38, 38);
+  background: #b28aba;
   color: #fff;
   padding: 0.8rem 1.5rem;
   position: sticky;
@@ -193,7 +193,7 @@ nav .logo {
   background: url('hero.png') center/cover no-repeat;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: left;
   text-align: center;
   color: black;
   padding: 20px;
