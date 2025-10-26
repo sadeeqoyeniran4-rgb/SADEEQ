@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   // ---------------- CONTACT FORM ----------------
   const form = document.getElementById("contactForm");
   const formResponse = document.getElementById("formResponse");
@@ -36,10 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const cartTotalEl = document.getElementById("cart-total");
   const cartCountEl = document.getElementById("cart-count");
   const cartBtn = document.getElementById("cartBtn");
-  const cartModal = document.getElementById("cart-modal");
+  const cartModal = document.getElementById("cart-sidebar");
   const closeCart = document.getElementById("close-cart");
-  const checkoutBtn = document.getElementById("checkout-btn");
   const checkoutTotalEl = document.getElementById("checkout-total");
+
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
 
@@ -82,34 +81,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Toggle cart modal
-  if (cartBtn)
-    cartBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      cartModal.classList.add("open");
-    });
-
-  if (closeCart)
-    closeCart.addEventListener("click", (e) => {
-      e.preventDefault();
-      cartModal.classList.remove("open");
-    });
-
-  window.addEventListener("click", (e) => {
-    if (e.target === cartModal) cartModal.classList.remove("open");
+if (cartBtn)
+  cartBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    cartModal.classList.add("open"); // ✅ changed from cartSidebar
   });
 
-  // Proceed to Checkout
-  if (checkoutBtn) {
-    checkoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (cart.length === 0) return alert("Your cart is empty!");
-      cartModal.classList.remove("open");
-      window.location.href = "checkout.html";
-    });
-  }
+if (closeCart)
+  closeCart.addEventListener("click", (e) => {
+    e.preventDefault();
+    cartModal.classList.remove("open"); // ✅ changed from cartSidebar
+  });
 
-  updateCartUI();
   window.addToCart = addToCart;
+  updateCartUI();
 
   // ---------------- PRODUCTS ----------------
   const productsContainer = document.getElementById("product-grid");
@@ -166,190 +151,51 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   );
 
-});
-
-
-// 🔐 ADMIN LOGIN
-// ============================
-/*const adminLoginForm = document.getElementById("adminLoginForm");
-const loginResponse = document.getElementById("loginResponse");
-const adminSection = document.getElementById("admin-section");
-const adminLoginModal = document.getElementById("admin-login-modal");
-
-// If token exists, show admin section automatically
-const savedToken = localStorage.getItem("adminToken");
-if (savedToken) {
-  adminSection.style.display = "block";
-  adminLoginModal.style.display = "none";
-}
-
-if (adminLoginForm) {
-  adminLoginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const password = document.getElementById("admin-password").value;
-
-    try {
-      const res = await fetch(`${window.API_BASE}/api/admin-login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.token) {
-        localStorage.setItem("adminToken", data.token);
-        loginResponse.textContent = "Login successful!";
-        loginResponse.style.color = "green";
-        adminSection.style.display = "block";
-        adminLoginModal.style.display = "none";
-      } else {
-        loginResponse.textContent = data.error || "Invalid password";
-        loginResponse.style.color = "red";
-      }
-    } catch (err) {
-      console.error("Login failed:", err);
-      loginResponse.textContent = "Error connecting to server";
-      loginResponse.style.color = "red";
-    }
-  });
-}
-
-
-  // ---------------- ADMIN ADD PRODUCT ----------------
-  // ============================
-// 🛍️ PRODUCT UPLOAD
-// ============================
-const productForm = document.getElementById("productForm");
-
-if (productForm) {
-  productForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const token = localStorage.getItem("adminToken");
-    if (!token) {
-      alert("You must log in first.");
-      return;
-    }
-
-    // 1️⃣ Upload Image First
-    const imageFile = document.getElementById("productImage").files[0];
-    if (!imageFile) {
-      alert("Please select an image.");
-      return;
-    }
-
-    const uploadData = new FormData();
-    uploadData.append("image", imageFile);
-
-    try {
-      const uploadRes = await fetch(`${window.API_BASE}/api/upload`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: uploadData,
-      });
-
-      if (!uploadRes.ok) {
-        const errText = await uploadRes.text();
-        console.error("Image upload failed:", errText);
-        alert("❌ Image upload failed");
-        return;
-      }
-
-      const uploadResult = await uploadRes.json();
-      const imageUrl = uploadResult.imageUrl;
-
-      // 2️⃣ Upload Product Info
-      const name = document.getElementById("productName").value;
-      const price = document.getElementById("productPrice").value;
-      const description = document.getElementById("productDescription").value;
-
-      const productData = { name, price, description, image: imageUrl };
-
-      const res = await fetch(`${window.API_BASE}/api/products`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(productData),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Product creation failed:", errorText);
-        alert("❌ Failed to create product.");
-        return;
-      }
-
-      alert("✅ Product created successfully!");
-      productForm.reset();
-      loadProducts(); // refresh product list
-    } catch (err) {
-      console.error("Error uploading product:", err);
-      alert("❌ Error uploading product.");
-    }
-  });
-}
-*/
-// ---------------- CHECKOUT MODAL ----------------
-document.addEventListener("DOMContentLoaded", () => {
-  const checkoutBtn = document.getElementById("checkout-btn"),
-    checkoutModal = document.getElementById("checkout-modal"),
-    checkoutClose = document.getElementById("checkout-close"),
-    shippingSelect = document.getElementById("shipping"),
-    checkoutForm = document.getElementById("checkout-form"),
-    checkoutTotalEl = document.getElementById("checkout-total"),
-    cartSidebar = document.getElementById("cart-sidebar");
+  // ---------------- CHECKOUT MODAL ----------------
+  const checkoutModal = document.getElementById("checkout-modal");
+  const checkoutBtn = document.getElementById("checkout-btn");
+  const checkoutClose = document.getElementById("checkout-close");
+  const shippingSelect = document.getElementById("shipping");
+  const checkoutForm = document.getElementById("checkout-form");
 
   let checkoutTotals = {};
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-  // ✅ Proceed to Checkout (open modal)
   if (checkoutBtn) {
-    checkoutBtn.addEventListener("click", async (e) => {
-      e.preventDefault();
+  checkoutBtn.addEventListener("click", async () => {
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
 
-      if (cart.length === 0) {
-        alert("Your cart is empty!");
-        return;
+    try {
+      const res = await fetch(`${window.API_BASE}/api/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cart }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        checkoutTotals = data;
+        checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
+        cartModal.classList.remove("open"); // ✅ changed from cartSidebar
+        checkoutModal.style.display = "flex";
+      } else {
+        alert("Error calculating total");
       }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("Checkout error — please try again.");
+    }
+  });
+}
 
-      try {
-        const res = await fetch(`${window.API_BASE}/api/checkout`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cart }),
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          checkoutTotals = data;
-          checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
-          cartSidebar.classList.remove("open");
-          checkoutModal.style.display = "flex";
-        } else {
-          alert("Error calculating total");
-        }
-      } catch (err) {
-        console.error("Checkout error:", err);
-        alert("Checkout error — please try again.");
-      }
-    });
-  }
-
-  // ✅ Close modal
-  if (checkoutClose) {
-    checkoutClose.addEventListener("click", () => {
-      checkoutModal.style.display = "none";
-    });
-  }
-
+  if (checkoutClose)
+    checkoutClose.addEventListener("click", () => (checkoutModal.style.display = "none"));
   window.addEventListener("click", (e) => {
     if (e.target === checkoutModal) checkoutModal.style.display = "none";
   });
 
-  // ✅ Update total on shipping change
   if (shippingSelect) {
     shippingSelect.addEventListener("change", async (e) => {
       try {
@@ -369,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
   // ---------------- ERROR MODAL ----------------
   function showErrorModal(message) {
     let modal = document.createElement("div");
