@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+
   // ---------------- CONTACT FORM ----------------
   const form = document.getElementById("contactForm");
   const formResponse = document.getElementById("formResponse");
@@ -12,8 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
         message: document.getElementById("message").value,
       };
 
-        try {
-    const res = await fetch(`${window.API_BASE}/api/contact`, {
+      try {
+        const res = await fetch(`${window.API_BASE}/api/contact`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -30,9 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------------- CART SYSTEM ----------------
-  document.addEventListener("DOMContentLoaded", () => {
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
   const cartItemsEl = document.getElementById("cart-items");
   const cartTotalEl = document.getElementById("cart-total");
   const cartCountEl = document.getElementById("cart-count");
@@ -47,8 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateCartUI() {
     if (!cartItemsEl) return;
     cartItemsEl.innerHTML = "";
-    let total = 0,
-      count = 0;
+    let total = 0, count = 0;
 
     cart.forEach((item, i) => {
       total += item.price * item.qty;
@@ -56,16 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const div = document.createElement("div");
       div.className = "cart-item";
       div.innerHTML = `
-        <span>${item.name} × ${item.qty} — ₦${(
-        item.price * item.qty
-      ).toLocaleString()}</span>
+        <span>${item.name} × ${item.qty} — ₦${(item.price * item.qty).toLocaleString()}</span>
         <button class="remove" data-i="${i}">×</button>`;
       cartItemsEl.appendChild(div);
     });
 
     cartTotalEl.textContent = `₦${total.toLocaleString()}`;
-    if (checkoutTotalEl)
-      checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
+    if (checkoutTotalEl) checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
     if (cartCountEl) cartCountEl.textContent = count;
     saveCart();
   }
@@ -76,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCartUI();
   }
 
-  // ✅ Remove item
+  // Remove item
   if (cartItemsEl) {
     cartItemsEl.addEventListener("click", (e) => {
       if (e.target.classList.contains("remove")) {
@@ -86,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ Toggle cart modal
+  // Toggle cart modal
   if (cartBtn)
     cartBtn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -103,93 +98,75 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === cartModal) cartModal.classList.remove("open");
   });
 
-  // ✅ Proceed to Checkout
+  // Proceed to Checkout
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
+      if (cart.length === 0) return alert("Your cart is empty!");
       cartModal.classList.remove("open");
       window.location.href = "checkout.html";
     });
   }
 
   updateCartUI();
-
-  // Optional: expose addToCart globally
   window.addToCart = addToCart;
-});
 
+  // ---------------- PRODUCTS ----------------
+  const productsContainer = document.getElementById("product-grid");
+  const categoryButtons = document.querySelectorAll(".filter-btn");
 
-// ====================== PRODUCT LOADER ======================
-const productsContainer = document.getElementById("product-grid");
-const categoryButtons = document.querySelectorAll(".filter-btn");
-
-async function loadProducts() {
-  if (!productsContainer) return;
-
-  try {
-    const res = await fetch(`${window.API_BASE}/api/products`);
-    const products = await res.json();
-
-    productsContainer.innerHTML = "";
-
-    products.forEach((p) => {
-      // Normalize category based on product description
-      const category =
-        (p.description || "uncategorized").toLowerCase().replace(/\s+|\/+/g, "-");
-
-      const card = document.createElement("div");
-      card.className = "product-card";
-      card.dataset.category = category;
-
-      card.innerHTML = `
-        <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
-        <h3>${p.name}</h3>
-        <p>${p.description || ""}</p>
-        <p class="price">₦${Number(p.price).toLocaleString()}</p>
-        <button class="add-to-cart" 
-          data-id="${p.id}" 
-          data-name="${p.name}" 
-          data-price="${p.price}">Add to Cart</button>
-      `;
-
-      productsContainer.appendChild(card);
-    });
-
-    // ✅ Add cart functionality to each button
-    document.querySelectorAll(".add-to-cart").forEach((btn) =>
-      btn.addEventListener("click", () => {
-        const product = {
-          id: +btn.dataset.id,
-          name: btn.dataset.name,
-          price: +btn.dataset.price,
-        };
-        addToCart(product); // ✅ call from your modal cart logic
-      })
-    );
-
-  } catch (err) {
-    console.error("❌ Error loading products:", err);
-    productsContainer.innerHTML =
-      "<p class='error-msg'>Unable to load products at the moment.</p>";
+  async function loadProducts() {
+    if (!productsContainer) return;
+    try {
+      const res = await fetch(`${window.API_BASE}/api/products`);
+      const products = await res.json();
+      productsContainer.innerHTML = "";
+      products.forEach((p) => {
+        const category = (p.description || "uncategorized").toLowerCase().replace(/\s+|\/+/g, "-");
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.dataset.category = category;
+        card.innerHTML = `
+          <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
+          <h3>${p.name}</h3>
+          <p>${p.description || ""}</p>
+          <p class="price">₦${Number(p.price).toLocaleString()}</p>
+          <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">Add to Cart</button>`;
+        productsContainer.appendChild(card);
+      });
+      document.querySelectorAll(".add-to-cart").forEach((btn) =>
+        btn.addEventListener("click", () => {
+          addToCart({
+            id: +btn.dataset.id,
+            name: btn.dataset.name,
+            price: +btn.dataset.price,
+          });
+        })
+      );
+    } catch (err) {
+      console.error("❌ Error loading products:", err);
+      productsContainer.innerHTML = "<p class='error-msg'>Unable to load products at the moment.</p>";
+    }
   }
-}
 
-// ====================== CATEGORY FILTERING ======================
-categoryButtons.forEach((btn) =>
-  btn.addEventListener("click", () => {
-    const selected = btn.dataset.category;
-    document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
+  loadProducts();
 
-    document.querySelectorAll(".product-card").forEach((card) => {
-      if (selected === "all" || card.dataset.category.includes(selected)) {
-        card.style.display = "block";
-      } else {
-        card.style.display = "none";
-      }
-    });
-  })
-);
+  // ---------------- CATEGORY FILTER ----------------
+  categoryButtons.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const selected = btn.dataset.category;
+      categoryButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".product-card").forEach((card) => {
+        card.style.display =
+          selected === "all" || card.dataset.category.includes(selected)
+            ? "block"
+            : "none";
+      });
+    })
+  );
+
+});
 
 loadProducts();
 
