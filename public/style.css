@@ -375,13 +375,13 @@ nav .logo {
     margin-top: -119px;
     height: 50vh;
     padding: 15px;
-    justify-content: center;
     background-size: contain;
     margin-bottom: -20px;
   }
 
   .hero-content h1 {
     font-size: 1rem;
+    justify-self: left;
   }
 
   .hero-content p {
