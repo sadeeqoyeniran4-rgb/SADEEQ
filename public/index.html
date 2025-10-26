@@ -34,9 +34,15 @@
         <li><a href="#" id="cartBtn">Cart <span id="cart-count">0</span></a></li>
       </ul>
 
-      <!-- Hamburger toggle -->
-      <div class="hamburger" id="hamburger">☰</div>
-    </nav>
+       <div class="cart-icon-wrapper">
+  <button id="cartBtn" class="cart-btn">
+    <i class="fas fa-shopping-cart"></i>
+    <span id="cart-count" class="cart-badge">0</span>
+  </button>
+</div>
+    <div class="hamburger" id="hamburger">☰</div>
+  </div>
+</nav>
   </header>
   <main>
     <!-- ================= HERO ================= -->
@@ -91,15 +97,23 @@
       </div>
     </div>
 
-    <!-- ================= CART SIDEBAR ================= -->
-    <div id="cart-sidebar" class="cart-sidebar">
-      <h2>Your Cart</h2>
-      <div id="cart-items"></div>
-      <div>Total: <span id="cart-total">₦0</span></div>
-      <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
-      <button id="close-cart" class="close-btn">&times;</button>
+    <!-- CART MODAL -->
+<!-- 🛍️ Cart Modal -->
+<div id="cart-modal" class="cart-modal">
+  <div class="cart-content">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button id="close-cart" class="close-cart">&times;</button>
     </div>
-
+    <div id="cart-items" class="cart-items"></div>
+    <div class="cart-footer">
+      <p>Total: <span id="cart-total">₦0</span></p>
+      <button class="checkout-btn" onclick="window.location.href='checkout.html'">
+        Proceed to Checkout
+      </button>
+    </div>
+  </div>
+</div>
     <!-- ================= CHECKOUT MODAL ================= -->
     <div id="checkout-modal" class="modal">
       <div class="modal-box">

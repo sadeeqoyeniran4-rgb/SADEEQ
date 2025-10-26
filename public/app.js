@@ -31,67 +31,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---------------- CART SYSTEM ----------------
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  const cartItemsEl = document.getElementById("cart-items"),
-    cartTotalEl = document.getElementById("cart-total"),
-    cartCountEl = document.getElementById("cart-count"),
-    cartBtn = document.getElementById("cartBtn"),
-    cartSidebar = document.getElementById("cart-sidebar"),
-    closeCart = document.getElementById("close-cart"),
-    checkoutTotalEl = document.getElementById("checkout-total");
+const cartItemsEl = document.getElementById("cart-items"),
+  cartTotalEl = document.getElementById("cart-total"),
+  cartCountEl = document.getElementById("cart-count"),
+  cartBtn = document.getElementById("cartBtn"),
+  cartModal = document.getElementById("cart-modal"),
+  closeCart = document.getElementById("close-cart"),
+  checkoutTotalEl = document.getElementById("checkout-total");
 
-  const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
+const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
 
-  function updateCartUI() {
-    if (!cartItemsEl) return;
-    cartItemsEl.innerHTML = "";
-    let total = 0,
-      count = 0;
+function updateCartUI() {
+  if (!cartItemsEl) return;
+  cartItemsEl.innerHTML = "";
+  let total = 0,
+    count = 0;
 
-    cart.forEach((item, i) => {
-      total += item.price * item.qty;
-      count += item.qty;
-      const div = document.createElement("div");
-      div.className = "cart-item";
-      div.innerHTML = `
-        <span>${item.name} × ${item.qty} — ₦${(
-        item.price * item.qty
-      ).toLocaleString()}</span>
-        <button class="remove" data-i="${i}">×</button>`;
-      cartItemsEl.appendChild(div);
-    });
+  cart.forEach((item, i) => {
+    total += item.price * item.qty;
+    count += item.qty;
+    const div = document.createElement("div");
+    div.className = "cart-item";
+    div.innerHTML = `
+      <span>${item.name} × ${item.qty} — ₦${(
+      item.price * item.qty
+    ).toLocaleString()}</span>
+      <button class="remove" data-i="${i}">×</button>`;
+    cartItemsEl.appendChild(div);
+  });
 
-    cartTotalEl.textContent = `₦${total.toLocaleString()}`;
-    if (checkoutTotalEl)
-      checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
-    if (cartCountEl) cartCountEl.textContent = count;
-    saveCart();
-  }
+  cartTotalEl.textContent = `₦${total.toLocaleString()}`;
+  if (checkoutTotalEl)
+    checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
+  if (cartCountEl) cartCountEl.textContent = count;
+  saveCart();
+}
 
-  function addToCart(product) {
-    const found = cart.find((i) => i.id === product.id);
-    found ? found.qty++ : cart.push({ ...product, qty: 1 });
-    updateCartUI();
-  }
-
-  if (cartItemsEl) {
-    cartItemsEl.addEventListener("click", (e) => {
-      if (e.target.classList.contains("remove")) {
-        cart.splice(e.target.dataset.i, 1);
-        updateCartUI();
-      }
-    });
-  }
-
-  if (cartBtn)
-    cartBtn.addEventListener("click", () =>
-      cartSidebar.classList.toggle("open")
-    );
-  if (closeCart)
-    closeCart.addEventListener("click", () =>
-      cartSidebar.classList.remove("open")
-    );
-
+function addToCart(product) {
+  const found = cart.find((i) => i.id === product.id);
+  found ? found.qty++ : cart.push({ ...product, qty: 1 });
   updateCartUI();
+}
+
+if (cartItemsEl) {
+  cartItemsEl.addEventListener("click", (e) => {
+    if (e.target.classList.contains("remove")) {
+      cart.splice(e.target.dataset.i, 1);
+      updateCartUI();
+    }
+  });
+}
+
+if (cartBtn)
+  cartBtn.addEventListener("click", () => cartModal.classList.add("open"));
+
+if (closeCart)
+  closeCart.addEventListener("click", () => cartModal.classList.remove("open"));
+
+window.addEventListener("click", (e) => {
+  if (e.target === cartModal) cartModal.classList.remove("open");
+});
+
+updateCartUI();
+
 
  // ---------------- FETCH PRODUCTS + CATEGORY FILTER ----------------
 const productsContainer = document.getElementById("product-grid");
