@@ -168,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-loadProducts();
 
 // 🔐 ADMIN LOGIN
 // ============================
