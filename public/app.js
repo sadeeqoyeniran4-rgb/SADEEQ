@@ -549,4 +549,3 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === contactModal) contactModal.style.display = "none";
     });
   }
-});
