@@ -395,7 +395,7 @@ nav .logo {
 
   /* further reduce logo on very small devices */
   .logo img {
-    height: 60px;
+    height: 80px;
   }
 
   nav {
