@@ -190,7 +190,7 @@ nav .logo {
 .hero {
   width: 100vw;
   height: 100vh;
-  background: url('hero.png') center/cover no-repeat;
+  background: url('hero.jpg') center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: left;
