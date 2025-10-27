@@ -16,7 +16,7 @@ body {
 /* ================= HEADER / NAVBAR ================= */
 header {
   width: 99%;
-  height: 50px;
+  height: 40px;
   background: #503f46;
   color: #fff;
   padding: 0.8rem 1.5rem;
@@ -44,7 +44,7 @@ header {
 }
 
 .logo img {
-  height: 200px;
+  height: 120px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -257,6 +257,9 @@ nav .logo {
     font-size: 0.9rem;
     padding: 10px 20px;
   }
+
+
+
 }
 
 /* 📱 Mobile Responsive (screens below 768px) */
@@ -301,6 +304,10 @@ nav .logo {
   .hero-content p {
     font-size: 10px;
   }
+
+.logo{
+  width: 80px;
+}
 
   .hero-content button {
     font-size: 0.9rem;
