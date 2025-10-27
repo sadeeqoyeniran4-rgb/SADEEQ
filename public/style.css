@@ -15,57 +15,42 @@ body {
 
 /* ================= HEADER / NAVBAR ================= */
 header {
-  width: 99%;
+  width: 100%;
   background: #503f46;
   color: #fff;
   padding: 0.8rem 1.5rem;
   position: sticky;
   top: 0;
-  left: 0;
   display: flex;
-  justify-content: space-between; /* center header content by default */
+  justify-content: space-between;
   align-items: center;
   z-index: 1000;
-}
-
-/* 📱 Mobile Responsive (screens below 480px) */
-@media (max-width: 480px) {
-  header {
-    padding-left: 0rem;
-    padding-right: 0.5rem;
-  }
-
-  nav {
-    width: 100%;
-    max-width: 468px;
-    justify-content: space-between;
-  }
 }
 
 .logo img {
   height: 120px;
   width: auto;
   object-fit: contain;
-  display: block;
 }
 
 nav {
-    justify-content: space-between; /* logo left, search center, controls right */
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
+  width: 100%;
+  max-width: 1200px;
   padding: 5px 15px;
-  height: 60px;
-  position: relative;
 }
 
 nav ul {
-    margin: 0; /* reset margin */
-  gap: 15px;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
   list-style: none;
   margin: 0;
   padding: 0;
+  font-size: 14px;
 }
 
 nav a {
@@ -77,79 +62,14 @@ nav a:hover {
   color: #f3c677;
 }
 
-/* Nav links */
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
-  list-style: none;
-  order: 3; /* nav links order */
-}
-.nav-links.open {
-  display: flex !important;
-  flex-direction: column;
-  background: #2f1e3d;
-  position: absolute;
-  top: 60px;
-  right: 0;
-  width: 100%;
-  padding: 1rem;
-  text-align: center;
-}
-
-/* Hamburger button */
-.hamburger {
-  display: none; /* hidden by default, will show on small screens */
-  font-size: 26px;
-  cursor: pointer;
-  color: #fff;
-  background: none;
-  border: none;
-  margin: 0;
-  order: 4; /* hamburger order */
-  z-index: 2100;
-}
-
-/* Make header content centered: logo + nav */
-nav .logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo { order: 1; }
-
-/* ensure nav-links and search align nicely */
+/* ========== SEARCH BAR ========== */
 .nav-search {
   flex: 1 1 300px;
-  min-width: 120px;
-  order: 2; /* search order */
-}
-
-/* On larger screens make header layout horizontal and spaced */
-@media (min-width: 769px) {
-  header {
-    padding: 0.8rem 2rem;
-  }
-
-  nav {
-    width: 100%;
-    max-width: 1200px;
-    justify-content: space-between;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-  }
-}
-
-/* ================= SEARCH BAR ================= */
-.nav-search {
-  flex: 2;
   display: flex;
   justify-content: center;
   position: relative;
 }
+
 .nav-search input {
   width: 60%;
   padding: 8px 36px 8px 12px;
@@ -158,6 +78,7 @@ nav .logo {
   outline: none;
   font-size: 14px;
 }
+
 #clear-search {
   position: absolute;
   right: 125px;
@@ -173,6 +94,7 @@ nav .logo {
 #clear-search:hover {
   color: #e91e63;
 }
+
 .nav-search button#search-btn {
   padding: 8px 16px;
   border: none;
@@ -186,9 +108,110 @@ nav .logo {
   background: #59464d;
 }
 
-/* ================= HERO ================= */
+/* ========== CART & HAMBURGER ========== */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cart-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  position: relative;
+}
+
+#cart-count {
+  background: #e91e63;
+  color: #fff;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  position: absolute;
+  top: -6px;
+  right: -10px;
+}
+
+.hamburger {
+  display: none;
+  font-size: 26px;
+  cursor: pointer;
+  color: #fff;
+  background: none;
+  border: none;
+}
+
+/* ========== MOBILE MENU ========== */
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links.open {
+  flex-direction: column;
+  background: #2f1e3d;
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  max-height: 320px;
+  opacity: 1;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    background: #503c44;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    padding: 1rem 0;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+  }
+
+  .nav-links.open {
+    display: flex;
+    max-height: 320px;
+    opacity: 1;
+  }
+
+  .nav-links li a {
+    display: block;
+    padding: 10px 0;
+    font-size: 16px;
+  }
+
+  .logo img {
+    height: 80px;
+  }
+
+  .nav-search {
+    width: 100%;
+    order: 3;
+    margin-top: 8px;
+  }
+
+  .nav-search input {
+    width: 100%;
+  }
+}
+
+/* ========== HERO SECTION ========== */
 .hero {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   background: url('hero.png') center/cover no-repeat;
   display: flex;
@@ -197,21 +220,16 @@ nav .logo {
   text-align: center;
   color: black;
   padding: 20px;
-  position: relative;
-  margin: 0;
   overflow: hidden;
 }
 
-/* Hero Text Container */
 .hero-content {
-  position: relative;
   max-width: 800px;
   padding: 0 20px;
-  z-index: 2;
 }
 
 .hero-content h1 {
-  font-size: 3rem;  /* desktop size */
+  font-size: 3rem;
   margin-bottom: 15px;
 }
 
@@ -230,72 +248,44 @@ nav .logo {
   cursor: pointer;
   transition: background 0.3s ease;
 }
-
 .hero-content button:hover {
   background: #e91e63;
 }
 
-/* 📱 Mobile Responsive (screens below 1024px) */
+/* Responsive hero scaling */
 @media (max-width: 1024px) {
   .hero {
-    margin-top: -119px;
-    height: 50vh;
-    padding: 15px;
+    height: 60vh;
     background-size: contain;
-
   }
 
   .hero-content h1 {
-    font-size: 2rem;   /* smaller heading */
-  }
-
-  .hero-content p {
-    font-size: 1rem;
-  }
-
-  .hero-content button {
-    font-size: 0.9rem;
-    padding: 10px 20px;
+    font-size: 2rem;
   }
 }
 
-/* 📱 Mobile Responsive (screens below 768px) */
 @media (max-width: 768px) {
   .hero {
-    margin-top: -119px;
     height: 50vh;
-    padding: 15px;
     background-size: contain;
-
   }
 
   .hero-content h1 {
-    font-size: 1.5rem;   /* smaller heading */
-  }
-
-  .hero-content p {
-    font-size: 1rem;
-  }
-
-  .hero-content button {
-    font-size: 0.9rem;
-    padding: 10px 20px;
+    font-size: 1.6rem;
   }
 }
-/* 📱 Mobile Responsive (screens below 480px) */
+
 @media (max-width: 480px) {
   .hero {
-    margin-top: -119px;
     height: 50vh;
-    padding: px;
     background-size: contain;
+    margin-top: -100px;
   }
 
   .hero-content h1 {
-    font-size: 2rem;   /* smaller heading */
+    font-size: 1.4rem;
     text-align: left;
     padding-right: 50px;
-    margin-bottom: 0px;
   }
 
   .hero-content p {
@@ -304,105 +294,7 @@ nav .logo {
 
   .hero-content button {
     font-size: 0.9rem;
-    padding: 10px 20px;
-  }
-
-
-  /* Show hamburger only on small screens */
-  .hamburger {
-    display: block;
-  }
-
-  /* Center logo and nav on small screens */
-  nav {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo img {
-    height: 80px; /* reduce logo size */
-  }
-
-  /* Collapse nav links into full-width vertical menu when open */
-  .nav-links {
-    display: none; /* hidden by default on mobile */
-    position: absolute;
-    top: 60px;
-    left: 0;
-    right: 0;
-    background: #503c44;
-    padding: 1rem 0;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .nav-links.open {
-    display: flex !important;
-  }
-
-  /* slide-down animation for mobile menu */
-  .nav-links {
-    transition: max-height 0.28s ease, opacity 0.2s ease;
-    overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-  }
-
-  .nav-links.open {
-    max-height: 320px; /* allow menu to expand */
-    opacity: 1;
-  }
-
-  .nav-links li a {
-    display: block;
-    padding: 10px 0;
-    font-size: 16px;
-  }
-
-  /* Make search take full width below nav when menu is closed */
-  .nav-search {
-    order: 3;
-    width: 100%;
-    margin-top: 8px;
-  }
-
-  .nav-search input {
-    width: 100%;
-  }
-}
-
-/* 📱 Very Small Devices (below 480px) */
-@media (max-width: 480px) {
-  .hero {
-    margin-top: -119px;
-    height: 50vh;
-    padding: 15px;
-    background-size: contain;
-    margin-bottom: -20px;
-  }
-
-  .hero-content h1 {
-    font-size: 1rem;
-    justify-self: left;
-  }
-
-  .hero-content p {
-    font-size: 0.9rem;
-  }
-
-  .hero-content button {
-    font-size: 0.85rem;
-    padding: 4px 8px;
-  }
-
-  /* further reduce logo on very small devices */
-  .logo img {
-    height: 80px;
-  }
-
-  nav {
-    padding: 8px 10px;
+    padding: 8px 16px;
   }
 }
 
