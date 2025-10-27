@@ -14,13 +14,15 @@ body {
 }
 
 /* ================= HEADER / NAVBAR ================= */
+/* ================= HEADER / NAVBAR ================= */
 header {
-  width: 100%;
+  width: 99%;
   background: #503f46;
   color: #fff;
   padding: 0.8rem 1.5rem;
   position: sticky;
   top: 0;
+  left: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -31,6 +33,7 @@ header {
   height: 120px;
   width: auto;
   object-fit: contain;
+  display: block;
 }
 
 nav {
@@ -38,9 +41,9 @@ nav {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  width: 100%;
-  max-width: 1200px;
+  height: 60px;
   padding: 5px 15px;
+  position: relative;
 }
 
 nav ul {
@@ -64,7 +67,7 @@ nav a:hover {
 
 /* ========== SEARCH BAR ========== */
 .nav-search {
-  flex: 1 1 300px;
+  flex: 2;
   display: flex;
   justify-content: center;
   position: relative;
@@ -142,20 +145,27 @@ nav a:hover {
   color: #fff;
   background: none;
   border: none;
+  margin: 0;
+  order: 4;
+  z-index: 2100;
 }
 
 /* ========== MOBILE MENU ========== */
 .nav-links {
   display: flex;
   gap: 1.5rem;
+  align-items: center;
+  list-style: none;
+  order: 3;
 }
 
 .nav-links.open {
+  display: flex !important;
   flex-direction: column;
   background: #2f1e3d;
   position: absolute;
   top: 60px;
-  left: 0;
+  right: 0;
   width: 100%;
   text-align: center;
   max-height: 320px;
