@@ -292,14 +292,14 @@ nav .logo {
   }
 
   .hero-content h1 {
-    font-size: 2rem;   /* smaller heading */
+    font-size: 12px;   /* smaller heading */
     text-align: left;
     padding-right: 50px;
     margin-bottom: 0px;
   }
 
   .hero-content p {
-    font-size: 1rem;
+    font-size: 10px;
   }
 
   .hero-content button {
@@ -372,30 +372,6 @@ nav .logo {
   }
 }
 
-/* 📱 Very Small Devices (below 480px) */
-@media (max-width: 480px) {
-  .hero {
-    margin-top: -119px;
-    height: 50vh;
-    padding: 15px;
-    background-size: contain;
-    margin-bottom: -20px;
-  }
-
-  .hero-content h1 {
-    font-size: 1rem;
-    justify-self: left;
-  }
-
-  .hero-content p {
-    font-size: 0.9rem;
-  }
-
-  .hero-content button {
-    font-size: 0.85rem;
-    padding: 4px 8px;
-  }
-
   /* further reduce logo on very small devices */
   .logo img {
     height: 80px;
@@ -404,7 +380,7 @@ nav .logo {
   nav {
     padding: 8px 10px;
   }
-}
+
 
 /* ================= PRODUCTS ================= */
 .products {
@@ -1131,5 +1107,43 @@ footer {
   #cart-count {
     top: -6px;
     right: -8px;
+  }
+}
+
+/* Default (desktop) */
+.search-icon {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* For mobile (below 768px) */
+@media (max-width: 768px) {
+  .search-box {
+    display: none;
+  }
+
+  .search-icon {
+    display: block;
+  }
+
+  /* When active (after click) */
+  .search-box.active {
+    display: flex;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background: #503c44;
+    padding: 8px;
+    justify-content: center;
+  }
+
+  .search-box input {
+    width: 70%;
+    border-radius: 20px;
   }
 }

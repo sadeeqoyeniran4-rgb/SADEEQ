@@ -246,6 +246,16 @@ if (closeCart)
     });
   }
 
+const searchIcon = document.getElementById("mobile-search-icon");
+const searchBox = document.querySelector(".search-box");
+
+if (searchIcon && searchBox) {
+  searchIcon.addEventListener("click", () => {
+    searchBox.classList.toggle("active");
+  });
+}
+
+
   // ---------------- PAYSTACK + VERIFY PAYMENT ----------------
   if (checkoutForm) {
     checkoutForm.addEventListener("submit", (e) => {
