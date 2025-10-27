@@ -1,411 +1,120 @@
 /* ================= GLOBAL ================= */
-html, body {
-  height: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
-}
-body {
-  margin: 0;
-  font-family: arial, sans-serif;
-  background-color: #fdfdfd;
-  color: #2f1e3d;
-  line-height: 1.6;
-  scrollbar-width: none;
-}
-
-/* ================= HEADER / NAVBAR ================= */
-header {
-  width: 99%;
-  background: #503f46;
-  color: #fff;
-  padding: 0.8rem 1.5rem;
-  position: sticky;
-  top: 0;
-  left: 0;
-  display: flex;
-  justify-content: space-between; /* center header content by default */
-  align-items: center;
-  z-index: 1000;
-}
-
-/* 📱 Mobile Responsive (screens below 480px) */
-@media (max-width: 480px) {
-  header {
-    padding-left: 0rem;
-    padding-right: 0.5rem;
-  }
-
-  nav {
-    width: 100%;
-    max-width: 468px;
-    justify-content: space-between;
-  }
-}
-
-.logo img {
-  height: 120px;
-  width: auto;
-  object-fit: contain;
-  display: block;
-}
-
-nav {
-    justify-content: space-between; /* logo left, search center, controls right */
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 5px 15px;
-  height: 60px;
-  position: relative;
-}
-
-nav ul {
-    margin: 0; /* reset margin */
-  gap: 15px;
-  font-size: 14px;
-  list-style: none;
+html, body * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
 
-nav a {
-  color: #fff;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-nav a:hover {
-  color: #f3c677;
+body {
+  background: #fff;
+  color: #2c1b28;
 }
 
-/* Nav links */
-.nav-links {
+/* HEADER */
+.header {
   display: flex;
-  gap: 1.5rem;
-  list-style: none;
-  order: 3; /* nav links order */
-}
-.nav-links.open {
-  display: flex !important;
-  flex-direction: column;
-  background: #2f1e3d;
-  position: absolute;
-  top: 60px;
-  right: 0;
-  width: 100%;
-  padding: 1rem;
-  text-align: center;
-}
-
-/* Hamburger button */
-.hamburger {
-  display: none; /* hidden by default, will show on small screens */
-  font-size: 26px;
-  cursor: pointer;
-  color: #fff;
-  background: none;
-  border: none;
-  margin: 0;
-  order: 4; /* hamburger order */
-  z-index: 2100;
-}
-
-/* Make header content centered: logo + nav */
-nav .logo {
-  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
+  padding: 14px 24px;
+  background: #4b2c3b;
+  color: white;
 }
 
-.logo { order: 1; }
-
-/* ensure nav-links and search align nicely */
-.nav-search {
-  flex: 1 1 300px;
-  min-width: 120px;
-  order: 2; /* search order */
-}
-
-/* On larger screens make header layout horizontal and spaced */
-@media (min-width: 769px) {
-  header {
-    padding: 0.8rem 2rem;
-  }
-
-  nav {
-    width: 100%;
-    max-width: 1200px;
-    justify-content: space-between;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-  }
-}
-
-/* ================= SEARCH BAR ================= */
-.nav-search {
-  flex: 2;
-  display: flex;
-  justify-content: center;
-  position: relative;
-}
-.nav-search input {
-  width: 60%;
-  padding: 8px 36px 8px 12px;
-  border-radius: 20px 0 0 20px;
-  border: 1px solid #ddd;
-  outline: none;
-  font-size: 14px;
-}
-#clear-search {
-  position: absolute;
-  right: 125px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  font-size: 16px;
-  cursor: pointer;
-  display: none;
-  color: #666;
-}
-#clear-search:hover {
-  color: #e91e63;
-}
-.nav-search button#search-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 0 20px 20px 0;
-  background: #403036;
-  color: #fff;
+.logo {
+  font-size: 1.5rem;
   font-weight: bold;
-  cursor: pointer;
-}
-.nav-search button#search-btn:hover {
-  background: #59464d;
+  letter-spacing: 1px;
 }
 
-/* ================= HERO ================= */
-.hero {
-  width: 100vw;
-  height: 100vh;
-  background: url('hero.png') center/cover no-repeat;
+.search-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: black;
-  padding: 20px;
-  position: relative;
-  margin: 0;
+  background: white;
+  border-radius: 25px;
   overflow: hidden;
 }
 
-/* Hero Text Container */
+.search-bar input {
+  border: none;
+  padding: 8px 12px;
+  width: 150px;
+  font-size: 0.9rem;
+}
+
+.search-bar button {
+  background: #4b2c3b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.menu-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.cart {
+  position: relative;
+  text-decoration: none;
+  color: white;
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: crimson;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 5px;
+  border-radius: 50%;
+}
+
+/* HERO SECTION */
+.hero {
+  position: relative;
+  background: url("hero-bg.jpg") center/cover no-repeat;
+  color: white;
+  text-align: center;
+  padding: 120px 20px;
+}
+
+.hero .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(50, 25, 40, 0.4);
+}
+
 .hero-content {
   position: relative;
-  max-width: 800px;
-  padding: 0 20px;
   z-index: 2;
 }
 
-.hero-content h1 {
-  font-size: 3rem;  /* desktop size */
-  margin-bottom: 15px;
+.hero h1 {
+  font-size: 2rem;
+  margin: 10px 0;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
-.hero-content p {
-  font-size: 1.2rem;
-  margin-bottom: 20px;
-}
-
-.hero-content button {
-  padding: 12px 25px;
-  font-size: 1rem;
+.shop-btn {
+  background: #4b2c3b;
+  color: white;
   border: none;
-  border-radius: 6px;
-  background: #503c44;
-  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  margin-top: 12px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: 1rem;
+  transition: background 0.3s;
 }
 
-.hero-content button:hover {
-  background: #e91e63;
+.shop-btn:hover {
+  background: #6a3f54;
 }
-
-/* 📱 Mobile Responsive (screens below 1024px) */
-@media (max-width: 1024px) {
-  .hero {
-    margin-top: -119px;
-    height: 50vh;
-    padding: 15px;
-    background-size: contain;
-
-  }
-
-  .hero-content h1 {
-    font-size: 2rem;   /* smaller heading */
-  }
-
-  .hero-content p {
-    font-size: 1rem;
-  }
-
-  .hero-content button {
-    font-size: 0.9rem;
-    padding: 10px 20px;
-  }
-}
-
-/* 📱 Mobile Responsive (screens below 768px) */
-@media (max-width: 768px) {
-  .hero {
-    margin-top: -119px;
-    height: 50vh;
-    padding: 15px;
-    background-size: contain;
-
-  }
-
-  .hero-content h1 {
-    font-size: 1.5rem;   /* smaller heading */
-  }
-
-  .hero-content p {
-    font-size: 1rem;
-  }
-
-  .hero-content button {
-    font-size: 0.9rem;
-    padding: 10px 20px;
-  }
-}
-/* 📱 Mobile Responsive (screens below 480px) */
-@media (max-width: 480px) {
-  .hero {
-    margin-top: -119px;
-    height: 50vh;
-    padding: px;
-    background-size: contain;
-  }
-
-  .hero-content h1 {
-    font-size: 2rem;   /* smaller heading */
-    text-align: left;
-    padding-right: 50px;
-    margin-bottom: 0px;
-  }
-
-  .hero-content p {
-    font-size: 1rem;
-  }
-
-  .hero-content button {
-    font-size: 0.9rem;
-    padding: 10px 20px;
-  }
-
-
-  /* Show hamburger only on small screens */
-  .hamburger {
-    display: block;
-  }
-
-  /* Center logo and nav on small screens */
-  nav {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo img {
-    height: 80px; /* reduce logo size */
-  }
-
-  /* Collapse nav links into full-width vertical menu when open */
-  .nav-links {
-    display: none; /* hidden by default on mobile */
-    position: absolute;
-    top: 60px;
-    left: 0;
-    right: 0;
-    background: #503c44;
-    padding: 1rem 0;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .nav-links.open {
-    display: flex !important;
-  }
-
-  /* slide-down animation for mobile menu */
-  .nav-links {
-    transition: max-height 0.28s ease, opacity 0.2s ease;
-    overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-  }
-
-  .nav-links.open {
-    max-height: 320px; /* allow menu to expand */
-    opacity: 1;
-  }
-
-  .nav-links li a {
-    display: block;
-    padding: 10px 0;
-    font-size: 16px;
-  }
-
-  /* Make search take full width below nav when menu is closed */
-  .nav-search {
-    order: 3;
-    width: 100%;
-    margin-top: 8px;
-  }
-
-  .nav-search input {
-    width: 100%;
-  }
-}
-
-/* 📱 Very Small Devices (below 480px) */
-@media (max-width: 480px) {
-  .hero {
-    margin-top: -119px;
-    height: 50vh;
-    padding: 15px;
-    background-size: contain;
-    margin-bottom: -20px;
-  }
-
-  .hero-content h1 {
-    font-size: 1rem;
-    justify-self: left;
-  }
-
-  .hero-content p {
-    font-size: 0.9rem;
-  }
-
-  .hero-content button {
-    font-size: 0.85rem;
-    padding: 4px 8px;
-  }
-
-  /* further reduce logo on very small devices */
-  .logo img {
-    height: 80px;
-  }
-
-  nav {
-    padding: 8px 10px;
-  }
-}
-
 /* ================= PRODUCTS ================= */
 .products {
   padding: 2rem;

@@ -15,43 +15,30 @@
 </head>
 <body>
   <!-- ================= HEADER ================= -->
-  <header>
-    <nav>
-      <div class="logo">
-        <img src="lofinda2.png" alt="LOFINDA Logo">
-      </div>
-
-      <div class="nav-search">
-        <input type="text" id="search-input" placeholder="Search...">
-        <button id="clear-search">&times;</button>
-        <button id="search-btn">Search</button>
-      </div>
-
-      <ul class="nav-links" id="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#" id="aboutBtn">About</a></li>
-        <li><a href="#" id="contactBtn">Contact</a></li>
-      </ul>
-</nav>
-       <div class="header-right">
-    <button id="cartBtn" class="cart-btn">
-      🛒 <span id="cart-count">0</span>
-    </button>
-    <button class="hamburger">☰</button>
-  </div>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">LÔFÍNDA</div>
+    <div class="search-bar">
+      <input type="text" placeholder="Search perfumes..." />
+      <button>🔍</button>
+    </div>
+    <div class="menu-icons">
+      <a href="#" class="cart">🛒<span class="cart-count">2</span></a>
+      <button class="menu-btn">☰</button>
+    </div>
   </header>
-  <main>
-    <!-- ================= HERO ================= -->
-    <section id="home" class="hero">
-      <div class="hero-text">
-        <h1>Discover the Art of Fragrance</h1>
-        <h2>ENJOY UP TO 20% OFF
-        ALL PERFUMES
-        COMBO SETS INCLUDED!</h2>
-        <button onclick="document.querySelector('#shop').scrollIntoView({behavior:'smooth'})">Shop Now</button>
-      </div>
-    </section>
 
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="overlay"></div>
+    <div class="hero-content">
+      <p class="tagline">Discover your signature scent</p>
+      <h1>ENJOY UP TO 20% OFF<br>ALL PERFUME COMBOS INCLUDED</h1>
+      <button class="shop-btn">Shop Now</button>
+    </div>
+  </section>
+  <main>
+   
     <!-- ================= SHOP ================= -->
     <section id="shop" class="products">
       <!-- Category Filter -->
