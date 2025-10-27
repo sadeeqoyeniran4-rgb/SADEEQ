@@ -14,36 +14,36 @@
 
 </head>
 <body>
-  <!-- ================= HEADER ================= -->
-  <header>
-    <nav>
-      <div class="logo">
-        <img src="lofinda2.png" alt="LOFINDA Logo">
-      </div>
+ <!-- ================= HEADER ================= -->
+<header>
+  <nav class="nav-container">
+    <div class="logo">
+      <img src="lofinda2.png" alt="LOFINDA Logo">
+    </div>
 
-      <div class="nav-search">
-        <input type="text" id="search-input" placeholder="Search...">
-        <button id="clear-search">&times;</button>
-        <button id="search-btn">Search</button>
-      </div>
+    <div class="nav-search">
+      <input type="text" id="search-input" placeholder="Search...">
+      <button id="clear-search">&times;</button>
+      <button id="search-btn">Search</button>
+    </div>
 
-      <ul class="nav-links" id="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#" id="aboutBtn">About</a></li>
-        <li><a href="#" id="contactBtn">Contact</a></li>
-      </ul>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#">Home</a></li>
+      <li><a href="#" id="aboutBtn">About</a></li>
+      <li><a href="#" id="contactBtn">Contact</a></li>
+    </ul>
 
-       <div class="cart-icon-wrapper">
-  <button id="cartBtn" class="cart-btn">
-    <i class="fas fa-shopping-cart"></i>
-    <span id="cart-count" class="cart-badge">0</span>
-  </button>
-</div>
-    <div class="hamburger" id="hamburger">☰</div>
-  </div>
-</nav>
-  </header>
-  <main>
+    <!-- Cart + Hamburger section -->
+    <div class="header-right">
+      <button id="cartBtn" class="cart-btn">
+        🛒 <span id="cart-count">0</span>
+      </button>
+      <button class="hamburger">☰</button>
+    </div>
+  </nav>
+</header>
+
+ <main>
     <!-- ================= HERO ================= -->
     <section id="home" class="hero">
       <div class="hero-text">
@@ -115,6 +115,7 @@
     </div>
   </div>
 </div> 
+
    <!-- ================= CHECKOUT MODAL ================= -->
     <div id="checkout-modal" class="modal">
       <div class="modal-box">
