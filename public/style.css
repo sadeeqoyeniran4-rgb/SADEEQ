@@ -239,8 +239,7 @@ nav .logo {
 /* 📱 Mobile Responsive (screens below 1024px) */
 @media (max-width: 1024px) {
   .hero {
-    margin-top: -119px;
-    height: 50vh;
+    margin-top: -109px;
     padding: 15px;
     background-size: contain;
 
