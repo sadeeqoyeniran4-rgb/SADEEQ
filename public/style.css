@@ -1208,6 +1208,7 @@ footer {
 }
 
 h1 {
+  color: black;
   text-align: left;
     display: block; ;
     font-size: 22px;
