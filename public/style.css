@@ -986,7 +986,7 @@ footer {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 15px;
 }
 
 .cart-btn {
@@ -1158,7 +1158,7 @@ footer {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 5px;
 }
 
 .icon-btn, .cart-btn, .hamburger {
