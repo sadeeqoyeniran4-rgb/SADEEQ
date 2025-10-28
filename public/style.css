@@ -736,7 +736,7 @@ footer {
   .modal-box { width: 95%; padding: 15px; border-radius: 8px; }
   .product-grid { grid-template-columns: 1fr; }
   button, .modal-btn { font-size: 15px; padding: 14px; }
-  body { font-size: 14px; line-height: 1.5; }
+  body { font-size: 10px; line-height: 1.5; }
 }
 /* Cart count badge */
 #cart-count {
