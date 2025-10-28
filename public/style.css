@@ -730,7 +730,7 @@ footer {
 }
 
 @media (max-width: 480px) {
-  .logo img { height: 60px; }
+  .logo img { height: 150px; padding-left: 50px; }
   .cart-sidebar { width: 100%; right: -100%; }
   .cart-sidebar.open { right: 0; }
   .modal-box { width: 95%; padding: 15px; border-radius: 8px; }
@@ -1108,7 +1108,7 @@ footer {
 }
 @media (max-width: 480px) {
   .header-right {
-    gap: 10px;
+    gap: 5px;
   }
 
   #cart-count {
