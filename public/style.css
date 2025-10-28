@@ -1158,7 +1158,7 @@ footer {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 0rem;
 }
 
 .icon-btn, .cart-btn, .hamburger {
