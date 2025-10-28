@@ -320,42 +320,45 @@ if (closeCart)
   }
 
   // ---------------- SEARCH ----------------
-  const searchIcon = document.getElementById("search-icon");
-  const searchBar = document.getElementById("search-bar"),
-    searchBtn = document.getElementById("search-btn"),
-    clearSearch = document.getElementById("clear-search");
+const searchIcon = document.getElementById("search-icon");
+const searchBar = document.getElementById("search-bar");
+const searchInput = document.getElementById("search-input");
+const searchBtn = document.getElementById("search-btn");
+const clearSearch = document.getElementById("clear-search");
 
-searchIcon.addEventListener("click", () => {
-  searchBar.classList.toggle("hidden");
-});
+if (searchIcon && searchBar) {
+  searchIcon.addEventListener("click", () => {
+    searchBar.classList.toggle("show");
+  });
+}
 
-  if (searchBar) {
-    searchBar.addEventListener("input", () => {
-      clearSearch.style.display = searchBar.value ? "block" : "none";
+if (searchInput) {
+  searchInput.addEventListener("input", () => {
+    if (clearSearch) clearSearch.style.display = searchInput.value ? "block" : "none";
+  });
+}
+
+if (clearSearch) {
+  clearSearch.addEventListener("click", () => {
+    searchInput.value = "";
+    clearSearch.style.display = "none";
+    document.querySelectorAll(".product-card").forEach((c) => (c.style.display = "block"));
+  });
+}
+
+if (searchBtn) {
+  searchBtn.addEventListener("click", () => {
+    let q = searchInput.value.toLowerCase();
+    document.querySelectorAll(".product-card").forEach((c) => {
+      c.style.display = c
+        .querySelector("h3")
+        .textContent.toLowerCase()
+        .includes(q)
+        ? "block"
+        : "none";
     });
-  }
-  if (clearSearch) {
-    clearSearch.addEventListener("click", () => {
-      searchBar.value = "";
-      clearSearch.style.display = "none";
-      document
-        .querySelectorAll(".product-card")
-        .forEach((c) => (c.style.display = "block"));
-    });
-  }
-  if (searchBtn) {
-    searchBtn.addEventListener("click", () => {
-      let q = searchBar.value.toLowerCase();
-      document.querySelectorAll(".product-card").forEach((c) => {
-        c.style.display = c
-          .querySelector("h3")
-          .textContent.toLowerCase()
-          .includes(q)
-          ? "block"
-          : "none";
-      });
-    });
-  }
+  });
+}
 
   // ---------------- ABOUT MODAL ----------------
   const aboutModal = document.getElementById("about-modal"),

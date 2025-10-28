@@ -1179,3 +1179,14 @@ footer {
 .search-bar.hidden {
   display: none;
 }
+.search-bar {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.search-bar.show {
+  max-height: 100px; /* adjust height as needed */
+  opacity: 1;
+}
