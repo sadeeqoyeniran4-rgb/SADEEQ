@@ -1154,3 +1154,28 @@ footer {
     border-radius: 20px;
   }
 }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon-btn, .cart-btn, .hamburger {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+/* Search bar hidden by default */
+.search-bar {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background: #fff;
+}
+
+.search-bar.hidden {
+  display: none;
+}

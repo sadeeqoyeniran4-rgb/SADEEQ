@@ -246,16 +246,6 @@ if (closeCart)
     });
   }
 
-const searchIcon = document.getElementById("mobile-search-icon");
-const searchBox = document.querySelector(".search-box");
-
-if (searchIcon && searchBox) {
-  searchIcon.addEventListener("click", () => {
-    searchBox.classList.toggle("active");
-  });
-}
-
-
   // ---------------- PAYSTACK + VERIFY PAYMENT ----------------
   if (checkoutForm) {
     checkoutForm.addEventListener("submit", (e) => {
@@ -330,9 +320,14 @@ if (searchIcon && searchBox) {
   }
 
   // ---------------- SEARCH ----------------
-  const searchBar = document.getElementById("search-input"),
+  const searchIcon = document.getElementById("search-icon");
+  const searchBar = document.getElementById("search-bar"),
     searchBtn = document.getElementById("search-btn"),
     clearSearch = document.getElementById("clear-search");
+
+searchIcon.addEventListener("click", () => {
+  searchBar.classList.toggle("hidden");
+});
 
   if (searchBar) {
     searchBar.addEventListener("input", () => {
