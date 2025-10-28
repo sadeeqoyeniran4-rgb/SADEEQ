@@ -196,7 +196,7 @@ nav .logo {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: black;
+  color: white;
   padding: 20px;
   position: relative;
   margin: 0;
@@ -1209,9 +1209,9 @@ footer {
 
 h1 {
   text-align: left;
-    display: block;
+    display: block; ;
     font-size: 26px;
-    padding-right: 110px;
+    padding-right: 95px;
     margin-block-start: 0.67em;
     margin-block-end: 0.67em;
     margin-inline-start: 0px;
