@@ -15,6 +15,16 @@ if (today >= DISCOUNT.start && today <= DISCOUNT.end) {
 } else {
   console.log("💤 No sale currently.");
 }
+// ================= SHOW DISCOUNT BANNER =================
+const banner = document.getElementById("discount-banner");
+const bannerPercent = document.getElementById("discount-percentage");
+
+if (DISCOUNT.active && banner) {
+  bannerPercent.textContent = `${DISCOUNT.percentage}%`;
+  banner.style.display = "block";
+} else if (banner) {
+  banner.style.display = "none";
+}
 
   // ---------------- CONTACT FORM ----------------
   const form = document.getElementById("contactForm");
