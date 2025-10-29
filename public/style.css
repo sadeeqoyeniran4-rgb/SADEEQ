@@ -995,7 +995,7 @@ footer {
   border: none;
   cursor: pointer;
   font-size: 1.6rem;
-  color: #333;
+  color: white;
   position: relative;
 }
 
@@ -1148,7 +1148,7 @@ footer {
 }
 
 .icon-btn:hover {
-  color: #a35dfd;
+  color: transparent;
   transform: scale(1.1);
 }
 /* 🛍 Cart count badge */
@@ -1240,7 +1240,7 @@ footer {
 }
 
 #search-btn:hover {
-  background: #e0c7ff;
+  background: transparent;
 }
 
 #search-btn.clear i {
