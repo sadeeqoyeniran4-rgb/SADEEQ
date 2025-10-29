@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================= GLOBAL DISCOUNT CONFIG =================
 const DISCOUNT = {
   active: false,
-  percentage: 10, // 💰 20% OFF
+  percentage: 5, // 💰 20% OFF
   start: new Date("2025-10-28"),
   end: new Date("2025-11-15"),
 };
