@@ -1132,7 +1132,7 @@ footer {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0px;
   position: relative;
   z-index: 100;
 }
