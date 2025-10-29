@@ -1221,6 +1221,35 @@ footer {
   background: #e0c7ff;
 }
 
+#search-btn {
+  background: #c7a4ff;
+  color: #1f1a1d;
+  border: none;
+  border-radius: 25px;
+  padding: 8px 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#search-btn i {
+  font-size: 1.2rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+#search-btn:hover {
+  background: #e0c7ff;
+}
+
+#search-btn.clear i {
+  color: #ff4d6d;
+  transform: rotate(90deg);
+}
+
+
 h1 {
   color: black;
   text-align: left;

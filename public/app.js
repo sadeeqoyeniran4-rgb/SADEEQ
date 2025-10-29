@@ -319,49 +319,47 @@ if (closeCart)
     });
   }
 
-  // ---------------- SEARCH ----------------
-const searchIcon = document.getElementById("search-icon");
+ const searchIcon = document.getElementById("search-icon");
 const searchBar = document.getElementById("search-bar");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
-const clearSearch = document.getElementById("clear-search");
-const searchIconInner = searchIcon.querySelector("i");
+const searchIconInner = searchBtn.querySelector("i");
 
-if (searchIcon && searchBar) {
-  searchIcon.addEventListener("click", () => {
+// Toggle search bar visibility
+searchIcon.addEventListener("click", () => {
   searchBar.classList.toggle("show");
-  const isActive = searchBar.classList.contains("show");
-  searchIconInner.className = isActive ? "bi bi-x" : "bi bi-search"; // toggle icons
+  if (searchBar.classList.contains("show")) searchInput.focus();
 });
-}
 
-if (searchInput) {
-  searchInput.addEventListener("input", () => {
-    if (clearSearch) clearSearch.style.display = searchInput.value ? "block" : "none";
-  });
-}
+// Change button between 🔍 and ❌ depending on input
+searchInput.addEventListener("input", () => {
+  if (searchInput.value.trim()) {
+    searchBtn.classList.add("clear");
+    searchIconInner.className = "bi bi-x";
+  } else {
+    searchBtn.classList.remove("clear");
+    searchIconInner.className = "bi bi-search";
+  }
+});
 
-if (clearSearch) {
-  clearSearch.addEventListener("click", () => {
+// Handle button click
+searchBtn.addEventListener("click", () => {
+  if (searchBtn.classList.contains("clear")) {
+    // Clear mode
     searchInput.value = "";
-    clearSearch.style.display = "none";
-    document.querySelectorAll(".product-card").forEach((c) => (c.style.display = "block"));
-  });
-}
-
-if (searchBtn) {
-  searchBtn.addEventListener("click", () => {
+    searchBtn.classList.remove("clear");
+    searchIconInner.className = "bi bi-search";
+    document.querySelectorAll(".product-card").forEach(c => (c.style.display = "block"));
+  } else {
+    // Search mode
     let q = searchInput.value.toLowerCase();
-    document.querySelectorAll(".product-card").forEach((c) => {
-      c.style.display = c
-        .querySelector("h3")
-        .textContent.toLowerCase()
-        .includes(q)
+    document.querySelectorAll(".product-card").forEach(c => {
+      c.style.display = c.querySelector("h3").textContent.toLowerCase().includes(q)
         ? "block"
         : "none";
     });
-  });
-}
+  }
+});
 
   // ---------------- ABOUT MODAL ----------------
   const aboutModal = document.getElementById("about-modal"),
