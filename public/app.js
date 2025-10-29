@@ -1,4 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // ================= GLOBAL DISCOUNT CONFIG =================
+const DISCOUNT = {
+  active: false,
+  percentage: 20, // 💰 20% OFF
+  start: new Date("2025-10-28"),
+  end: new Date("2025-11-15"),
+};
+
+// 🕒 Check if sale period is active
+const today = new Date();
+if (today >= DISCOUNT.start && today <= DISCOUNT.end) {
+  DISCOUNT.active = true;
+  console.log("🔥 Sale is active! Applying discount...");
+} else {
+  console.log("💤 No sale currently.");
+}
+
   // ---------------- CONTACT FORM ----------------
   const form = document.getElementById("contactForm");
   const formResponse = document.getElementById("formResponse");
@@ -110,18 +127,43 @@ async function loadProducts() {
     productsContainer.innerHTML = "";
 
     products.forEach((p) => {
-      const category = (p.description || "uncategorized").toLowerCase().replace(/\s+|\/+/g, "-");
-      const card = document.createElement("div");
-      card.className = "product-card";
-      card.dataset.category = category;
-      card.innerHTML = `
-        <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
-        <h3>${p.name}</h3>
-        <p>${p.description || ""}</p>
-        <p class="price">₦${Number(p.price).toLocaleString()}</p>
-        <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">Add to Cart</button>`;
-      productsContainer.appendChild(card);
-    });
+  const category = (p.description || "uncategorized").toLowerCase().replace(/\s+|\/+/g, "-");
+  const card = document.createElement("div");
+  card.className = "product-card";
+  card.dataset.category = category;
+
+  // ✅ Apply discount if active
+  let finalPrice = Number(p.price);
+  if (DISCOUNT.active) {
+    finalPrice = p.price - (p.price * DISCOUNT.percentage) / 100;
+  }
+
+  card.innerHTML = `
+    <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
+    <h3>${p.name}</h3>
+    <p>${p.description || ""}</p>
+    ${
+      DISCOUNT.active
+        ? `
+          <p class="price">
+            <span class="old-price">₦${Number(p.price).toLocaleString()}</span>
+            <span class="new-price">₦${finalPrice.toLocaleString()}</span>
+          </p>
+          <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>
+          <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${finalPrice}">
+            Add to Cart
+          </button>
+        `
+        : `
+          <p class="price">₦${Number(p.price).toLocaleString()}</p>
+          <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
+            Add to Cart
+          </button>
+        `
+    }
+  `;
+  productsContainer.appendChild(card);
+});
 
     document.querySelectorAll(".add-to-cart").forEach((btn) =>
       btn.addEventListener("click", () => {

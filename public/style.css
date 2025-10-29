@@ -1264,3 +1264,23 @@ h1 {
     unicode-bidi: isolate;
 }
 
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+  margin-right: 6px;
+}
+
+.new-price {
+  color: #c2185b;
+  font-weight: 600;
+}
+
+.discount-badge {
+  display: inline-block;
+  background: #c2185b;
+  color: #fff;
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
