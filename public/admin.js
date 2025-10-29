@@ -173,10 +173,7 @@ async function deleteProduct(id) {
   }
 }
 
-// ===============================
-// ✏️ EDIT PRODUCT
-// ===============================
-// ================= EDIT PRODUCT =================
+/// ================= EDIT PRODUCT =================
 const editModal = document.getElementById("edit-modal");
 const editForm = document.getElementById("editProductForm");
 
@@ -195,16 +192,17 @@ if (editForm) {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("price", price);
-    if (imageFile) formData.append("image", imageFile);
-
     try {
+      const updatedProduct = {
+        name,
+        description,
+        price
+      };
+
       const res = await fetch(`${window.API_BASE}/api/products/${id}`, {
         method: "PUT",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedProduct)
       });
 
       const data = await res.json();
@@ -222,6 +220,7 @@ if (editForm) {
     }
   });
 }
+
 
 function closeEditModal() {
   document.getElementById("edit-modal").style.display = "none";
