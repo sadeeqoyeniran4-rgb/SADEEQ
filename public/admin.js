@@ -223,6 +223,17 @@ if (editForm) {
   });
 }
 
+function closeEditModal() {
+  document.getElementById("edit-modal").style.display = "none";
+}
+function openEditModal(id, name, description, price) {
+  document.getElementById("edit-id").value = id;
+  document.getElementById("edit-name").value = name;
+  document.getElementById("edit-desc").value = description;
+  document.getElementById("edit-price").value = price;
+  editModal.style.display = "flex";
+}
+
 // ===============================
 // 📦 LOAD ORDERS
 // ===============================
