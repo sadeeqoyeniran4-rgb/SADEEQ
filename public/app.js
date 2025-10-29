@@ -100,41 +100,47 @@ if (closeCart)
   const productsContainer = document.getElementById("product-grid");
   const categoryButtons = document.querySelectorAll(".filter-btn");
 
-  async function loadProducts() {
-    if (!productsContainer) return;
-    try {
-      const res = await fetch(`${window.API_BASE}/api/products`);
-      const products = await res.json();
-      productsContainer.innerHTML = "";
-      products.forEach((p) => {
-        const category = (p.description || "uncategorized").toLowerCase().replace(/\s+|\/+/g, "-");
-        const card = document.createElement("div");
-        card.className = "product-card";
-        card.dataset.category = category;
-        card.innerHTML = `
-          <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
-          <h3>${p.name}</h3>
-          <p>${p.description || ""}</p>
-          <p class="price">₦${Number(p.price).toLocaleString()}</p>
-          <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">Add to Cart</button>`;
-        productsContainer.appendChild(card);
-      });
-      document.querySelectorAll(".add-to-cart").forEach((btn) =>
-        btn.addEventListener("click", () => {
-          addToCart({
-            id: +btn.dataset.id,
-            name: btn.dataset.name,
-            price: +btn.dataset.price,
-          });
-        })
-      );
-    } catch (err) {
-      console.error("❌ Error loading products:", err);
-      productsContainer.innerHTML = "<p class='error-msg'>Unable to load products at the moment.</p>";
-    }
-  }
+async function loadProducts() {
+  if (!productsContainer) return;
+  try {
+    showSpinner(); // 👈 Show spinner before fetch starts
 
-  loadProducts();
+    const res = await fetch(`${window.API_BASE}/api/products`);
+    const products = await res.json();
+    productsContainer.innerHTML = "";
+
+    products.forEach((p) => {
+      const category = (p.description || "uncategorized").toLowerCase().replace(/\s+|\/+/g, "-");
+      const card = document.createElement("div");
+      card.className = "product-card";
+      card.dataset.category = category;
+      card.innerHTML = `
+        <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
+        <h3>${p.name}</h3>
+        <p>${p.description || ""}</p>
+        <p class="price">₦${Number(p.price).toLocaleString()}</p>
+        <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">Add to Cart</button>`;
+      productsContainer.appendChild(card);
+    });
+
+    document.querySelectorAll(".add-to-cart").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        addToCart({
+          id: +btn.dataset.id,
+          name: btn.dataset.name,
+          price: +btn.dataset.price,
+        });
+      })
+    );
+  } catch (err) {
+    console.error("❌ Error loading products:", err);
+    productsContainer.innerHTML = "<p class='error-msg'>Unable to load products at the moment.</p>";
+  } finally {
+    hideSpinner(); // 👈 Hide spinner no matter what
+  }
+}
+
+loadProducts();
 
   // ---------------- CATEGORY FILTER ----------------
   categoryButtons.forEach((btn) =>
@@ -425,5 +431,12 @@ searchBtn.addEventListener("click", () => {
     navLinks?.classList.remove("open");
   }
 });
+function showSpinner() {
+  document.getElementById("spinner-overlay").style.display = "flex";
+}
+
+function hideSpinner() {
+  document.getElementById("spinner-overlay").style.display = "none";
+}
 
 });
