@@ -135,44 +135,34 @@ app.delete("/api/products/:id", async (req, res) => {
   }
 });
 
-app.put("/api/products/:id", async (req, res) => {
-  const { id } = req.params;
-  const { name, description, price, image_url } = req.body;
+app.put("/api/products/:id", upload.single("image"), async (req, res) => {
   try {
-    const result = await pool.query(
-      `UPDATE products SET name = $1, description = $2, price = $3, image_url = $4 WHERE id = $5 RETURNING *`,
-      [name, description, price, image_url, id]
-    );
-    if (result.rowCount === 0) return res.status(404).json({ success: false, message: "Product not found" });
+    const { name, description, price } = req.body;
+    const image = req.file ? req.file.path : null;
 
-    res.json({ success: true, message: "Product updated", product: result.rows[0] });
-  } catch (err) {
-    console.error("❌ Error updating product:", err);
-    res.status(500).json({ success: false, message: "Update failed" });
-  }
-});
-
-// ================== CHECKOUT ==================
-app.post("/api/checkout", async (req, res) => {
-  try {
-    const { cart, shipping } = req.body;
-    if (!cart || cart.length === 0) {
-      return res.status(400).json({ success: false, message: "Cart is empty" });
+    if (!name || !price) {
+      return res.status(400).json({ success: false, message: "Missing fields" });
     }
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    // 🧠 Check if product exists
+    const existing = await pool.query("SELECT * FROM products WHERE id = $1", [req.params.id]);
+    if (existing.rowCount === 0) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
 
-    let shippingCost = 0;
-    if (shipping === "intra-state") shippingCost = 1000;
-    else if (shipping === "inter-state") shippingCost = 3000;
-    else if (shipping === "pickup") shippingCost = 0;
+    // 🖼 Use existing image if no new one uploaded
+    const newImage = image || existing.rows[0].image_url;
 
-    const grandTotal = total + shippingCost;
+    // ✅ Update product
+    await pool.query(
+      "UPDATE products SET name=$1, description=$2, price=$3, image_url=$4 WHERE id=$5",
+      [name, description, price, newImage, req.params.id]
+    );
 
-    res.json({ success: true, total, shippingCost, grandTotal });
+    res.json({ success: true, message: "Product updated successfully!" });
   } catch (err) {
-    console.error("❌ Checkout error:", err);
-    res.status(500).json({ success: false, message: "Server error during checkout" });
+    console.error("❌ Error updating product:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
