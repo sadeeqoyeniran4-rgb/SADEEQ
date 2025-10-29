@@ -1148,7 +1148,7 @@ footer {
 }
 
 .icon-btn:hover {
-  color: #f3c677;
+  color: none;
   transform: scale(1.1);
 }
 /* 🛍 Cart count badge */
