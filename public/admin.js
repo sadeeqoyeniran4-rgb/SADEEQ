@@ -176,29 +176,24 @@ async function deleteProduct(id) {
 // ===============================
 // ✏️ EDIT PRODUCT
 // ===============================
+// ================= EDIT PRODUCT =================
 const editModal = document.getElementById("edit-modal");
 const editForm = document.getElementById("editProductForm");
-
-function openEditModal(id, name, desc, price) {
-  document.getElementById("edit-id").value = id;
-  document.getElementById("edit-name").value = name;
-  document.getElementById("edit-desc").value = desc;
-  document.getElementById("edit-price").value = price;
-  editModal.style.display = "flex";
-}
-
-function closeEditModal() {
-  editModal.style.display = "none";
-}
 
 if (editForm) {
   editForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const id = document.getElementById("edit-id").value;
-    const name = document.getElementById("edit-name").value;
-    const description = document.getElementById("edit-desc").value;
-    const price = document.getElementById("edit-price").value;
+    const name = document.getElementById("edit-name").value.trim();
+    const description = document.getElementById("edit-desc").value.trim();
+    const price = parseFloat(document.getElementById("edit-price").value);
     const imageFile = document.getElementById("edit-image-file").files[0];
+
+    if (!name || !price) {
+      alert("Please fill in all required fields");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", name);
@@ -207,15 +202,23 @@ if (editForm) {
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      loadingIndicator.style.display = "flex";
-      const res = await fetch(`${API_BASE}/api/products/${id}`, { method: "PUT", body: formData });
-      if (!res.ok) throw new Error("Update failed");
-      closeEditModal();
-      loadProducts();
+      const res = await fetch(`${window.API_BASE}/api/products/${id}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("✅ Product updated successfully!");
+        editModal.style.display = "none";
+        loadProducts(); // refresh product list
+      } else {
+        alert("❌ Failed to update product.");
+      }
     } catch (err) {
-      console.error("Edit error:", err);
-    } finally {
-      loadingIndicator.style.display = "none";
+      console.error("Error updating product:", err);
+      alert("Something went wrong. Please try again.");
     }
   });
 }
