@@ -432,7 +432,7 @@ input, textarea {
   border-radius: 5px;
 }
 button {
-  background-color: #503c44;
+  background-color: transparent;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -1148,7 +1148,7 @@ footer {
 }
 
 .icon-btn:hover {
-  color: none;
+  color: #f3c677;
   transform: scale(1.1);
 }
 /* 🛍 Cart count badge */
