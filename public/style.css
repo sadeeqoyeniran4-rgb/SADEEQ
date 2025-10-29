@@ -1286,12 +1286,13 @@ h1 {
 }
 .discount-banner {
   position: fixed;
-  top: 50px; /* adjust this depending on your header height */
+  top: 20px; /* adjust this depending on your header height */
   left: 0;
   width: 100%;
   background: gray; /* Lọ́fíndà purple */
   color: #fff;
   text-align: center;
+  opacity: 70%;
   padding: 10px 0;
   font-size: 14px;
   font-weight: 500;
