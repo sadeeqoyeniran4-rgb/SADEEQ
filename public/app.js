@@ -411,67 +411,19 @@ searchBtn.addEventListener("click", () => {
     });
   }
 
-  // ---------------- HEADER PANEL BEHAVIOR ----------------
-const hamburger = document.querySelector(".hamburger"); // your menu icon button
-const navLinks = document.getElementById("nav-links"); // your nav links container
-
-function closeAllPanels() {
-  // close search bar
-  if (searchBar) searchBar.classList.remove("show");
-  // close cart
-  if (cartModal) cartModal.classList.remove("open");
-  // close menu
-  if (navLinks) navLinks.classList.remove("open");
-}
-
-// CART toggle
-if (cartBtn) {
-  cartBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isOpen = cartModal.classList.toggle("open");
-    if (isOpen) {
-      if (searchBar) searchBar.classList.remove("show");
-      if (navLinks) navLinks.classList.remove("open");
-    }
-  });
-}
-
-// SEARCH toggle (update your existing listener to use this behavior)
-if (searchIcon) {
-  searchIcon.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isOpen = searchBar.classList.toggle("show");
-    if (isOpen) {
-      if (cartModal) cartModal.classList.remove("open");
-      if (navLinks) navLinks.classList.remove("open");
-      searchInput.focus();
-    }
-  });
-}
-
-// MENU toggle
-if (hamburger) {
-  hamburger.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isOpen = navLinks.classList.toggle("open");
-    if (isOpen) {
-      if (cartModal) cartModal.classList.remove("open");
-      if (searchBar) searchBar.classList.remove("show");
-    }
-  });
-}
-
-// CLOSE all when clicking outside
-document.addEventListener("click", (e) => {
-  const clickedInside =
-    (searchBar && searchBar.contains(e.target)) ||
-    (cartModal && cartModal.contains(e.target)) ||
-    (navLinks && navLinks.contains(e.target)) ||
-    (searchIcon && searchIcon.contains(e.target)) ||
-    (cartBtn && cartBtn.contains(e.target)) ||
-    (hamburger && hamburger.contains(e.target));
-
-  if (!clickedInside) closeAllPanels();
+  document.addEventListener("click", (e) => {
+  if (
+    !searchBar?.contains(e.target) &&
+    !searchIcon?.contains(e.target) &&
+    !cartModal?.contains(e.target) &&
+    !cartBtn?.contains(e.target) &&
+    !navLinks?.contains(e.target) &&
+    !hamburger?.contains(e.target)
+  ) {
+    searchBar?.classList.remove("show");
+    cartModal?.classList.remove("open");
+    navLinks?.classList.remove("open");
+  }
 });
 
 });
