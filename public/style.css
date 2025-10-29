@@ -1285,17 +1285,20 @@ h1 {
   margin-bottom: 8px;
 }
 .discount-banner {
-  background: black; /* purple or use your brand color */
-  color: white;
+  position: fixed;
+  top: 50px; /* adjust this depending on your header height */
+  left: 0;
+  width: 100%;
+  background: gray; /* Lọ́fíndà purple */
+  color: #fff;
   text-align: center;
   padding: 10px 0;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.3px;
-  position: sticky;
-  top: 0;
-  z-index: 999;
+  z-index: 9999;
   animation: fadeInDown 0.5s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 @keyframes fadeInDown {
