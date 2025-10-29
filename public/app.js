@@ -325,11 +325,14 @@ const searchBar = document.getElementById("search-bar");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const clearSearch = document.getElementById("clear-search");
+const searchIconInner = searchIcon.querySelector("i");
 
 if (searchIcon && searchBar) {
   searchIcon.addEventListener("click", () => {
-    searchBar.classList.toggle("show");
-  });
+  searchBar.classList.toggle("show");
+  const isActive = searchBar.classList.contains("show");
+  searchIconInner.className = isActive ? "bi bi-x" : "bi bi-search"; // toggle icons
+});
 }
 
 if (searchInput) {
