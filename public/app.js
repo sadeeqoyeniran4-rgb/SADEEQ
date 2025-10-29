@@ -328,45 +328,50 @@ const searchIconInner = searchBtn.querySelector("i");
 // Toggle search bar visibility
 searchIcon.addEventListener("click", () => {
   searchBar.classList.toggle("show");
-  if (searchBar.classList.contains("show")) {
-    searchInput.focus();
-  } else {
-    searchInput.value = "";
-    searchBtn.classList.remove("clear");
-    searchIconInner.className = "bi bi-search";
-    document.querySelectorAll(".product-card").forEach(c => (c.style.display = "block"));
-  }
+  if (searchBar.classList.contains("show")) searchInput.focus();
 });
-
 // Live search as user types
 searchInput.addEventListener("input", () => {
   const query = searchInput.value.toLowerCase().trim();
-  
-  // Change icon
-  if (query) {
-    searchBtn.classList.add("clear");
-    searchIconInner.className = "bi bi-x";
-  } else {
-    searchBtn.classList.remove("clear");
-    searchIconInner.className = "bi bi-search";
-  }
 
-  // Live filter products
+   // Live filter products
   document.querySelectorAll(".product-card").forEach(card => {
     const name = card.querySelector("h3").textContent.toLowerCase();
     card.style.display = name.includes(query) ? "block" : "none";
   });
 });
 
-// Clear search when ❌ is clicked
+// Change button between 🔍 and ❌ depending on input
+searchInput.addEventListener("input", () => {
+  if (searchInput.value.trim()) {
+    searchBtn.classList.add("clear");
+    searchIconInner.className = "bi bi-x";
+  } else {
+    searchBtn.classList.remove("clear");
+    searchIconInner.className = "bi bi-search";
+  }
+});
+
+// Handle button click
 searchBtn.addEventListener("click", () => {
   if (searchBtn.classList.contains("clear")) {
+    // Clear mode
     searchInput.value = "";
     searchBtn.classList.remove("clear");
     searchIconInner.className = "bi bi-search";
     document.querySelectorAll(".product-card").forEach(c => (c.style.display = "block"));
+  } else {
+    // Search mode
+    let q = searchInput.value.toLowerCase();
+    document.querySelectorAll(".product-card").forEach(c => {
+      c.style.display = c.querySelector("h3").textContent.toLowerCase().includes(q)
+        ? "block"
+        : "none";
+    });
   }
+  
 });
+
 
   // ---------------- ABOUT MODAL ----------------
   const aboutModal = document.getElementById("about-modal"),
