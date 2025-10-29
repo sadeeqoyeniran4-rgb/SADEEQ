@@ -1129,12 +1129,53 @@ footer {
 }
 
 /* Search bar default state (hidden) */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  z-index: 100;
+}
+
+.icon-btn, .cart-btn, .hamburger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 1.6rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.icon-btn:hover, .cart-btn:hover, .hamburger:hover {
+  color: #c7a4ff; /* a soft luxury lavender tone */
+  transform: scale(1.1);
+}
+
+/* 🛍 Cart count badge */
+.cart-btn {
+  position: relative;
+}
+
+.cart-btn #cart-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #c7a4ff;
+  color: #000;
+  font-size: 0.7rem;
+  border-radius: 50%;
+  padding: 2px 5px;
+  font-weight: bold;
+}
+
+/* Search Bar */
 .search-bar {
   position: absolute;
-  top: 60px;
+  top: 70px;
   left: 0;
   width: 100%;
-  background: #503c44;
+  background: #1f1a1d;
   padding: 10px;
   display: flex;
   justify-content: center;
@@ -1146,65 +1187,38 @@ footer {
   z-index: 99;
 }
 
-/* When visible */
 .search-bar.show {
   opacity: 1;
   max-height: 80px;
 }
 
-/* Search input styles */
 .search-bar input {
   width: 70%;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 20px;
+  padding: 10px 15px;
+  border: 1px solid #c7a4ff;
+  border-radius: 25px;
+  background: #2b2226;
+  color: #fff;
   outline: none;
-  font-size: 14px;
 }
 
-/* Search button */
-#search-btn {
-  background: #403036;
-  color: #fff;
+.search-bar input::placeholder {
+  color: #b8a2c9;
+}
+
+.search-bar button {
+  background: #c7a4ff;
+  color: #1f1a1d;
   border: none;
-  border-radius: 20px;
+  border-radius: 25px;
   padding: 8px 15px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
-#search-btn:hover {
-  background: #59464d;
-}
-
-/* 🔍 Search icon & other header buttons */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
-  z-index: 100;
-}
-
-.icon-btn, .cart-btn, .hamburger {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #fff;
-}
-
-/* 📱 Mobile */
-@media (max-width: 768px) {
-  .search-bar {
-    top: 55px;
-    background: #503c44;
-    padding: 10px;
-  }
-
-  .search-bar input {
-    width: 80%;
-  }
+.search-bar button:hover {
+  background: #e0c7ff;
 }
 
 h1 {

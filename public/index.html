@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link  rel="stylesheet"href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/some-library/button.min.css">
 </head>
 <body>
@@ -26,13 +27,20 @@
         <li><a href="#" id="contactBtn">Contact</a></li>
       </ul>
 </nav>
-       <div class="header-right">
-  <button id="search-icon" class="icon-btn">🔍</button>
-    <button id="cartBtn" class="cart-btn">
-      🛒 <span id="cart-count">0</span>
-    </button>
-    <button class="hamburger">☰</button>
-  </div>
+      <div class="header-right">
+  <button id="search-icon" class="icon-btn" title="Search">
+    <i class="bi bi-search"></i>
+  </button>
+
+  <button id="cartBtn" class="cart-btn" title="Cart">
+    <i class="bi bi-bag"></i>
+    <span id="cart-count">0</span>
+  </button>
+
+  <button class="hamburger icon-btn" id="menu-toggle" title="Menu">
+    <i class="bi bi-list"></i>
+  </button>
+</div>
 
 <div id="search-bar" class="search-bar hidden">
   <input type="text" id="search-input" placeholder="Search...">
