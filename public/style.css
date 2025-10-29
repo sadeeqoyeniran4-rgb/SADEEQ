@@ -1286,7 +1286,7 @@ h1 {
 }
 .discount-banner {
   position: fixed;
-  top: 20px; /* adjust this depending on your header height */
+  top: 70px; /* adjust this depending on your header height */
   left: 0;
   width: 100%;
   background: gray; /* Lọ́fíndà purple */
