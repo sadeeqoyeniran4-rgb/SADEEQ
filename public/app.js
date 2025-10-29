@@ -328,36 +328,43 @@ const searchIconInner = searchBtn.querySelector("i");
 // Toggle search bar visibility
 searchIcon.addEventListener("click", () => {
   searchBar.classList.toggle("show");
-  if (searchBar.classList.contains("show")) searchInput.focus();
+  if (searchBar.classList.contains("show")) {
+    searchInput.focus();
+  } else {
+    searchInput.value = "";
+    searchBtn.classList.remove("clear");
+    searchIconInner.className = "bi bi-search";
+    document.querySelectorAll(".product-card").forEach(c => (c.style.display = "block"));
+  }
 });
 
-// Change button between 🔍 and ❌ depending on input
+// Live search as user types
 searchInput.addEventListener("input", () => {
-  if (searchInput.value.trim()) {
+  const query = searchInput.value.toLowerCase().trim();
+  
+  // Change icon
+  if (query) {
     searchBtn.classList.add("clear");
     searchIconInner.className = "bi bi-x";
   } else {
     searchBtn.classList.remove("clear");
     searchIconInner.className = "bi bi-search";
   }
+
+  // Live filter products
+  document.querySelectorAll(".product-card").forEach(card => {
+    const name = card.querySelector("h3").textContent.toLowerCase();
+    card.style.display = name.includes(query) ? "block" : "none";
+  });
 });
 
-// Handle button click
+// Clear search when ❌ is clicked
 searchBtn.addEventListener("click", () => {
   if (searchBtn.classList.contains("clear")) {
-    // Clear mode
     searchInput.value = "";
     searchBtn.classList.remove("clear");
     searchIconInner.className = "bi bi-search";
     document.querySelectorAll(".product-card").forEach(c => (c.style.display = "block"));
-  } else {
-    // Search mode
-    let q = searchInput.value.toLowerCase();
-    document.querySelectorAll(".product-card").forEach(c => {
-      c.style.display = c.querySelector("h3").textContent.toLowerCase().includes(q)
-        ? "block"
-        : "none";
-    });
   }
 });
 
