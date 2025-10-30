@@ -64,6 +64,7 @@ if (DISCOUNT.active && banner) {
   const cartBtn = document.getElementById("cartBtn");
   const cartModal = document.getElementById("cart-modal");
   const closeCart = document.getElementById("close-cart");
+  const checkoutTotalEl = document.getElementById("checkout-total");
 
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
@@ -213,7 +214,6 @@ loadProducts();
 const checkoutModal = document.getElementById("checkout-modal");
 const checkoutClose = document.getElementById("checkout-close");
 const shippingSelect = document.getElementById("shipping");
-const checkoutTotalEl = document.getElementById("checkout-total");
 let checkoutTotals = {};
 
 if (checkoutBtn) {
