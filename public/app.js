@@ -214,6 +214,7 @@ const checkoutBtn = document.getElementById("checkout-btn");
 const checkoutModal = document.getElementById("checkout-modal");
 const checkoutClose = document.getElementById("checkout-close");
 const shippingSelect = document.getElementById("shipping");
+const checkoutForm = document.getElementById("checkout-form");
 let checkoutTotals = {};
 
 if (checkoutBtn) {
