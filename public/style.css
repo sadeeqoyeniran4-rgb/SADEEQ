@@ -1287,6 +1287,7 @@ h1 {
 .discount-banner {
   background: black; /* purple or use your brand color */
   color: white;
+  top: 60px;
   text-align: center;
   padding: 10px 0;
   font-size: 14px;
