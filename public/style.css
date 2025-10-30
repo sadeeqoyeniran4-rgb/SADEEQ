@@ -1294,7 +1294,7 @@ h1 {
   font-weight: 500;
   letter-spacing: 0.3px;
   position: sticky;
-  top: 65px;
+  top: 0;
   z-index: 999;
   animation: fadeInDown 0.5s ease;
 }
