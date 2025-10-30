@@ -64,7 +64,6 @@ if (DISCOUNT.active && banner) {
   const cartBtn = document.getElementById("cartBtn");
   const cartModal = document.getElementById("cart-modal");
   const closeCart = document.getElementById("close-cart");
-  const checkoutTotalEl = document.getElementById("checkout-total");
 
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
@@ -210,15 +209,14 @@ loadProducts();
   );
 
   // ---------------- CHECKOUT MODAL ----------------
-  const checkoutModal = document.getElementById("checkout-modal");
   const checkoutBtn = document.getElementById("checkout-btn");
-  const checkoutClose = document.getElementById("checkout-close");
-  const shippingSelect = document.getElementById("shipping");
-  const checkoutForm = document.getElementById("checkout-form");
+const checkoutModal = document.getElementById("checkout-modal");
+const checkoutClose = document.getElementById("checkout-close");
+const shippingSelect = document.getElementById("shipping");
+const checkoutTotalEl = document.getElementById("checkout-total");
+let checkoutTotals = {};
 
-  let checkoutTotals = {};
-
-  if (checkoutBtn) {
+if (checkoutBtn) {
   checkoutBtn.addEventListener("click", async () => {
     if (cart.length === 0) {
       alert("Your cart is empty!");
@@ -226,6 +224,7 @@ loadProducts();
     }
 
     try {
+      // First load subtotal (no shipping yet)
       const res = await fetch(`${window.API_BASE}/api/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -236,7 +235,6 @@ loadProducts();
       if (data.success) {
         checkoutTotals = data;
         checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
-        cartModal.classList.remove("open"); // ✅ changed from cartSidebar
         checkoutModal.style.display = "flex";
       } else {
         alert("Error calculating total");
@@ -248,31 +246,33 @@ loadProducts();
   });
 }
 
-  if (checkoutClose)
-    checkoutClose.addEventListener("click", () => (checkoutModal.style.display = "none"));
-  window.addEventListener("click", (e) => {
-    if (e.target === checkoutModal) checkoutModal.style.display = "none";
-  });
+// Close modal
+if (checkoutClose)
+  checkoutClose.addEventListener("click", () => (checkoutModal.style.display = "none"));
+window.addEventListener("click", (e) => {
+  if (e.target === checkoutModal) checkoutModal.style.display = "none";
+});
 
-  if (shippingSelect) {
-    shippingSelect.addEventListener("change", async (e) => {
-      try {
-        const res = await fetch(`${window.API_BASE}/api/checkout`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cart, shipping: e.target.value }),
-        });
-        const { success, grandTotal, total, shippingCost } = await res.json();
+// Update total when shipping method changes
+if (shippingSelect) {
+  shippingSelect.addEventListener("change", async (e) => {
+    try {
+      const res = await fetch(`${window.API_BASE}/api/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cart, shipping: e.target.value }),
+      });
+      const data = await res.json();
 
-        if (success) {
-          checkoutTotals = { grandTotal, total, shippingCost, success: true };
-          checkoutTotalEl.textContent = `₦${grandTotal.toLocaleString()}`;
-        }
-      } catch (err) {
-        console.error("Error updating total with shipping:", err);
+      if (data.success) {
+        checkoutTotals = data;
+        checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
       }
-    });
-  }
+    } catch (err) {
+      console.error("Error updating total with shipping:", err);
+    }
+  });
+}
 
   // ---------------- ERROR MODAL ----------------
   function showErrorModal(message) {
