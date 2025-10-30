@@ -234,8 +234,18 @@ if (checkoutBtn) {
 
       if (data.success) {
         checkoutTotals = data;
-        checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
-        checkoutModal.style.display = "flex";
+        checkoutTotalEl.innerHTML = `
+  <div><strong>Subtotal:</strong> ₦${data.subtotal.toLocaleString()}</div>
+  <div><strong>Shipping:</strong> ₦${data.shippingCost.toLocaleString()}</div>
+  ${
+    data.discount > 0
+      ? `<div><strong>Discount:</strong> -₦${data.discount.toLocaleString()}</div>`
+      : ""
+  }
+  <hr>
+  <div><strong>Total:</strong> ₦${data.grandTotal.toLocaleString()}</div>
+`;
+checkoutModal.style.display = "flex";
       } else {
         alert("Error calculating total");
       }

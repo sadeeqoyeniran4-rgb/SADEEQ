@@ -171,40 +171,43 @@ app.put("/api/products/:id", upload.single("image"), async (req, res) => {
 app.post("/api/checkout", async (req, res) => {
   try {
     const { cart, shipping } = req.body;
-
-    if (!cart || cart.length === 0) {
+    if (!cart || cart.length === 0)
       return res.status(400).json({ success: false, message: "Cart is empty" });
-    }
 
-    // Subtotal
-    const subtotal = cart.reduce(
-      (sum, item) => sum + item.price * (item.quantity || 1),
-      0
-    );
+    // Calculate subtotal safely
+    let total = cart.reduce((sum, item) => {
+      const price = parseFloat(item.price) || 0;
+      const qty = item.quantity || item.qty || 1;
+      return sum + price * qty;
+    }, 0);
 
-    // Shipping fees
+    // Shipping cost
     let shippingCost = 0;
     if (shipping === "intra-state") shippingCost = 1500;
     else if (shipping === "inter-state") shippingCost = 3000;
     else if (shipping === "pickup") shippingCost = 0;
 
-    // Optional discount logic (remove if not needed)
-    const discount = 0.05; // 5%
-    const discountAmount = subtotal * discount;
+    // Optional 5% discount (only active within promo period)
+    const today = new Date();
+    const discountStart = new Date("2025-10-28");
+    const discountEnd = new Date("2025-11-15");
+    let discount = 0;
+    if (today >= discountStart && today <= discountEnd) {
+      discount = 0.05 * total;
+    }
 
-    // Grand total
-    const grandTotal = subtotal - discountAmount + shippingCost;
+    const grandTotal = total - discount + shippingCost;
 
     res.json({
       success: true,
-      subtotal,
+      subtotal: total,
       shippingCost,
-      discountAmount,
+      discount,
       grandTotal,
     });
   } catch (err) {
-    console.error("Checkout error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("❌ Checkout error:", err);
+    res.status(500).json({ success: false, message: "Server error calculating checkout" });
   }
 });
 
