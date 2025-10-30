@@ -166,6 +166,44 @@ app.put("/api/products/:id", upload.single("image"), async (req, res) => {
   }
 });
 
+
+// ================== CHECKOUT CALCULATION ==================
+app.post("/api/checkout", async (req, res) => {
+  try {
+    const { cart, shipping } = req.body;
+
+    if (!cart || cart.length === 0) {
+      return res.status(400).json({ success: false, message: "Cart is empty" });
+    }
+
+    // Calculate subtotal
+    const total = cart.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+
+    // Shipping cost (you can adjust logic here)
+    let shippingCost = 0;
+    if (shipping === "express") shippingCost = 2500;
+    else if (shipping === "standard") shippingCost = 1500;
+
+    // Discount (example: 5% off active sale)
+    const discount = 0.05; // 5%
+    const discountAmount = total * discount;
+
+    const grandTotal = total - discountAmount + shippingCost;
+
+    res.json({
+      success: true,
+      total,
+      discount: discountAmount,
+      shippingCost,
+      grandTotal,
+    });
+  } catch (err) {
+    console.error("Checkout route error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
 // ================== VERIFY PAYMENT (FIXED) ==================
 app.post("/api/verify-payment", async (req, res) => {
   try {
