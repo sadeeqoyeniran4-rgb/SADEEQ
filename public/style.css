@@ -638,6 +638,7 @@ button:hover {
 }
 
 /* ================= GENERAL MODALS ================= */
+/* ================= MODAL ================= */
 .modal {
   display: none;
   position: fixed;
@@ -650,7 +651,9 @@ button:hover {
   justify-content: center;
   align-items: center;
   padding: 20px;
+  box-sizing: border-box;
 }
+
 .modal-box {
   background: #fff;
   padding: 25px;
@@ -661,16 +664,21 @@ button:hover {
   border-radius: 10px;
   position: relative;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
+
 .modal-title {
   text-align: center;
   font-size: 1.5rem;
   margin-bottom: 15px;
   color: #2f1e3d;
 }
+
 .modal-form .form-group {
   margin-bottom: 15px;
 }
+
 .modal-form input,
 .modal-form textarea,
 .modal-form select {
@@ -679,7 +687,9 @@ button:hover {
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
+  box-sizing: border-box;
 }
+
 .modal-btn {
   width: 100%;
   padding: 12px;
@@ -691,10 +701,63 @@ button:hover {
   cursor: pointer;
   transition: background 0.3s;
 }
+
 .modal-btn:hover {
   background: #5e3b7a;
 }
 
+/* ================= RESPONSIVE MODAL ================= */
+/* Tablet */
+@media (max-width: 1024px) {
+  .modal-box {
+    width: 80%;
+    max-width: 450px;
+    padding: 20px;
+  }
+  .modal-title { font-size: 1.4rem; }
+  .modal-form input,
+  .modal-form textarea,
+  .modal-form select {
+    font-size: 13px;
+    padding: 8px;
+  }
+  .modal-btn { font-size: 15px; padding: 10px; }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .modal-box {
+    width: 95%;
+    max-width: 400px;
+    padding: 15px;
+  }
+  .modal-title { font-size: 1.3rem; }
+  .modal-form input,
+  .modal-form textarea,
+  .modal-form select {
+    font-size: 12px;
+    padding: 8px;
+  }
+  .modal-btn { font-size: 14px; padding: 10px; }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .modal-box {
+    width: 95%;
+    max-width: 350px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  .modal-title { font-size: 1.2rem; }
+  .modal-form input,
+  .modal-form textarea,
+  .modal-form select {
+    font-size: 12px;
+    padding: 6px;
+  }
+  .modal-btn { font-size: 13px; padding: 8px; }
+}
 /* ================= FOOTER ================= */
 footer {
   width: 100vw;
