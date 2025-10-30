@@ -209,8 +209,8 @@ loadProducts();
     })
   );
 
-  // ---------------- CHECKOUT MODAL ----------------
-  const checkoutBtn = document.getElementById("checkout-btn");
+ // ---------------- CHECKOUT MODAL ----------------
+const checkoutBtn = document.getElementById("checkout-btn");
 const checkoutModal = document.getElementById("checkout-modal");
 const checkoutClose = document.getElementById("checkout-close");
 const shippingSelect = document.getElementById("shipping");
@@ -224,28 +224,32 @@ if (checkoutBtn) {
     }
 
     try {
-      // First load subtotal (no shipping yet)
+      // ✅ Single fetch — includes discount info
       const res = await fetch(`${window.API_BASE}/api/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart }),
+        body: JSON.stringify({
+          cart,
+          frontendDiscountApplied: DISCOUNT.active, // 👈 include discount flag
+        }),
       });
+
       const data = await res.json();
 
       if (data.success) {
         checkoutTotals = data;
         checkoutTotalEl.innerHTML = `
-  <div><strong>Subtotal:</strong> ₦${data.subtotal.toLocaleString()}</div>
-  <div><strong>Shipping:</strong> ₦${data.shippingCost.toLocaleString()}</div>
-  ${
-    data.discount > 0
-      ? `<div><strong>Discount:</strong> -₦${data.discount.toLocaleString()}</div>`
-      : ""
-  }
-  <hr>
-  <div><strong>Total:</strong> ₦${data.grandTotal.toLocaleString()}</div>
-`;
-checkoutModal.style.display = "flex";
+          <div><strong>Subtotal:</strong> ₦${data.subtotal.toLocaleString()}</div>
+          <div><strong>Shipping:</strong> ₦${data.shippingCost.toLocaleString()}</div>
+          ${
+            data.discount > 0
+              ? `<div><strong>Discount:</strong> -₦${data.discount.toLocaleString()}</div>`
+              : ""
+          }
+          <hr>
+          <div><strong>Total:</strong> ₦${data.grandTotal.toLocaleString()}</div>
+        `;
+        checkoutModal.style.display = "flex";
       } else {
         alert("Error calculating total");
       }
@@ -266,23 +270,52 @@ window.addEventListener("click", (e) => {
 // Update total when shipping method changes
 if (shippingSelect) {
   shippingSelect.addEventListener("change", async (e) => {
+    const selected = e.target.value;
+    if (!selected) return;
+
+    checkoutTotalEl.style.opacity = "0.5";
+    checkoutTotalEl.innerHTML = "<em>Calculating...</em>";
+
     try {
       const res = await fetch(`${window.API_BASE}/api/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart, shipping: e.target.value }),
+        body: JSON.stringify({
+          cart,
+          shipping: selected,
+          frontendDiscountApplied: DISCOUNT.active, // 👈 include here too
+        }),
       });
+
       const data = await res.json();
 
       if (data.success) {
         checkoutTotals = data;
-        checkoutTotalEl.textContent = `₦${data.grandTotal.toLocaleString()}`;
+        setTimeout(() => {
+          checkoutTotalEl.style.transition = "all 0.4s ease";
+          checkoutTotalEl.style.opacity = "1";
+          checkoutTotalEl.innerHTML = `
+            <div><strong>Subtotal:</strong> ₦${data.subtotal.toLocaleString()}</div>
+            <div><strong>Shipping:</strong> ₦${data.shippingCost.toLocaleString()}</div>
+            ${
+              data.discount > 0
+                ? `<div><strong>Discount:</strong> -₦${data.discount.toLocaleString()}</div>`
+                : ""
+            }
+            <hr>
+            <div style="font-size:1.1em;"><strong>Total:</strong> ₦${data.grandTotal.toLocaleString()}</div>
+          `;
+        }, 300);
+      } else {
+        checkoutTotalEl.innerHTML = "<span style='color:red;'>Error updating total.</span>";
       }
     } catch (err) {
-      console.error("Error updating total with shipping:", err);
+      console.error("❌ Error updating total with shipping:", err);
+      checkoutTotalEl.innerHTML = "<span style='color:red;'>Network error. Try again.</span>";
     }
   });
 }
+
 
   // ---------------- ERROR MODAL ----------------
   function showErrorModal(message) {

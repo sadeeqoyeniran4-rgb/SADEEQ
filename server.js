@@ -170,46 +170,53 @@ app.put("/api/products/:id", upload.single("image"), async (req, res) => {
 // ================== CHECKOUT CALCULATION ==================
 app.post("/api/checkout", async (req, res) => {
   try {
-    const { cart, shipping } = req.body;
-    if (!cart || cart.length === 0)
+    const { cart, shipping, frontendDiscountApplied } = req.body;
+
+    if (!cart || cart.length === 0) {
       return res.status(400).json({ success: false, message: "Cart is empty" });
+    }
 
     // Calculate subtotal safely
-    let total = cart.reduce((sum, item) => {
+    let subtotal = cart.reduce((sum, item) => {
       const price = parseFloat(item.price) || 0;
       const qty = item.quantity || item.qty || 1;
       return sum + price * qty;
     }, 0);
 
-    // Shipping cost
+    // Determine shipping cost
     let shippingCost = 0;
-    if (shipping === "intra-state") shippingCost = 1500;
+    if (shipping === "intra-state") shippingCost = 1000;
     else if (shipping === "inter-state") shippingCost = 3000;
     else if (shipping === "pickup") shippingCost = 0;
 
-    // Optional 5% discount (only active within promo period)
+    // Optional 5% discount (only if frontend hasn't already applied it)
     const today = new Date();
     const discountStart = new Date("2025-10-28");
     const discountEnd = new Date("2025-11-15");
+
     let discount = 0;
-    if (today >= discountStart && today <= discountEnd) {
-      discount = 0.05 * total;
+    if (!frontendDiscountApplied && today >= discountStart && today <= discountEnd) {
+      discount = 0.05 * subtotal;
     }
 
-    const grandTotal = total - discount + shippingCost;
+    // Calculate grand total
+    const grandTotal = subtotal - discount + shippingCost;
 
+    // Send response
     res.json({
       success: true,
-      subtotal: total,
+      subtotal,
       shippingCost,
       discount,
       grandTotal,
     });
+
   } catch (err) {
     console.error("❌ Checkout error:", err);
     res.status(500).json({ success: false, message: "Server error calculating checkout" });
   }
 });
+
 
 // ================== VERIFY PAYMENT (FIXED) ==================
 app.post("/api/verify-payment", async (req, res) => {
