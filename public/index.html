@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link  rel="stylesheet"href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <script type="application/ld+json">{"@context": "https://schema.org/","@type": "Store","name": "Lofinda Perfumes","url": "https://thelofinda.com","logo": "https://thelofinda.com/lofinda2.png","image": "https://thelofinda.com/lofinda2.png","address": {  "@type": "PostalAddress",  "streetAddress": "5, Ogunrotimi Close, Akobo-ojurin", "addressLocality": "Ibadan","addressCountry": "Nigeria"}}</script>
 </head>
 <body>
   <!-- ================= HEADER ================= -->
@@ -81,6 +82,14 @@
         <!-- Products will be dynamically loaded here -->
       </div>
     </section>
+
+    <!-- ================== SOCIAL PROOF SECTION ================== -->
+<section id="social-proof" class="social-proof">
+  <!-- JS will populate this dynamically -->
+</section>
+
+
+
 
     <!-- ================= ABOUT MODAL ================= -->
     <div id="about-modal" class="modal">
@@ -181,6 +190,21 @@ Lọ́fíndà — your scent, your masterpiece.</p>
         </form>
       </div>
     </div>
+
+<!-- ❌ Transaction Failed Modal -->
+<div id="payment-failed-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal('payment-failed-modal')">&times;</span>
+    <h2>⚠️ Payment Failed</h2>
+    <p>Your transaction was not completed. Please try again.</p>
+    <div class="modal-buttons">
+      <button class="retry-btn" onclick="retryPayment()">🔄 Retry Payment</button>
+      <button class="close-btn-alt" onclick="closeModal('payment-failed-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+
   </main>
 
   <!-- ================= FOOTER ================= -->
@@ -201,313 +225,6 @@ Lọ́fíndà — your scent, your masterpiece.</p>
   </div>
      <a href="admin.html" style="color: white; text-decoration: none;" id="adminLink">@</a>
   </footer>
-
-  <script src="config.js"></script>
-  <script>
-    const hamburger = document.querySelector('.hamburger');
-const navLinks = document.querySelector('.nav-links');
-
-hamburger.addEventListener('click', () => {
-  navLinks.classList.toggle('open');
-});
-
-
-    // Close menu when clicking a link
-    document.querySelectorAll("#nav-links a").forEach(link => {
-      link.addEventListener("click", () => {
-        navLinks.classList.remove("open");
-      });
-    });
-  </script>
-<!-- ❌ Transaction Failed Modal -->
-<div id="payment-failed-modal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeModal('payment-failed-modal')">&times;</span>
-    <h2>⚠️ Payment Failed</h2>
-    <p>Your transaction was not completed. Please try again.</p>
-    <div class="modal-buttons">
-      <button class="retry-btn" onclick="retryPayment()">🔄 Retry Payment</button>
-      <button class="close-btn-alt" onclick="closeModal('payment-failed-modal')">Close</button>
-    </div>
-  </div>
-</div>
-
-<style>
-  /* Modal Styles */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-  }
-  .modal-content {
-    background: #fff;
-    max-width: 400px;
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  }
-  .modal-content h2 {
-    color: #b02956;
-    margin-bottom: 10px;
-  }
-  .modal-content p {
-    color: #333;
-    font-size: 15px;
-    margin-bottom: 20px;
-  }
-  .modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-  }
-  .retry-btn {
-    background: #2f1e3d;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  .retry-btn:hover {
-    background: #b02956;
-  }
-  .close-btn-alt {
-    background: #777;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  .close-btn-alt:hover {
-    background: #555;
-  }
-  .close-btn {
-    float: right;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #666;
-  }
-  .close-btn:hover {
-    color: #b02956;
-  }
-</style>
-
-<script>
-  function showModal(id) {
-    document.getElementById(id).style.display = "block";
-  }
-  function closeModal(id) {
-    document.getElementById(id).style.display = "none";
-  }
-</script>
-
-<!-- ================= ADMIN LOGIN MODAL ================= -->
-<div id="admin-login-modal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeModal('admin-login-modal')">&times;</span>
-    <h2>🔐 Admin Login</h2>
-    <input type="password" id="adminPassword" placeholder="Enter Admin Password">
-    <button onclick="checkAdminLogin()" class="modal-btn">Login</button>
-    <p id="loginResponse" style="color:red; margin-top:10px;"></p>
-  </div>
-</div>
-
-<!-- ================= ADMIN PRODUCT FORM (Hidden) ================= -->
-<section id="admin" class="admin-panel" style="display:none;">
-  <h2>Add New Product</h2>
-  <form id="addProductForm">
-    <div class="form-group">
-      <label for="productName">Product Name</label>
-      <input type="text" id="productName" name="name" required>
-    </div>
-
-    <div class="form-group">
-      <label for="productDescription">Description</label>
-      <textarea id="productDescription" name="description"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="productPrice">Price (₦)</label>
-      <input type="number" id="productPrice" name="price" required>
-    </div>
-
-    <div class="form-group">
-      <label for="productImage">Image URL</label>
-      <input type="url" id="productImage" name="image_url" placeholder="https://example.com/image.jpg">
-    </div>
-
-    <div class="form-group">
-      <img id="imagePreview" src="" alt="Image Preview" style="max-width:150px; display:none; margin-top:10px;">
-    </div>
-
-    <button type="submit" class="modal-btn">Add Product</button>
-  </form>
-
-  <div id="adminResponse"></div>
-</section>
-
-<style>
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-  }
-  .modal-content {
-    background: #fff;
-    max-width: 350px;
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-  }
-  .modal-content input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-  }
-</style>
-
-<script>
-  // ------------------ LOGIN CHECK ------------------
-  // Admin login is handled by the backend. This client-side helper opens the modal.
-  function openAdminLogin() {
-    showModal("admin-login-modal");
-  }
-
-  async function checkAdminLogin() {
-    const enteredPassword = document.getElementById("adminPassword").value;
-    try {
-      const res = await fetch(`${window.API_BASE}/api/admin-login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: enteredPassword })
-      });
-      const data = await res.json();
-      if (data.success) {
-        localStorage.setItem('adminToken', data.token);
-        closeModal('admin-login-modal');
-        document.getElementById('admin').style.display = 'block';
-      } else {
-        document.getElementById('loginResponse').textContent = '❌ Wrong password!';
-      }
-    } catch (err) {
-      document.getElementById('loginResponse').textContent = '❌ Login error';
-    }
-  }
-
-  // ------------------ FORM HANDLING ------------------
-  const productImageInput = document.getElementById("productImage");
-  const imagePreview = document.getElementById("imagePreview");
-
-  productImageInput.addEventListener("input", () => {
-    const url = productImageInput.value;
-    if (url) {
-      imagePreview.src = url;
-      imagePreview.style.display = "block";
-    } else {
-      imagePreview.style.display = "none";
-    }
-  });
-
-  document.getElementById("addProductForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const product = {
-      name: document.getElementById("productName").value,
-      description: document.getElementById("productDescription").value,
-      price: parseFloat(document.getElementById("productPrice").value),
-      image_url: document.getElementById("productImage").value
-    };
-
-    try {
-      const res = await fetch("https://lofinda-backend.onrender.com/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(product)
-      });
-      const data = await res.json();
-      if (data.id) {
-        document.getElementById("adminResponse").textContent = "✅ Product added!";
-        document.getElementById("addProductForm").reset();
-        imagePreview.style.display = "none";
-        if (typeof loadProducts === "function") loadProducts();
-      } else {
-        document.getElementById("adminResponse").textContent = "❌ Failed to add product.";
-      }
-    } catch (err) {
-      console.error("Error adding product:", err);
-      document.getElementById("adminResponse").textContent = "❌ Error saving product.";
-    }
-  });
-
-  // Utility functions
-  function showModal(id) {
-    document.getElementById(id).style.display = "block";
-  }
-  function closeModal(id) {
-    document.getElementById(id).style.display = "none";
-  }
-
-  async function handleAdminLogin(enteredPassword) {
-  const res = await fetch("https://lofinda-backend.onrender.com/api/admin-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password: enteredPassword })
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    localStorage.setItem("adminToken", data.token);
-    // show admin form
-  } else {
-    alert("Invalid password");
-  }
-}
-
-const token = localStorage.getItem("adminToken");
-
-async function addProduct(product, token) {
-  try {
-    const res = await fetch("https://lofinda-backend.onrender.com/api/products", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(product)
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      console.log("✅ Product added successfully:", data);
-      alert("Product added successfully!");
-      // You can also refresh product list here
-    } else {
-      console.error("❌ Failed to add product:", data);
-      alert("Failed to add product. Please try again.");
-    }
-  } catch (err) {
-    console.error("⚠️ Error adding product:", err);
-    alert("An error occurred. Please try again.");
-  }
-}
-</script>
-<!-- ================= SCRIPTS ================= -->
-  <script src="https://js.paystack.co/v1/inline.js"></script>
-  <script type="module" src="app.js"></script>
 <!-- Spinner Overlay -->
 <div id="spinner-overlay" style="
   position: fixed;
@@ -523,6 +240,9 @@ async function addProduct(product, token) {
     <span class="visually-hidden">Loading...</span>
   </div>
 </div>
-
+<!-- ================= SCRIPTS ================= -->
+ <script src="config.js"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

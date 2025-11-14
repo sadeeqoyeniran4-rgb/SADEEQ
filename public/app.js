@@ -474,6 +474,101 @@ searchBtn.addEventListener("click", () => {
   
 });
 
+// ================== SOCIAL PROOF DYNAMIC ==================
+const socialProofEl = document.getElementById("social-proof");
+const recentPurchaseEl = document.getElementById("recent-purchase");
+
+async function loadSocialProof() {
+  try {
+    // Fetch reviews
+    const reviewsRes = await fetch(`${window.API_BASE}/api/reviews`);
+    const reviews = await reviewsRes.json();
+
+    // Fetch trending products (could be top 3 by sales)
+    const productsRes = await fetch(`${window.API_BASE}/api/products`);
+    const products = await productsRes.json();
+    const trending = products.slice(0, 3); // top 3 for example
+
+    // Build testimonials HTML
+    let testimonialsHTML = '<div class="testimonials-carousel">';
+    reviews.forEach(r => {
+      testimonialsHTML += `
+        <div class="testimonial">
+          <p>“${r.message}”</p>
+          <span>– ${r.name}, ${r.location || ""}</span>
+          <div class="stars">${'⭐'.repeat(r.rating)}</div>
+        </div>
+      `;
+    });
+    testimonialsHTML += '</div>';
+
+    // Build trending products HTML
+    let trendingHTML = '<div class="trending-products">';
+    trending.forEach(p => {
+      trendingHTML += `<div class="product-badge">${p.name}</div>`;
+    });
+    trendingHTML += '</div>';
+
+    // Inject into social-proof section
+    socialProofEl.innerHTML = `
+      <h2>What Our Customers Are Saying 💖</h2>
+      ${testimonialsHTML}
+      <h3>🔥 Trending Perfumes</h3>
+      ${trendingHTML}
+    `;
+  } catch (err) {
+    console.error("❌ Error loading social proof:", err);
+    socialProofEl.innerHTML = "<p class='error-msg'>Unable to load reviews at the moment.</p>";
+  }
+}
+
+// ================== RECENT PURCHASE NOTIFICATIONS ==================
+const fakePurchases = [
+  { customer: "Chioma, Lagos", product: "Adekunle Gold" },
+  { customer: "Tunde, Abuja", product: "Arabian Nights" },
+  { customer: "Nkechi, Port Harcourt", product: "Signature Floral" },
+];
+
+function showRecentPurchase(customer, product) {
+  recentPurchaseEl.textContent = `${customer} just bought ${product}! 🎉`;
+  recentPurchaseEl.style.display = "block";
+  setTimeout(() => {
+    recentPurchaseEl.style.display = "none";
+  }, 5000);
+}
+
+// Randomly show notifications every 10–15 seconds
+setInterval(() => {
+  const p = fakePurchases[Math.floor(Math.random() * fakePurchases.length)];
+  showRecentPurchase(p.customer, p.product);
+}, 12000);
+
+// Load social proof after DOM is ready
+loadSocialProof();
+
+
+   const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
+
+hamburger.addEventListener('click', () => {
+  navLinks.classList.toggle('open');
+});
+
+
+    // Close menu when clicking a link
+    document.querySelectorAll("#nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+      });
+    });
+ 
+    function showModal(id) {
+    document.getElementById(id).style.display = "block";
+  }
+  function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+  }
+
 
   // ---------------- ABOUT MODAL ----------------
   const aboutModal = document.getElementById("about-modal"),
