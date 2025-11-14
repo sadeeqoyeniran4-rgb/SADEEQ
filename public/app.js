@@ -214,20 +214,53 @@ function renderPagination() {
   const paginationContainer = document.getElementById("pagination");
   if (!paginationContainer) return;
 
-  paginationContainer.innerHTML = "";
+  paginationContainer.innerHTML = `
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center mb-0"></ul>
+    </nav>
+  `;
 
+  const ul = paginationContainer.querySelector(".pagination");
+
+  // Previous button
+  const prevLi = document.createElement("li");
+  prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+  prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous">&laquo;</a>`;
+  prevLi.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      loadProducts(currentPage);
+    }
+  });
+  ul.appendChild(prevLi);
+
+  // Page numbers
   for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement("button");
-    btn.textContent = i;
-    btn.className = i === currentPage ? "active" : "";
-    btn.addEventListener("click", () => {
+    const li = document.createElement("li");
+    li.className = `page-item ${i === currentPage ? "active" : ""}`;
+    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+    li.addEventListener("click", (e) => {
+      e.preventDefault();
       currentPage = i;
       loadProducts(currentPage);
     });
-    paginationContainer.appendChild(btn);
+    ul.appendChild(li);
   }
-}
 
+  // Next button
+  const nextLi = document.createElement("li");
+  nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+  nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next">&raquo;</a>`;
+  nextLi.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      loadProducts(currentPage);
+    }
+  });
+  ul.appendChild(nextLi);
+}
 
   // ---------------- CATEGORY FILTER ----------------
   categoryButtons.forEach(btn => {
@@ -510,22 +543,35 @@ const API_BASE = window.API_BASE; // make sure this is set globally
 
 // Load reviews safely
 async function loadSocialProof() {
-  if (!socialProofEl) return; // Element may not exist
+  if (!socialProofEl) return;
+
   try {
     const res = await fetch(`${API_BASE}/api/reviews`);
     const reviews = await res.json();
-    socialProofEl.innerHTML = reviews.map(r => `
-      <div class="testimonial">
-        <p>“${r.message}”</p>
-        <span>– ${r.name}${r.location ? ", " + r.location : ""}</span>
-        <div class="stars">${'⭐'.repeat(r.rating)}</div>
-      </div>
-    `).join('');
+
+    socialProofEl.innerHTML = reviews.map(r => {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        stars += i <= r.rating
+          ? '<i class="bi bi-star-fill text-warning"></i>'
+          : '<i class="bi bi-star text-muted"></i>';
+      }
+
+      return `
+        <div class="card mb-3 p-3 shadow-sm">
+          <p class="mb-1">“${r.message}”</p>
+          <small class="text-muted">– ${r.name}${r.location ? ", " + r.location : ""}</small>
+          <div class="stars mt-2">${stars}</div>
+        </div>
+      `;
+    }).join('');
+
   } catch (err) {
     console.error("❌ Error loading social proof:", err);
-    socialProofEl.innerHTML = "<p class='error-msg'>Unable to load reviews.</p>";
+    socialProofEl.innerHTML = "<p class='text-danger'>Unable to load reviews.</p>";
   }
 }
+
 
 if (reviewForm) {
   reviewForm.addEventListener("submit", async (e) => {
