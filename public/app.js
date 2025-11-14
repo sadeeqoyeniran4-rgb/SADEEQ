@@ -142,7 +142,7 @@ function createProductCard(product) {
   }
 
   return `
-    <div class="col-6 col-sm-6 col-md-4 col-lg-3"> <!-- 2 per row on mobile, 3 on md, 4 on lg -->
+    <div class="col-6 col-md-6 mb-3"> <!-- 2 per row on mobile (col-6) -->
       <div class="card h-100 shadow-sm">
         <img src="${product.image_url}" class="card-img-top" alt="${product.name}" style="height:180px; object-fit:cover;">
         <div class="card-body p-2">
@@ -168,6 +168,7 @@ function createProductCard(product) {
     </div>
   `;
 }
+
 
 
 async function loadProducts(page = 1) {
