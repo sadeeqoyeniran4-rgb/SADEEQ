@@ -472,6 +472,43 @@ nav .logo {
     height: 130px;
   }
 }
+
+/* Ensure mobile 2 per row */
+@media (max-width: 480px) {
+  .product-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    padding: 0 5px;
+  }
+
+  .product-card {
+    padding: 0.5rem !important;
+  }
+
+  .product-card img {
+    height: 140px !important;
+  }
+
+  .product-card h3 {
+    font-size: 0.85rem !important;
+  }
+
+  .product-card p {
+    font-size: 0.75rem !important;
+  }
+
+  .product-card .price {
+    font-size: 0.8rem !important;
+  }
+
+  .product-card button {
+    font-size: 0.75rem !important;
+    padding: 5px !important;
+  }
+}
+
+
 /* ================= CONTACT ================= */
 .contact {
   padding: 2rem;
