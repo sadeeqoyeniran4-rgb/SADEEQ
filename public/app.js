@@ -1,4 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+ 
+ let currentPage = 1;
+const productsPerPage = 20; // change as needed
+let totalPages = 1;
+
   // ================= GLOBAL DISCOUNT CONFIG =================
 const DISCOUNT = {
   active: false,
@@ -127,72 +132,97 @@ if (closeCart)
   const productsContainer = document.getElementById("product-grid");
   const categoryButtons = document.querySelectorAll(".filter-btn");
 
-async function loadProducts() {
+async function loadProducts(page = 1) {
   if (!productsContainer) return;
-  try {
-    showSpinner(); // 👈 Show spinner before fetch starts
+  showSpinner();
 
+  try {
     const res = await fetch(`${window.API_BASE}/api/products`);
     const products = await res.json();
+
+    // Filter based on category/search if you want (optional)
+    let filtered = Array.from(products);
+
+    // Category filter
+    if (currentCategory && currentCategory !== "all") {
+      filtered = filtered.filter(p =>
+        (p.description || "uncategorized").toLowerCase().includes(currentCategory)
+      );
+    }
+
+    // Search filter
+    if (currentSearchQuery) {
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(currentSearchQuery)
+      );
+    }
+
+    // Pagination logic
+    totalPages = Math.ceil(filtered.length / productsPerPage);
+    const start = (page - 1) * productsPerPage;
+    const end = start + productsPerPage;
+    const pageProducts = filtered.slice(start, end);
+
     productsContainer.innerHTML = "";
 
-    products.forEach((p) => {
-  const category = (p.description || "uncategorized").toLowerCase().replace(/\s+|\/+/g, "-");
-  const card = document.createElement("div");
-  card.className = "product-card";
-  card.dataset.category = category;
+    pageProducts.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "product-card";
 
-  // ✅ Apply discount if active
-  let finalPrice = Number(p.price);
-  if (DISCOUNT.active) {
-    finalPrice = p.price - (p.price * DISCOUNT.percentage) / 100;
-  }
+      let finalPrice = Number(p.price);
+      if (DISCOUNT.active) finalPrice = p.price - (p.price * DISCOUNT.percentage) / 100;
 
-  card.innerHTML = `
-    <img src="${p.image_url || "default.jpg"}" alt="${p.name}" loading="lazy">
-    <h3>${p.name}</h3>
-    <p>${p.description || ""}</p>
-    ${
-      DISCOUNT.active
-        ? `
-          <p class="price">
-            <span class="old-price">₦${Number(p.price).toLocaleString()}</span>
-            <span class="new-price">₦${finalPrice.toLocaleString()}</span>
-          </p>
-          <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>
-          <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${finalPrice}">
-            Add to Cart
-          </button>
-        `
-        : `
-          <p class="price">₦${Number(p.price).toLocaleString()}</p>
-          <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
-            Add to Cart
-          </button>
-        `
-    }
-  `;
-  productsContainer.appendChild(card);
-});
+      card.innerHTML = `
+        <img src="${p.image_url || 'default.jpg'}" alt="${p.name}" loading="lazy">
+        <h3>${p.name}</h3>
+        <p>${p.description || ""}</p>
+        ${DISCOUNT.active
+          ? `<p class="price"><span class="old-price">₦${p.price.toLocaleString()}</span> <span class="new-price">₦${finalPrice.toLocaleString()}</span></p>
+             <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>`
+          : `<p class="price">₦${p.price.toLocaleString()}</p>`}
+        <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${finalPrice}">Add to Cart</button>
+      `;
+      productsContainer.appendChild(card);
+    });
 
-    document.querySelectorAll(".add-to-cart").forEach((btn) =>
-      btn.addEventListener("click", () => {
-        addToCart({
-          id: +btn.dataset.id,
-          name: btn.dataset.name,
-          price: +btn.dataset.price,
-        });
-      })
+    document.querySelectorAll(".add-to-cart").forEach(btn =>
+      btn.addEventListener("click", () => addToCart({
+        id: +btn.dataset.id,
+        name: btn.dataset.name,
+        price: +btn.dataset.price
+      }))
     );
+
+    renderPagination(); // render page buttons
+
   } catch (err) {
     console.error("❌ Error loading products:", err);
-    productsContainer.innerHTML = "<p class='error-msg'>Unable to load products at the moment.</p>";
+    productsContainer.innerHTML = "<p class='error-msg'>Unable to load products.</p>";
   } finally {
-    hideSpinner(); // 👈 Hide spinner no matter what
+    hideSpinner();
   }
 }
 
 loadProducts();
+
+function renderPagination() {
+  const paginationContainer = document.getElementById("pagination");
+  if (!paginationContainer) return;
+
+  paginationContainer.innerHTML = "";
+
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.className = i === currentPage ? "active" : "";
+    btn.addEventListener("click", () => {
+      currentPage = i;
+      loadProducts(currentPage);
+    });
+    paginationContainer.appendChild(btn);
+  }
+}
+
 
   // ---------------- CATEGORY FILTER ----------------
   categoryButtons.forEach((btn) =>
