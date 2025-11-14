@@ -131,28 +131,44 @@ if (closeCart)
   updateCartUI();
 
   // ---------------- PRODUCTS ----------------
-  const productsContainer = document.getElementById("product-grid");
+  const productsContainer = document.getElementById("product-list");
   const categoryButtons = document.querySelectorAll(".filter-btn");
 
 function createProductCard(product) {
+  let finalPrice = Number(product.price);
+
+  // Apply discount if active
+  if (DISCOUNT.active) {
+    finalPrice = product.price - (product.price * DISCOUNT.percentage) / 100;
+  }
+
   return `
     <div class="col-md-4 col-sm-6 mb-4">
       <div class="card h-100 shadow-sm">
         <img src="${product.image_url}" class="card-img-top" alt="${product.name}">
-        
+
         <div class="card-body">
           <h5 class="card-title">${product.name}</h5>
-          <p class="card-text text-muted">${product.description}</p>
+          <p class="card-text text-muted">${product.description || ""}</p>
 
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="fw-bold">₦${Number(product.price).toLocaleString()}</span>
-          </div>
+          ${
+            DISCOUNT.active
+              ? `
+                <p class="price">
+                  <span class="old-price">₦${product.price.toLocaleString()}</span>
+                  <span class="new-price">₦${finalPrice.toLocaleString()}</span>
+                </p>
+                <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>
+              `
+              : `
+                <p class="price">₦${product.price.toLocaleString()}</p>
+              `
+          }
 
-          <button class="btn btn-dark w-100 add-to-cart" 
-                  data-id="${product.id}" 
-                  data-name="${product.name}" 
-                  data-price="${product.price}" 
-                  data-image="${product.image_url}">
+          <button class="btn btn-dark w-100 add-to-cart"
+            data-id="${product.id}"
+            data-name="${product.name}"
+            data-price="${finalPrice}">
             <i class="bi bi-bag"></i> Add to Cart
           </button>
         </div>
@@ -174,13 +190,15 @@ async function loadProducts(page = 1) {
     let filtered = Array.from(products);
 
     // Category filter
-    if (currentCategory && currentCategory !== "all") {
+    // Category filter
+if (currentCategory && currentCategory !== "all") {
   filtered = filtered.filter(p =>
     (p.description || "")
       .toLowerCase()
-      .replace(/\s+/g, "-") === currentCategory.toLowerCase()
+      .includes(currentCategory.toLowerCase())
   );
 }
+
 
 
     // Search filter
@@ -199,24 +217,8 @@ async function loadProducts(page = 1) {
     productsContainer.innerHTML = "";
 
     pageProducts.forEach(p => {
-      const card = document.createElement("div");
-      card.className = "product-card";
-
-      let finalPrice = Number(p.price);
-      if (DISCOUNT.active) finalPrice = p.price - (p.price * DISCOUNT.percentage) / 100;
-
-      card.innerHTML = `
-        <img src="${p.image_url || 'default.jpg'}" alt="${p.name}" loading="lazy">
-        <h3>${p.name}</h3>
-        <p>${p.description || ""}</p>
-        ${DISCOUNT.active
-          ? `<p class="price"><span class="old-price">₦${p.price.toLocaleString()}</span> <span class="new-price">₦${finalPrice.toLocaleString()}</span></p>
-             <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>`
-          : `<p class="price">₦${p.price.toLocaleString()}</p>`}
-        <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${finalPrice}">Add to Cart</button>
-      `;
-      productsContainer.appendChild(card);
-    });
+  productsContainer.insertAdjacentHTML("beforeend", createProductCard(p));
+     });
 
     document.querySelectorAll(".add-to-cart").forEach(btn =>
       btn.addEventListener("click", () => addToCart({
