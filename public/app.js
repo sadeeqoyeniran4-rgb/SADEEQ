@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
  
  let currentPage = 1;
-const productsPerPage = 20; // change as needed
+const productsPerPage = 30; // change as needed
 let totalPages = 1;
 let currentCategory = "all";
 let currentSearchQuery = "";
@@ -476,13 +476,22 @@ searchInput.addEventListener("input", () => {
   currentPage = 1;
   loadProducts(currentPage);
 
-  if (searchInput.value.trim()) {
-    searchBtn.classList.add("clear");
-    searchIconInner.className = "bi bi-x";
-  } else {
+  searchBtn.addEventListener("click", () => {
+  if (searchBtn.classList.contains("clear")) {
+    searchInput.value = "";
+    currentSearchQuery = "";
+    currentPage = 1;
+    loadProducts(currentPage);
+
     searchBtn.classList.remove("clear");
     searchIconInner.className = "bi bi-search";
+    searchInput.focus();
+  } else {
+    // Optional: toggle search bar if you want
+    searchBar.classList.toggle("show");
+    if (searchBar.classList.contains("show")) searchInput.focus();
   }
+});
 });
 
   
