@@ -137,38 +137,30 @@ if (closeCart)
 function createProductCard(product) {
   let finalPrice = Number(product.price);
 
-  // Apply discount if active
   if (DISCOUNT.active) {
     finalPrice = product.price - (product.price * DISCOUNT.percentage) / 100;
   }
 
   return `
-    <div class="col-md-4 col-sm-6 mb-4">
+    <div class="col-6 col-sm-6 col-md-4 col-lg-3"> <!-- 2 per row on mobile, 3 on md, 4 on lg -->
       <div class="card h-100 shadow-sm">
-        <img src="${product.image_url}" class="card-img-top" alt="${product.name}">
-
-        <div class="card-body">
-          <h5 class="card-title">${product.name}</h5>
-          <p class="card-text text-muted">${product.description || ""}</p>
-
+        <img src="${product.image_url}" class="card-img-top" alt="${product.name}" style="height:180px; object-fit:cover;">
+        <div class="card-body p-2">
+          <h6 class="card-title mb-1">${product.name}</h6>
+          <p class="card-text text-muted mb-2" style="font-size:.85rem;">${product.description || ""}</p>
           ${
             DISCOUNT.active
-              ? `
-                <p class="price">
+              ? `<p class="price mb-2">
                   <span class="old-price">₦${product.price.toLocaleString()}</span>
                   <span class="new-price">₦${finalPrice.toLocaleString()}</span>
-                </p>
-                <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>
-              `
-              : `
-                <p class="price">₦${product.price.toLocaleString()}</p>
-              `
+                 </p>
+                 <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>`
+              : `<p class="price mb-2">₦${product.price.toLocaleString()}</p>`
           }
-
           <button class="btn btn-dark w-100 add-to-cart"
-            data-id="${product.id}"
-            data-name="${product.name}"
-            data-price="${finalPrice}">
+                  data-id="${product.id}"
+                  data-name="${product.name}"
+                  data-price="${finalPrice}">
             <i class="bi bi-bag"></i> Add to Cart
           </button>
         </div>
