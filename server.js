@@ -329,6 +329,40 @@ app.put("/api/orders/:id/status", async (req, res) => {
   }
 });
 
+// ================== REVIEWS ==================
+
+// Get all reviews
+app.get("/api/reviews", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM reviews ORDER BY created_at DESC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("❌ Error fetching reviews:", err);
+    res.status(500).json({ success: false, message: "Error fetching reviews" });
+  }
+});
+
+// Submit a review
+app.post("/api/reviews", async (req, res) => {
+  const { name, message, rating, location } = req.body;
+
+  if (!name || !message || !rating) {
+    return res.status(400).json({ success: false, message: "Please fill in all required fields." });
+  }
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO reviews (name, message, rating, location) VALUES ($1, $2, $3, $4) RETURNING *",
+      [name, message, rating, location || ""]
+    );
+    res.json({ success: true, message: "Thank you for your review!", review: result.rows[0] });
+  } catch (err) {
+    console.error("❌ Error saving review:", err);
+    res.status(500).json({ success: false, message: "Error saving review." });
+  }
+});
+
+
 // ================== START SERVER ==================
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);

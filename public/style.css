@@ -1637,3 +1637,54 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 6px;
   }
+  #review-form-section {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #fdfdfd;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+#reviewForm input,
+#reviewForm textarea,
+#reviewForm select {
+  width: 100%;
+  padding: 10px;
+  margin: 0.5rem 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+#reviewForm button {
+  padding: 10px 20px;
+  background: #6a0dad;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+#reviewForm button:hover {
+  background: #520a9e;
+}
+
+#reviewResponse {
+  margin-top: 0.5rem;
+  font-weight: bold;
+}
+
+.testimonial {
+  background: #f5f5f5;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border-radius: 8px;
+}
+
+.stars {
+  color: gold;
+  margin-top: 0.3rem;
+  font-size: 1.1rem;
+}

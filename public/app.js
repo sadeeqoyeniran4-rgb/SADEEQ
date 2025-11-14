@@ -474,53 +474,64 @@ searchBtn.addEventListener("click", () => {
   
 });
 
-// ================== SOCIAL PROOF DYNAMIC ==================
+const reviewForm = document.getElementById("reviewForm");
+const reviewResponse = document.getElementById("reviewResponse");
 const socialProofEl = document.getElementById("social-proof");
-const recentPurchaseEl = document.getElementById("recent-purchase");
 
-async function loadSocialProof() {
+const API_BASE = "http://localhost:3000"; // your backend
+
+// Load reviews
+async function loadReviews() {
   try {
-    // Fetch reviews
-    const reviewsRes = await fetch(`${window.API_BASE}/api/reviews`);
-    const reviews = await reviewsRes.json();
-
-    // Fetch trending products (could be top 3 by sales)
-    const productsRes = await fetch(`${window.API_BASE}/api/products`);
-    const products = await productsRes.json();
-    const trending = products.slice(0, 3); // top 3 for example
-
-    // Build testimonials HTML
-    let testimonialsHTML = '<div class="testimonials-carousel">';
-    reviews.forEach(r => {
-      testimonialsHTML += `
-        <div class="testimonial">
-          <p>“${r.message}”</p>
-          <span>– ${r.name}, ${r.location || ""}</span>
-          <div class="stars">${'⭐'.repeat(r.rating)}</div>
-        </div>
-      `;
-    });
-    testimonialsHTML += '</div>';
-
-    // Build trending products HTML
-    let trendingHTML = '<div class="trending-products">';
-    trending.forEach(p => {
-      trendingHTML += `<div class="product-badge">${p.name}</div>`;
-    });
-    trendingHTML += '</div>';
-
-    // Inject into social-proof section
-    socialProofEl.innerHTML = `
-      <h2>What Our Customers Are Saying 💖</h2>
-      ${testimonialsHTML}
-      <h3>🔥 Trending Perfumes</h3>
-      ${trendingHTML}
-    `;
+    const res = await fetch(`${API_BASE}/api/reviews`);
+    const reviews = await res.json();
+    socialProofEl.innerHTML = reviews.map(r => `
+      <div class="testimonial">
+        <p>“${r.message}”</p>
+        <span>– ${r.name}${r.location ? ", " + r.location : ""}</span>
+        <div class="stars">${'⭐'.repeat(r.rating)}</div>
+      </div>
+    `).join('');
   } catch (err) {
-    console.error("❌ Error loading social proof:", err);
-    socialProofEl.innerHTML = "<p class='error-msg'>Unable to load reviews at the moment.</p>";
+    socialProofEl.innerHTML = "<p class='error-msg'>Unable to load reviews.</p>";
   }
 }
+
+// Submit review
+if (reviewForm) {
+  reviewForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = {
+      name: document.getElementById("review-name").value,
+      location: document.getElementById("review-location").value,
+      message: document.getElementById("review-message").value,
+      rating: +document.getElementById("review-rating").value
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      reviewResponse.textContent = data.message;
+      reviewResponse.style.color = data.success ? "green" : "red";
+      if (data.success) {
+        reviewForm.reset();
+        loadReviews(); // reload reviews dynamically
+      }
+    } catch {
+      reviewResponse.textContent = "Something went wrong. Try again.";
+      reviewResponse.style.color = "red";
+    }
+  });
+}
+
+// Load reviews on page load
+loadReviews();
+
+
 
 // ================== RECENT PURCHASE NOTIFICATIONS ==================
 const fakePurchases = [
