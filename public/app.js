@@ -474,89 +474,79 @@ searchBtn.addEventListener("click", () => {
   
 });
 
-const reviewForm = document.getElementById("reviewForm");
-const reviewResponse = document.getElementById("reviewResponse");
-const socialProofEl = document.getElementById("social-proof");
+// ---------------- REVIEWS / SOCIAL PROOF ----------------
+  const reviewForm = document.getElementById("reviewForm");
+  const reviewResponse = document.getElementById("reviewResponse");
+  const socialProofEl = document.getElementById("social-proof");
+  const API_BASE = window.API_BASE; // make sure this is set globally
 
-const API_BASE = "http://localhost:3000"; // your backend
-
-// Load reviews
-async function loadReviews() {
-  try {
-    const res = await fetch(`${API_BASE}/api/reviews`);
-    const reviews = await res.json();
-    socialProofEl.innerHTML = reviews.map(r => `
-      <div class="testimonial">
-        <p>“${r.message}”</p>
-        <span>– ${r.name}${r.location ? ", " + r.location : ""}</span>
-        <div class="stars">${'⭐'.repeat(r.rating)}</div>
-      </div>
-    `).join('');
-  } catch (err) {
-    socialProofEl.innerHTML = "<p class='error-msg'>Unable to load reviews.</p>";
-  }
-}
-
-// Submit review
-if (reviewForm) {
-  reviewForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = {
-      name: document.getElementById("review-name").value,
-      location: document.getElementById("review-location").value,
-      message: document.getElementById("review-message").value,
-      rating: +document.getElementById("review-rating").value
-    };
-
+  async function loadReviews() {
+    if (!socialProofEl) return;
     try {
-      const res = await fetch(`${API_BASE}/api/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
-      reviewResponse.textContent = data.message;
-      reviewResponse.style.color = data.success ? "green" : "red";
-      if (data.success) {
-        reviewForm.reset();
-        loadReviews(); // reload reviews dynamically
-      }
-    } catch {
-      reviewResponse.textContent = "Something went wrong. Try again.";
-      reviewResponse.style.color = "red";
+      const res = await fetch(`${API_BASE}/api/reviews`);
+      const reviews = await res.json();
+      socialProofEl.innerHTML = reviews.map(r => `
+        <div class="testimonial">
+          <p>“${r.message}”</p>
+          <span>– ${r.name}${r.location ? ", " + r.location : ""}</span>
+          <div class="stars">${'⭐'.repeat(r.rating)}</div>
+        </div>
+      `).join('');
+    } catch (err) {
+      socialProofEl.innerHTML = "<p class='error-msg'>Unable to load reviews.</p>";
     }
-  });
-}
+  }
 
-// Load reviews on page load
-loadReviews();
+  if (reviewForm) {
+    reviewForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = {
+        name: document.getElementById("review-name").value,
+        location: document.getElementById("review-location").value,
+        message: document.getElementById("review-message").value,
+        rating: +document.getElementById("review-rating").value
+      };
+      try {
+        const res = await fetch(`${API_BASE}/api/reviews`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData)
+        });
+        const data = await res.json();
+        reviewResponse.textContent = data.message;
+        reviewResponse.style.color = data.success ? "green" : "red";
+        if (data.success) {
+          reviewForm.reset();
+          loadReviews();
+        }
+      } catch {
+        reviewResponse.textContent = "Something went wrong. Try again.";
+        reviewResponse.style.color = "red";
+      }
+    });
+  }
 
+  loadReviews(); // ✅ load reviews on page load
 
+  // ---------------- RECENT PURCHASE ----------------
+  const recentPurchaseEl = document.getElementById("recent-purchase");
+  const fakePurchases = [
+    { customer: "Chioma, Lagos", product: "Adekunle Gold" },
+    { customer: "Tunde, Abuja", product: "Arabian Nights" },
+    { customer: "Nkechi, Port Harcourt", product: "Signature Floral" },
+  ];
 
-// ================== RECENT PURCHASE NOTIFICATIONS ==================
-const fakePurchases = [
-  { customer: "Chioma, Lagos", product: "Adekunle Gold" },
-  { customer: "Tunde, Abuja", product: "Arabian Nights" },
-  { customer: "Nkechi, Port Harcourt", product: "Signature Floral" },
-];
+  function showRecentPurchase(customer, product) {
+    if (!recentPurchaseEl) return;
+    recentPurchaseEl.textContent = `${customer} just bought ${product}! 🎉`;
+    recentPurchaseEl.style.display = "block";
+    setTimeout(() => (recentPurchaseEl.style.display = "none"), 5000);
+  }
 
-function showRecentPurchase(customer, product) {
-  recentPurchaseEl.textContent = `${customer} just bought ${product}! 🎉`;
-  recentPurchaseEl.style.display = "block";
-  setTimeout(() => {
-    recentPurchaseEl.style.display = "none";
-  }, 5000);
-}
-
-// Randomly show notifications every 10–15 seconds
-setInterval(() => {
-  const p = fakePurchases[Math.floor(Math.random() * fakePurchases.length)];
-  showRecentPurchase(p.customer, p.product);
-}, 12000);
-
-// Load social proof after DOM is ready
-loadSocialProof();
-
+  setInterval(() => {
+    const p = fakePurchases[Math.floor(Math.random() * fakePurchases.length)];
+    showRecentPurchase(p.customer, p.product);
+  }, 12000);
 
    const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
