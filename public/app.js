@@ -134,6 +134,34 @@ if (closeCart)
   const productsContainer = document.getElementById("product-grid");
   const categoryButtons = document.querySelectorAll(".filter-btn");
 
+function createProductCard(product) {
+  return `
+    <div class="col-md-4 col-sm-6 mb-4">
+      <div class="card h-100 shadow-sm">
+        <img src="${product.image_url}" class="card-img-top" alt="${product.name}">
+        
+        <div class="card-body">
+          <h5 class="card-title">${product.name}</h5>
+          <p class="card-text text-muted">${product.description}</p>
+
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="fw-bold">₦${Number(product.price).toLocaleString()}</span>
+          </div>
+
+          <button class="btn btn-dark w-100 add-to-cart" 
+                  data-id="${product.id}" 
+                  data-name="${product.name}" 
+                  data-price="${product.price}" 
+                  data-image="${product.image_url}">
+            <i class="bi bi-bag"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+
 async function loadProducts(page = 1) {
   if (!productsContainer) return;
   showSpinner();
@@ -212,54 +240,57 @@ loadProducts();
 
 function renderPagination() {
   const paginationContainer = document.getElementById("pagination");
-  if (!paginationContainer) return;
+  if (!paginationContainer || totalPages <= 1) {
+    paginationContainer.innerHTML = "";
+    return;
+  }
 
   paginationContainer.innerHTML = `
-    <nav aria-label="Page navigation">
-      <ul class="pagination justify-content-center mb-0"></ul>
+    <nav aria-label="Product pages">
+      <ul class="pagination justify-content-center"></ul>
     </nav>
   `;
 
   const ul = paginationContainer.querySelector(".pagination");
 
-  // Previous button
-  const prevLi = document.createElement("li");
-  prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
-  prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous">&laquo;</a>`;
-  prevLi.addEventListener("click", (e) => {
+  // Previous
+  const prev = document.createElement("li");
+  prev.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+  prev.innerHTML = `<a class="page-link" href="#">&laquo;</a>`;
+  prev.onclick = e => {
     e.preventDefault();
     if (currentPage > 1) {
       currentPage--;
       loadProducts(currentPage);
     }
-  });
-  ul.appendChild(prevLi);
+  };
+  ul.appendChild(prev);
 
   // Page numbers
   for (let i = 1; i <= totalPages; i++) {
     const li = document.createElement("li");
     li.className = `page-item ${i === currentPage ? "active" : ""}`;
     li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-    li.addEventListener("click", (e) => {
+    li.onclick = e => {
       e.preventDefault();
       currentPage = i;
       loadProducts(currentPage);
-    });
+    };
     ul.appendChild(li);
   }
 
-  // Next button
-  const nextLi = document.createElement("li");
-  nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
-  nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next">&raquo;</a>`;
-  nextLi.addEventListener("click", (e) => {
+  // Next
+  const next = document.createElement("li");
+  next.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+  next.innerHTML = `<a class="page-link" href="#">&raquo;</a>`;
+  next.onclick = e => {
     e.preventDefault();
     if (currentPage < totalPages) {
       currentPage++;
       loadProducts(currentPage);
     }
-  });
-  ul.appendChild(nextLi);
+  };
+  ul.appendChild(next);
 }
 
   // ---------------- CATEGORY FILTER ----------------
@@ -550,27 +581,27 @@ async function loadSocialProof() {
     const reviews = await res.json();
 
     socialProofEl.innerHTML = reviews.map(r => {
-      let stars = '';
+      let stars = "";
       for (let i = 1; i <= 5; i++) {
         stars += i <= r.rating
-          ? '<i class="bi bi-star-fill text-warning"></i>'
-          : '<i class="bi bi-star text-muted"></i>';
+          ? `<i class="bi bi-star-fill text-warning"></i>`
+          : `<i class="bi bi-star text-muted"></i>`;
       }
 
       return `
-        <div class="card mb-3 p-3 shadow-sm">
+        <div class="card p-3 mb-3 shadow-sm">
           <p class="mb-1">“${r.message}”</p>
           <small class="text-muted">– ${r.name}${r.location ? ", " + r.location : ""}</small>
-          <div class="stars mt-2">${stars}</div>
+          <div class="mt-2">${stars}</div>
         </div>
       `;
-    }).join('');
+    }).join("");
 
   } catch (err) {
-    console.error("❌ Error loading social proof:", err);
-    socialProofEl.innerHTML = "<p class='text-danger'>Unable to load reviews.</p>";
+    socialProofEl.innerHTML = `<p class="text-danger">Unable to load reviews.</p>`;
   }
 }
+
 
 
 if (reviewForm) {
