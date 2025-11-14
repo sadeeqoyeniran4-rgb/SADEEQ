@@ -136,13 +136,12 @@ if (closeCart)
 
 function createProductCard(product) {
   let finalPrice = Number(product.price);
-
   if (DISCOUNT.active) {
     finalPrice = product.price - (product.price * DISCOUNT.percentage) / 100;
   }
 
   return `
-    <div class="col-6 col-md-6 mb-3"> <!-- 2 per row on mobile (col-6) -->
+    <div class="col-6 mb-3"> <!-- col-6 = two columns per row -->
       <div class="card h-100 shadow-sm">
         <img src="${product.image_url}" class="card-img-top" alt="${product.name}" style="height:180px; object-fit:cover;">
         <div class="card-body p-2">
