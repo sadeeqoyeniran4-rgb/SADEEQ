@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
  let currentPage = 1;
 const productsPerPage = 20; // change as needed
 let totalPages = 1;
+let currentCategory = "all";
+let currentSearchQuery = "";
 
   // ================= GLOBAL DISCOUNT CONFIG =================
 const DISCOUNT = {
@@ -225,19 +227,15 @@ function renderPagination() {
 
 
   // ---------------- CATEGORY FILTER ----------------
-  categoryButtons.forEach((btn) =>
-    btn.addEventListener("click", () => {
-      const selected = btn.dataset.category;
-      categoryButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      document.querySelectorAll(".product-card").forEach((card) => {
-        card.style.display =
-          selected === "all" || card.dataset.category.includes(selected)
-            ? "block"
-            : "none";
-      });
-    })
-  );
+  categoryButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentCategory = btn.dataset.category; // Set selected category
+    currentPage = 1;                        // Reset page
+    categoryButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    loadProducts(currentPage);              // Reload products
+  });
+});
 
  // ---------------- CHECKOUT MODAL ----------------
 const checkoutBtn = document.getElementById("checkout-btn");
@@ -464,17 +462,17 @@ searchIcon.addEventListener("click", () => {
 });
 // Live search as user types
 searchInput.addEventListener("input", () => {
-  const query = searchInput.value.toLowerCase().trim();
-
-   // Live filter products
-  document.querySelectorAll(".product-card").forEach(card => {
-    const name = card.querySelector("h3").textContent.toLowerCase();
-    card.style.display = name.includes(query) ? "block" : "none";
-  });
+  currentSearchQuery = searchInput.value.toLowerCase().trim();
+  currentPage = 1;
+  loadProducts(currentPage);
 });
 
 // Change button between 🔍 and ❌ depending on input
 searchInput.addEventListener("input", () => {
+  currentSearchQuery = searchInput.value.toLowerCase().trim();
+  currentPage = 1;
+  loadProducts(currentPage);
+
   if (searchInput.value.trim()) {
     searchBtn.classList.add("clear");
     searchIconInner.className = "bi bi-x";
@@ -484,26 +482,7 @@ searchInput.addEventListener("input", () => {
   }
 });
 
-// Handle button click
-searchBtn.addEventListener("click", () => {
-  if (searchBtn.classList.contains("clear")) {
-    // Clear mode
-    searchInput.value = "";
-    searchBtn.classList.remove("clear");
-    searchIconInner.className = "bi bi-search";
-    document.querySelectorAll(".product-card").forEach(c => (c.style.display = "block"));
-  } else {
-    // Search mode
-    let q = searchInput.value.toLowerCase();
-    document.querySelectorAll(".product-card").forEach(c => {
-      c.style.display = c.querySelector("h3").textContent.toLowerCase().includes(q)
-        ? "block"
-        : "none";
-    });
-  }
   
-});
-
 // ---------------- REVIEWS / SOCIAL PROOF ----------------
 const reviewForm = document.getElementById("reviewForm");
 const reviewResponse = document.getElementById("reviewResponse");
