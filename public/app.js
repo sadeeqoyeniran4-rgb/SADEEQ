@@ -147,10 +147,13 @@ async function loadProducts(page = 1) {
 
     // Category filter
     if (currentCategory && currentCategory !== "all") {
-      filtered = filtered.filter(p =>
-        (p.description || "uncategorized").toLowerCase().includes(currentCategory)
-      );
-    }
+  filtered = filtered.filter(p =>
+    (p.description || "")
+      .toLowerCase()
+      .replace(/\s+/g, "-") === currentCategory.toLowerCase()
+  );
+}
+
 
     // Search filter
     if (currentSearchQuery) {
