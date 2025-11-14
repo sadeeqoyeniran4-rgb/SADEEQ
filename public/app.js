@@ -535,26 +535,50 @@ if (reviewForm) {
 // Load reviews on page load
 loadSocialProof();
 
-// ---------------- RECENT PURCHASE ----------------
+// ---------------- RECENT PURCHASE (REAL ORDERS) ----------------
 const recentPurchaseEl = document.getElementById("recent-purchase");
-const fakePurchases = [
-  { customer: "Chioma, Lagos", product: "Adekunle Gold" },
-  { customer: "Tunde, Abuja", product: "Arabian Nights" },
-  { customer: "Nkechi, Port Harcourt", product: "Signature Floral" },
-];
+let recentOrders = [];
 
-function showRecentPurchase(customer, product) {
-  if (!recentPurchaseEl) return; // Element may not exist
-  recentPurchaseEl.textContent = `${customer} just bought ${product}! 🎉`;
+// Fetch recent orders from backend
+async function loadRecentOrders() {
+  try {
+    const res = await fetch(`${window.API_BASE}/api/orders`);
+    const data = await res.json();
+
+    if (data.success && data.orders.length > 0) {
+      recentOrders = data.orders;
+    }
+  } catch (err) {
+    console.error("❌ Error fetching recent orders:", err);
+  }
+}
+
+// Show a random recent purchase
+function showRecentPurchaseFromOrders() {
+  if (!recentPurchaseEl || recentOrders.length === 0) return;
+
+  // Pick a random order
+  const order = recentOrders[Math.floor(Math.random() * recentOrders.length)];
+
+  // Pick a random item from that order
+  if (!order.items || order.items.length === 0) return;
+  const item = order.items[Math.floor(Math.random() * order.items.length)];
+
+  // Display notification
+  recentPurchaseEl.textContent = `${order.customer_name} just bought ${item.product_name}! 🎉`;
   recentPurchaseEl.style.display = "block";
+
   setTimeout(() => (recentPurchaseEl.style.display = "none"), 5000);
 }
 
-// Show a random recent purchase every 12 seconds
-setInterval(() => {
-  const p = fakePurchases[Math.floor(Math.random() * fakePurchases.length)];
-  showRecentPurchase(p.customer, p.product);
-}, 12000);
+// Initial fetch
+loadRecentOrders();
+
+// Randomize notification every 12 seconds
+setInterval(showRecentPurchaseFromOrders, 12000);
+
+// Optional: refresh recent orders every 60 seconds to catch new orders
+setInterval(loadRecentOrders, 60000);
 
 const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
