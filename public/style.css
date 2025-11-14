@@ -395,7 +395,7 @@ nav .logo {
   padding: 2rem;
   text-align: center;
 }
-.product-grid {
+.product-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
@@ -893,7 +893,7 @@ footer {
   to { transform: scale(1); opacity: 1; }
 }
 /* Product Grid */
-.product-grid {
+.product-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.2rem;
@@ -985,7 +985,7 @@ footer {
 
 /* 🟣 Mobile: 2 per row */
 @media (max-width: 480px) {
-  .product-grid {
+  .product-list {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
