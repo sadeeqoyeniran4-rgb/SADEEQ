@@ -1659,7 +1659,7 @@ h1 {
 
 #reviewForm button {
   padding: 10px 20px;
-  background: #6a0dad;
+  background: #503f46;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -1668,7 +1668,7 @@ h1 {
 }
 
 #reviewForm button:hover {
-  background: #520a9e;
+  background: #503f46;
 }
 
 #reviewResponse {
