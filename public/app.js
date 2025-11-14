@@ -463,20 +463,27 @@ searchIcon.addEventListener("click", () => {
   searchBar.classList.toggle("show");
   if (searchBar.classList.contains("show")) searchInput.focus();
 });
+
 // Live search as user types
 searchInput.addEventListener("input", () => {
   currentSearchQuery = searchInput.value.toLowerCase().trim();
   currentPage = 1;
   loadProducts(currentPage);
+
+  // Toggle search/clear button
+  if (currentSearchQuery) {
+    searchBtn.classList.add("clear");
+    searchIconInner.className = "bi bi-x"; // ❌
+    searchBtn.style.display = "inline-flex";
+  } else {
+    searchBtn.classList.remove("clear");
+    searchIconInner.className = "bi bi-search"; // 🔍
+    searchBtn.style.display = "none";
+  }
 });
 
-// Change button between 🔍 and ❌ depending on input
-searchInput.addEventListener("input", () => {
-  currentSearchQuery = searchInput.value.toLowerCase().trim();
-  currentPage = 1;
-  loadProducts(currentPage);
-
-  searchBtn.addEventListener("click", () => {
+// Clear input when button is clicked
+searchBtn.addEventListener("click", () => {
   if (searchBtn.classList.contains("clear")) {
     searchInput.value = "";
     currentSearchQuery = "";
@@ -485,13 +492,13 @@ searchInput.addEventListener("input", () => {
 
     searchBtn.classList.remove("clear");
     searchIconInner.className = "bi bi-search";
+    searchBtn.style.display = "none";
     searchInput.focus();
   } else {
-    // Optional: toggle search bar if you want
+    // Optional: toggle search bar
     searchBar.classList.toggle("show");
     if (searchBar.classList.contains("show")) searchInput.focus();
   }
-});
 });
 
   
