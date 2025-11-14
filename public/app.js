@@ -136,31 +136,38 @@ if (closeCart)
 
 function createProductCard(product) {
   let finalPrice = Number(product.price);
+
   if (DISCOUNT.active) {
     finalPrice = product.price - (product.price * DISCOUNT.percentage) / 100;
   }
 
   return `
-    <div class="col-6 mb-3"> <!-- col-6 = two columns per row -->
+    <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-2"> <!-- compact responsive columns -->
       <div class="card h-100 shadow-sm">
-        <img src="${product.image_url}" class="card-img-top" alt="${product.name}" style="height:180px; object-fit:cover;">
-        <div class="card-body p-2">
-          <h6 class="card-title mb-1">${product.name}</h6>
-          <p class="card-text text-muted mb-2" style="font-size:.85rem;">${product.description || ""}</p>
+        <img src="${product.image_url}" 
+             class="card-img-top" 
+             alt="${product.name}" 
+             style="height:140px; object-fit:cover;"> <!-- smaller image -->
+
+        <div class="card-body p-2 d-flex flex-column">
+          <h6 class="card-title mb-1" style="font-size:.9rem;">${product.name}</h6>
+          <p class="card-text text-muted mb-1" style="font-size:.75rem;">${product.description || ""}</p>
+
           ${
             DISCOUNT.active
-              ? `<p class="price mb-2">
+              ? `<p class="price mb-1" style="font-size:.8rem;">
                   <span class="old-price">₦${product.price.toLocaleString()}</span>
                   <span class="new-price">₦${finalPrice.toLocaleString()}</span>
                  </p>
-                 <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>`
-              : `<p class="price mb-2">₦${product.price.toLocaleString()}</p>`
+                 <span class="discount-badge mb-1" style="font-size:.7rem;">-${DISCOUNT.percentage}% OFF</span>`
+              : `<p class="price mb-1" style="font-size:.8rem;">₦${product.price.toLocaleString()}</p>`
           }
-          <button class="btn btn-dark w-100 add-to-cart"
+
+          <button class="btn btn-dark btn-sm w-100 mt-auto add-to-cart" style="font-size:.75rem;"
                   data-id="${product.id}"
                   data-name="${product.name}"
                   data-price="${finalPrice}">
-            <i class="bi bi-bag"></i> Add to Cart
+            <i class="bi bi-bag"></i> Add
           </button>
         </div>
       </div>
@@ -178,20 +185,13 @@ async function loadProducts(page = 1) {
     const res = await fetch(`${window.API_BASE}/api/products`);
     const products = await res.json();
 
-    // Filter based on category/search if you want (optional)
-    let filtered = Array.from(products);
-
     // Category filter
-    // Category filter
-if (currentCategory && currentCategory !== "all") {
-  filtered = filtered.filter(p =>
-    (p.description || "")
-      .toLowerCase()
-      .includes(currentCategory.toLowerCase())
-  );
-}
-
-
+    let filtered = products.filter(p => {
+      if (currentCategory && currentCategory !== "all") {
+        return (p.description || "").toLowerCase().replace(/\s+/g, "-") === currentCategory.toLowerCase();
+      }
+      return true;
+    });
 
     // Search filter
     if (currentSearchQuery) {
@@ -200,7 +200,7 @@ if (currentCategory && currentCategory !== "all") {
       );
     }
 
-    // Pagination logic
+    // Pagination
     totalPages = Math.ceil(filtered.length / productsPerPage);
     const start = (page - 1) * productsPerPage;
     const end = start + productsPerPage;
@@ -209,9 +209,10 @@ if (currentCategory && currentCategory !== "all") {
     productsContainer.innerHTML = "";
 
     pageProducts.forEach(p => {
-  productsContainer.insertAdjacentHTML("beforeend", createProductCard(p));
-     });
+      productsContainer.insertAdjacentHTML("beforeend", createProductCard(p));
+    });
 
+    // Add to cart event
     document.querySelectorAll(".add-to-cart").forEach(btn =>
       btn.addEventListener("click", () => addToCart({
         id: +btn.dataset.id,
@@ -220,7 +221,7 @@ if (currentCategory && currentCategory !== "all") {
       }))
     );
 
-    renderPagination(); // render page buttons
+    renderPagination();
 
   } catch (err) {
     console.error("❌ Error loading products:", err);
