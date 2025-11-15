@@ -746,7 +746,7 @@ hamburger.addEventListener('click', () => {
 
   // ---------------- ABOUT MODAL ----------------
   const aboutModal = document.getElementById("about-modal"),
-    openAbout = document.getElementById("aboutBtn"),
+    openAbout = document.getElementById("aboutBtnSidebar"),
     closeAbout = document.getElementById("close-about");
 
   if (openAbout) {
@@ -765,7 +765,7 @@ hamburger.addEventListener('click', () => {
 
   // ---------------- CONTACT MODAL ----------------
   const contactModal = document.getElementById("contact-modal"),
-    openContact = document.getElementById("contactBtn"),
+    openContact = document.getElementById("contactBtnSidebar"),
     closeContact = document.getElementById("close-contact");
 
   if (openContact) {
