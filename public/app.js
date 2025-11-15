@@ -48,6 +48,31 @@ function hideSpinner() {
 window.showSpinner = showSpinner;
 window.hideSpinner = hideSpinner;
 
+const menuToggle = document.getElementById("menu-toggle");
+const sidebar = document.getElementById("sidebar");
+
+// Toggle sidebar
+menuToggle.addEventListener("click", () => {
+  sidebar.classList.toggle("active");
+});
+
+// Close sidebar when clicking outside
+document.addEventListener("click", (e) => {
+  if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+    sidebar.classList.remove("active");
+  }
+});
+
+// Open modals
+document.getElementById("aboutBtnSidebar").addEventListener("click", () => {
+  document.getElementById("about-modal").style.display = "block";
+  sidebar.classList.remove("active");
+});
+
+document.getElementById("contactBtnSidebar").addEventListener("click", () => {
+  document.getElementById("contact-modal").style.display = "block";
+  sidebar.classList.remove("active");
+});
 
 
   // ---------------- CONTACT FORM ----------------
