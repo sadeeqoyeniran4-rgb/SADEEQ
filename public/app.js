@@ -72,8 +72,8 @@ if (DISCOUNT.active && banner) {
   const cartModal = document.getElementById("cart-modal");
   const closeCart = document.getElementById("close-cart");
   const checkoutTotalEl = document.getElementById("checkout-total");
-  const cartToastEl = document.getElementById("cartToast");
-
+  const toastEl = document.getElementById("cartToast");
+const cartToast = toastEl ? new bootstrap.Toast(toastEl) : null;
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
 
   function updateCartUI() {
@@ -98,17 +98,35 @@ if (DISCOUNT.active && banner) {
     saveCart();
   }
 
-  function addToCart(product) {
-  const found = cart.find(i => i.id === product.id);
-  found ? found.qty++ : cart.push({ ...product, qty: 1 });
+  
+// Function to show toast
+function showToast(productName) {
+  if (!cartToast || !toastEl) return;
 
+  // Update message
+  toastEl.querySelector(".toast-body").textContent = `${productName} added to cart! 🎉`;
+
+  // Update timestamp
+  toastEl.querySelector(".toast-header small").textContent = "Just now";
+
+  // Show toast
+  cartToast.show();
+}
+
+// Add to Cart function
+function addToCart(product) {
+  const found = cart.find(i => i.id === product.id);
+  if (found) {
+    found.qty++;
+  } else {
+    cart.push({ ...product, qty: 1 });
+  }
+
+  // Update cart UI
   updateCartUI();
 
-  if (cartToast) {
-    cartToastEl.querySelector(".toast-body").textContent =
-      `${product.name} added to cart 🎉`;
-    cartToast.show();
-  }
+  // Show toast notification
+  showToast(product.name);
 }
 
 
@@ -748,17 +766,6 @@ function showSpinner() {
 function hideSpinner() {
   const spinner = document.getElementById("spinner-overlay");
   if (spinner) spinner.classList.add("d-none");
-}
-
-// Toast
-let cartToast;
-const toastEl = document.getElementById("cartToast");
-if (toastEl) cartToast = new bootstrap.Toast(toastEl);
-
-function showToast(message) {
-  if (!cartToast || !toastEl) return;
-  toastEl.querySelector(".toast-body").textContent = message;
-  cartToast.show();
 }
 
 // Make them globally available
