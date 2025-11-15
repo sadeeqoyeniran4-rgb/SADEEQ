@@ -51,29 +51,6 @@ window.hideSpinner = hideSpinner;
 const menuToggle = document.getElementById("menu-toggle");
 const sidebar = document.getElementById("sidebar");
 
-// Toggle sidebar
-menuToggle.addEventListener("click", () => {
-  sidebar.classList.toggle("active");
-});
-
-// Close sidebar when clicking outside
-document.addEventListener("click", (e) => {
-  if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-    sidebar.classList.remove("active");
-  }
-});
-
-// Open modals
-document.getElementById("aboutBtnSidebar").addEventListener("click", () => {
-  document.getElementById("about-modal").style.display = "block";
-  sidebar.classList.remove("active");
-});
-
-document.getElementById("contactBtnSidebar").addEventListener("click", () => {
-  document.getElementById("contact-modal").style.display = "block";
-  sidebar.classList.remove("active");
-});
-
 
   // ---------------- CONTACT FORM ----------------
   const form = document.getElementById("contactForm");
@@ -553,115 +530,9 @@ if (shippingSelect) {
       handler.openIframe();
     });
   }
-
- document.addEventListener("DOMContentLoaded", () => {
-  // ---------------- NAVBAR ----------------
-  const hamburger = document.querySelector('.hamburger');
-  const navLinks = document.querySelector('.nav-links');
-  const searchIcon = document.getElementById("search-icon");
-  const searchBar = document.getElementById("search-bar");
-  const searchInput = document.getElementById("search-input");
-  const searchBtn = document.getElementById("search-btn");
-  const searchIconInner = searchBtn.querySelector("i");
-  const cartBtn = document.getElementById("cartBtn");
-  const cartModal = document.getElementById("cart-modal");
-
-  // Hamburger toggle
-  hamburger?.addEventListener("click", () => navLinks.classList.toggle("open"));
-
-  // Close nav when clicking a link
-  document.querySelectorAll("#nav-links a").forEach(link => {
-    link.addEventListener("click", () => navLinks.classList.remove("open"));
-  });
-
-  // Toggle search bar
-  searchIcon?.addEventListener("click", () => {
-    searchBar?.classList.toggle("show");
-    if (searchBar?.classList.contains("show")) searchInput.focus();
-  });
-
-  // Live search
-  searchInput?.addEventListener("input", () => {
-    const query = searchInput.value.toLowerCase().trim();
-    currentSearchQuery = query;
-    currentPage = 1;
-    loadProducts(currentPage);
-
-    if (query) {
-      searchBtn.classList.add("clear");
-      searchIconInner.className = "bi bi-x";
-      searchBtn.style.display = "inline-flex";
-    } else {
-      searchBtn.classList.remove("clear");
-      searchIconInner.className = "bi bi-search";
-      searchBtn.style.display = "none";
-    }
-  });
-
-  // Clear input
-  searchBtn?.addEventListener("click", () => {
-    if (searchBtn.classList.contains("clear")) {
-      searchInput.value = "";
-      currentSearchQuery = "";
-      currentPage = 1;
-      loadProducts(currentPage);
-
-      searchBtn.classList.remove("clear");
-      searchIconInner.className = "bi bi-search";
-      searchBtn.style.display = "none";
-      searchInput.focus();
-    } else {
-      searchBar?.classList.toggle("show");
-      if (searchBar?.classList.contains("show")) searchInput.focus();
-    }
-  });
-
-  // Toggle cart modal
-  cartBtn?.addEventListener("click", e => {
-    e.preventDefault();
-    cartModal?.classList.add("open");
-  });
-
-  // Close cart & nav when clicking outside
-  document.addEventListener("click", e => {
-    if (
-      !searchBar?.contains(e.target) &&
-      !searchIcon?.contains(e.target) &&
-      !cartModal?.contains(e.target) &&
-      !cartBtn?.contains(e.target) &&
-      !navLinks?.contains(e.target) &&
-      !hamburger?.contains(e.target)
-    ) {
-      searchBar?.classList.remove("show");
-      cartModal?.classList.remove("open");
-      navLinks?.classList.remove("open");
-    }
-  });
-
-  // ---------------- MODALS (About & Contact) ----------------
-  function setupModal(openBtnId, modalId, closeBtnId) {
-    const openBtn = document.getElementById(openBtnId);
-    const modal = document.getElementById(modalId);
-    const closeBtn = document.getElementById(closeBtnId);
-
-    openBtn?.addEventListener("click", e => {
-      e.preventDefault();
-      modal.style.display = "flex";
-    });
-
-    closeBtn?.addEventListener("click", () => modal.style.display = "none");
-
-    window.addEventListener("click", e => {
-      if (e.target === modal) modal.style.display = "none";
-    });
-  }
-
-  setupModal("aboutBtnSidebar", "about-modal", "close-about");
-  setupModal("contactBtnSidebar", "contact-modal", "close-contact");
-});
-
  
-  const searchIcon = document.getElementById("search-icon");
+  // ---------------- SEARCH BAR ----------------
+const searchIcon = document.getElementById("search-icon");
 const searchBar = document.getElementById("search-bar");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
@@ -847,7 +718,7 @@ hamburger.addEventListener('click', () => {
 
   // ---------------- ABOUT MODAL ----------------
   const aboutModal = document.getElementById("about-modal"),
-    openAbout = document.getElementById("aboutBtnSidebar"),
+    openAbout = document.getElementById("aboutBtn"),
     closeAbout = document.getElementById("close-about");
 
   if (openAbout) {
@@ -866,7 +737,7 @@ hamburger.addEventListener('click', () => {
 
   // ---------------- CONTACT MODAL ----------------
   const contactModal = document.getElementById("contact-modal"),
-    openContact = document.getElementById("contactBtnSidebar"),
+    openContact = document.getElementById("contact"),
     closeContact = document.getElementById("close-contact");
 
   if (openContact) {
