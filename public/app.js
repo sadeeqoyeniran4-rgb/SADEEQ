@@ -131,51 +131,8 @@ if (closeCart)
   updateCartUI();
 
   // ---------------- PRODUCTS ----------------
-  const productsContainer = document.getElementById("product-list");
+  const productsContainer = document.getElementById("product-grid");
   const categoryButtons = document.querySelectorAll(".filter-btn");
-
-function createProductCard(product) {
-  let finalPrice = Number(product.price);
-
-  if (DISCOUNT.active) {
-    finalPrice = product.price - (product.price * DISCOUNT.percentage) / 100;
-  }
-
-  return `
-    <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-2"> <!-- compact responsive columns -->
-      <div class="card h-100 shadow-sm">
-        <img src="${product.image_url}" 
-             class="card-img-top" 
-             alt="${product.name}" 
-             style="height:140px; object-fit:cover;"> <!-- smaller image -->
-
-        <div class="card-body p-2 d-flex flex-column">
-          <h6 class="card-title mb-1" style="font-size:.9rem;">${product.name}</h6>
-          <p class="card-text text-muted mb-1" style="font-size:.75rem;">${product.description || ""}</p>
-
-          ${
-            DISCOUNT.active
-              ? `<p class="price mb-1" style="font-size:.8rem;">
-                  <span class="old-price">₦${product.price.toLocaleString()}</span>
-                  <span class="new-price">₦${finalPrice.toLocaleString()}</span>
-                 </p>
-                 <span class="discount-badge mb-1" style="font-size:.7rem;">-${DISCOUNT.percentage}% OFF</span>`
-              : `<p class="price mb-1" style="font-size:.8rem;">₦${product.price.toLocaleString()}</p>`
-          }
-
-          <button class="btn btn-dark btn-sm w-100 mt-auto add-to-cart" style="font-size:.75rem;"
-                  data-id="${product.id}"
-                  data-name="${product.name}"
-                  data-price="${finalPrice}">
-            <i class="bi bi-bag"></i> Add
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-
 
 async function loadProducts(page = 1) {
   if (!productsContainer) return;
@@ -185,13 +142,18 @@ async function loadProducts(page = 1) {
     const res = await fetch(`${window.API_BASE}/api/products`);
     const products = await res.json();
 
+    // Filter based on category/search if you want (optional)
+    let filtered = Array.from(products);
+
     // Category filter
-    let filtered = products.filter(p => {
-      if (currentCategory && currentCategory !== "all") {
-        return (p.description || "").toLowerCase().replace(/\s+/g, "-") === currentCategory.toLowerCase();
-      }
-      return true;
-    });
+    if (currentCategory && currentCategory !== "all") {
+  filtered = filtered.filter(p =>
+    (p.description || "")
+      .toLowerCase()
+      .replace(/\s+/g, "-") === currentCategory.toLowerCase()
+  );
+}
+
 
     // Search filter
     if (currentSearchQuery) {
@@ -200,7 +162,7 @@ async function loadProducts(page = 1) {
       );
     }
 
-    // Pagination
+    // Pagination logic
     totalPages = Math.ceil(filtered.length / productsPerPage);
     const start = (page - 1) * productsPerPage;
     const end = start + productsPerPage;
@@ -209,10 +171,25 @@ async function loadProducts(page = 1) {
     productsContainer.innerHTML = "";
 
     pageProducts.forEach(p => {
-      productsContainer.insertAdjacentHTML("beforeend", createProductCard(p));
+      const card = document.createElement("div");
+      card.className = "product-card";
+
+      let finalPrice = Number(p.price);
+      if (DISCOUNT.active) finalPrice = p.price - (p.price * DISCOUNT.percentage) / 100;
+
+      card.innerHTML = `
+        <img src="${p.image_url || 'default.jpg'}" alt="${p.name}" loading="lazy">
+        <h3>${p.name}</h3>
+        <p>${p.description || ""}</p>
+        ${DISCOUNT.active
+          ? `<p class="price"><span class="old-price">₦${p.price.toLocaleString()}</span> <span class="new-price">₦${finalPrice.toLocaleString()}</span></p>
+             <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>`
+          : `<p class="price">₦${p.price.toLocaleString()}</p>`}
+        <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${finalPrice}">Add to Cart</button>
+      `;
+      productsContainer.appendChild(card);
     });
 
-    // Add to cart event
     document.querySelectorAll(".add-to-cart").forEach(btn =>
       btn.addEventListener("click", () => addToCart({
         id: +btn.dataset.id,
@@ -221,7 +198,7 @@ async function loadProducts(page = 1) {
       }))
     );
 
-    renderPagination();
+    renderPagination(); // render page buttons
 
   } catch (err) {
     console.error("❌ Error loading products:", err);
@@ -235,58 +212,22 @@ loadProducts();
 
 function renderPagination() {
   const paginationContainer = document.getElementById("pagination");
-  if (!paginationContainer || totalPages <= 1) {
-    paginationContainer.innerHTML = "";
-    return;
-  }
+  if (!paginationContainer) return;
 
-  paginationContainer.innerHTML = `
-    <nav aria-label="Product pages">
-      <ul class="pagination justify-content-center"></ul>
-    </nav>
-  `;
+  paginationContainer.innerHTML = "";
 
-  const ul = paginationContainer.querySelector(".pagination");
-
-  // Previous
-  const prev = document.createElement("li");
-  prev.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
-  prev.innerHTML = `<a class="page-link" href="#">&laquo;</a>`;
-  prev.onclick = e => {
-    e.preventDefault();
-    if (currentPage > 1) {
-      currentPage--;
-      loadProducts(currentPage);
-    }
-  };
-  ul.appendChild(prev);
-
-  // Page numbers
   for (let i = 1; i <= totalPages; i++) {
-    const li = document.createElement("li");
-    li.className = `page-item ${i === currentPage ? "active" : ""}`;
-    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-    li.onclick = e => {
-      e.preventDefault();
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.className = i === currentPage ? "active" : "";
+    btn.addEventListener("click", () => {
       currentPage = i;
       loadProducts(currentPage);
-    };
-    ul.appendChild(li);
+    });
+    paginationContainer.appendChild(btn);
   }
-
-  // Next
-  const next = document.createElement("li");
-  next.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
-  next.innerHTML = `<a class="page-link" href="#">&raquo;</a>`;
-  next.onclick = e => {
-    e.preventDefault();
-    if (currentPage < totalPages) {
-      currentPage++;
-      loadProducts(currentPage);
-    }
-  };
-  ul.appendChild(next);
 }
+
 
   // ---------------- CATEGORY FILTER ----------------
   categoryButtons.forEach(btn => {
@@ -569,35 +510,22 @@ const API_BASE = window.API_BASE; // make sure this is set globally
 
 // Load reviews safely
 async function loadSocialProof() {
-  if (!socialProofEl) return;
-
+  if (!socialProofEl) return; // Element may not exist
   try {
     const res = await fetch(`${API_BASE}/api/reviews`);
     const reviews = await res.json();
-
-    socialProofEl.innerHTML = reviews.map(r => {
-      let stars = "";
-      for (let i = 1; i <= 5; i++) {
-        stars += i <= r.rating
-          ? `<i class="bi bi-star-fill text-warning"></i>`
-          : `<i class="bi bi-star text-muted"></i>`;
-      }
-
-      return `
-        <div class="card p-3 mb-3 shadow-sm">
-          <p class="mb-1">“${r.message}”</p>
-          <small class="text-muted">– ${r.name}${r.location ? ", " + r.location : ""}</small>
-          <div class="mt-2">${stars}</div>
-        </div>
-      `;
-    }).join("");
-
+    socialProofEl.innerHTML = reviews.map(r => `
+      <div class="testimonial">
+        <p>“${r.message}”</p>
+        <span>– ${r.name}${r.location ? ", " + r.location : ""}</span>
+        <div class="stars">${'⭐'.repeat(r.rating)}</div>
+      </div>
+    `).join('');
   } catch (err) {
-    socialProofEl.innerHTML = `<p class="text-danger">Unable to load reviews.</p>`;
+    console.error("❌ Error loading social proof:", err);
+    socialProofEl.innerHTML = "<p class='error-msg'>Unable to load reviews.</p>";
   }
 }
-
-
 
 if (reviewForm) {
   reviewForm.addEventListener("submit", async (e) => {
