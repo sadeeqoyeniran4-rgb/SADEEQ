@@ -33,6 +33,23 @@ if (DISCOUNT.active && banner) {
   banner.style.display = "none";
 }
 
+// ---------------- Spinner Functions ----------------
+const spinnerEl = document.getElementById("spinner-overlay");
+
+function showSpinner() {
+  spinnerEl?.classList.add("show");
+}
+
+function hideSpinner() {
+  spinnerEl?.classList.remove("show");
+}
+
+// Make globally accessible
+window.showSpinner = showSpinner;
+window.hideSpinner = hideSpinner;
+
+
+
   // ---------------- CONTACT FORM ----------------
   const form = document.getElementById("contactForm");
   const formResponse = document.getElementById("formResponse");
@@ -755,19 +772,5 @@ hamburger.addEventListener('click', () => {
   }
 });
 
-// ---------------- Spinner Functions ----------------
-const spinnerEl = document.getElementById("spinner-overlay");
-
-function showSpinner() {
-  spinnerEl?.classList.add("show");
-}
-
-function hideSpinner() {
-  spinnerEl?.classList.remove("show");
-}
-
-// Make globally accessible
-window.showSpinner = showSpinner;
-window.hideSpinner = hideSpinner;
   
 });
