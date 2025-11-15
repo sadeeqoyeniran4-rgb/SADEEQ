@@ -37,9 +37,13 @@
     <span id="cart-count">0</span>
   </button>
 
-  <button class="hamburger icon-btn" id="menu-toggle" title="Menu">
-    <i class="bi bi-list"></i>
-  </button>
+  <button class="hamburger icon-btn" 
+        data-bs-toggle="offcanvas" 
+        data-bs-target="#mobileSidebar" 
+        title="Menu">
+  <i class="bi bi-list"></i>
+</button>
+
 </div>
 
 <div id="search-bar" class="search-bar hidden">
@@ -48,6 +52,25 @@
 </div>
 
   </header>
+
+  <!-- ==== MOBILE SIDEBAR (BOOTSTRAP OFFCANVAS) ==== -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <ul class="list-group">
+      <li class="list-group-item"><a href="#home">Home</a></li>
+      <li class="list-group-item"><a href="#shop">Shop</a></li>
+      <li class="list-group-item" id="aboutBtnSidebar">About</a></li>
+      <li class="list-group-item" id="contactBtnSidebar">Contact</a></li>
+    </ul>
+  </div>
+</div>
+
+
   <!-- 🏷️ Discount Banner -->
 <div id="discount-banner" class="discount-banner" style="display: none;">
   🎉 Enjoy <span id="discount-percentage">5%</span> OFF all items! Offer ends soon!

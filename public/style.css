@@ -1892,3 +1892,19 @@ h1 {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.offcanvas {
+  width: 250px;
+}
+
+.offcanvas .list-group-item {
+  cursor: pointer;
+  border: none;
+  font-size: 16px;
+  padding: 12px;
+}
+
+.offcanvas .list-group-item a {
+  color: #333;
+  text-decoration: none;
+  display: block;
+}
