@@ -51,6 +51,7 @@ window.hideSpinner = hideSpinner;
 const menuToggle = document.getElementById("menu-toggle");
 const sidebar = document.getElementById("sidebar");
 
+// Toggle sidebar
 menuToggle.addEventListener("click", () => {
   sidebar.classList.toggle("active");
 });
@@ -62,16 +63,13 @@ document.addEventListener("click", (e) => {
   }
 });
 
-
-const aboutBtn = document.getElementById("aboutBtnSidebar");
-const contactBtn = document.getElementById("contactBtnSidebar");
-
-aboutBtn?.addEventListener("click", () => {
+// Open modals
+document.getElementById("aboutBtnSidebar").addEventListener("click", () => {
   document.getElementById("about-modal").style.display = "block";
   sidebar.classList.remove("active");
 });
 
-contactBtn?.addEventListener("click", () => {
+document.getElementById("contactBtnSidebar").addEventListener("click", () => {
   document.getElementById("contact-modal").style.display = "block";
   sidebar.classList.remove("active");
 });
@@ -723,6 +721,13 @@ setInterval(showRecentPurchaseFromOrders, 12000);
 // Optional: refresh recent orders every 60 seconds to catch new orders
 setInterval(loadRecentOrders, 60000);
 
+const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
+
+hamburger.addEventListener('click', () => {
+  navLinks.classList.toggle('open');
+});
+
 
     // Close menu when clicking a link
     document.querySelectorAll("#nav-links a").forEach(link => {
@@ -741,7 +746,7 @@ setInterval(loadRecentOrders, 60000);
 
   // ---------------- ABOUT MODAL ----------------
   const aboutModal = document.getElementById("about-modal"),
-    openAbout = document.getElementById("aboutBtnSidebar"),
+    openAbout = document.getElementById("aboutBtn"),
     closeAbout = document.getElementById("close-about");
 
   if (openAbout) {
@@ -760,7 +765,7 @@ setInterval(loadRecentOrders, 60000);
 
   // ---------------- CONTACT MODAL ----------------
   const contactModal = document.getElementById("contact-modal"),
-    openContact = document.getElementById("contactBtnSidebar"),
+    openContact = document.getElementById("contactBtn"),
     closeContact = document.getElementById("close-contact");
 
   if (openContact) {
