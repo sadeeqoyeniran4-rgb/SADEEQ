@@ -38,10 +38,7 @@
     <span id="cart-count">0</span>
   </button>
 
-  <button class="hamburger icon-btn" 
-        data-bs-toggle="offcanvas" 
-        data-bs-target="#mobileSidebar" 
-        title="Menu">
+  <button class="hamburger icon-btn" id="menu-toggle" title="Menu">
   <i class="bi bi-list"></i>
 </button>
 
@@ -293,7 +290,19 @@ Lọ́fíndà — your scent, your masterpiece.</p>
 
 
 <!-- ================= SCRIPTS ================= -->
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+ <script>
+  const menuToggle = document.getElementById("menu-toggle");
+  const sidebar = document.getElementById("sidebar");
+
+  menuToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("active");
+  });
+</script>
+
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc59p4aXjk2PbJjYtK68s0O9p1HB4B4vxpVfSdDsi"
+crossorigin="anonymous"></script>
+>
  <script src="config.js"></script>
   <script src="https://js.paystack.co/v1/inline.js"></script>
   <script type="module" src="app.js"></script>

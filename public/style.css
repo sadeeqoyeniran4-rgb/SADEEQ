@@ -1908,3 +1908,35 @@ h1 {
   text-decoration: none;
   display: block;
 }
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100vh;
+  background: #2d1b47; /* LÓFÍNDÀ purple/black vibes */
+  color: white;
+  padding: 20px;
+  transition: left 0.3s ease;
+  z-index: 2000;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  padding: 12px 0;
+  cursor: pointer;
+}
+
+.sidebar ul li a {
+  color: white;
+  text-decoration: none;
+}
+
+.sidebar.active {
+  left: 0;
+}
