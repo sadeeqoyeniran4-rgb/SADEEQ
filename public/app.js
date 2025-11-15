@@ -755,20 +755,19 @@ hamburger.addEventListener('click', () => {
   }
 });
 
-// Spinner functions
-// Spinner
+// ---------------- Spinner Functions ----------------
+const spinnerEl = document.getElementById("spinner-overlay");
+
 function showSpinner() {
-  const spinner = document.getElementById("spinner-overlay");
-  if (spinner) spinner.classList.remove("d-none");
-}
-function hideSpinner() {
-  const spinner = document.getElementById("spinner-overlay");
-  if (spinner) spinner.classList.add("d-none");
+  spinnerEl?.classList.add("show");
 }
 
-// Make them globally available
+function hideSpinner() {
+  spinnerEl?.classList.remove("show");
+}
+
+// Make globally accessible
 window.showSpinner = showSpinner;
 window.hideSpinner = hideSpinner;
-window.showToast = showToast;
   
 });
