@@ -64,56 +64,60 @@ if (DISCOUNT.active && banner) {
   }
 
   // ---------------- CART SYSTEM ----------------
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  const cartItemsEl = document.getElementById("cart-items");
-  const cartTotalEl = document.getElementById("cart-total");
-  const cartCountEl = document.getElementById("cart-count");
-  const cartBtn = document.getElementById("cartBtn");
-  const cartModal = document.getElementById("cart-modal");
-  const closeCart = document.getElementById("close-cart");
-  const checkoutTotalEl = document.getElementById("checkout-total");
-  const toastEl = document.getElementById("cartToast");
-const cartToast = toastEl ? new bootstrap.Toast(toastEl) : null;
-  const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+const cartItemsEl = document.getElementById("cart-items");
+const cartTotalEl = document.getElementById("cart-total");
+const cartCountEl = document.getElementById("cart-count");
+const cartBtn = document.getElementById("cartBtn");
+const cartModal = document.getElementById("cart-modal");
+const closeCart = document.getElementById("close-cart");
+const checkoutTotalEl = document.getElementById("checkout-total");
 
-  function updateCartUI() {
-    if (!cartItemsEl) return;
-    cartItemsEl.innerHTML = "";
-    let total = 0, count = 0;
+// Toast element
+const toastEl = document.getElementById("cartToast");
+const toastMessage = toastEl?.querySelector(".toast-message");
+const toastClose = toastEl?.querySelector(".toast-close");
 
-    cart.forEach((item, i) => {
-      total += item.price * item.qty;
-      count += item.qty;
-      const div = document.createElement("div");
-      div.className = "cart-item";
-      div.innerHTML = `
-        <span>${item.name} × ${item.qty} — ₦${(item.price * item.qty).toLocaleString()}</span>
-        <button class="remove" data-i="${i}">×</button>`;
-      cartItemsEl.appendChild(div);
-    });
+const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
 
-    cartTotalEl.textContent = `₦${total.toLocaleString()}`;
-    if (checkoutTotalEl) checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
-    if (cartCountEl) cartCountEl.textContent = count;
-    saveCart();
-  }
+function updateCartUI() {
+  if (!cartItemsEl) return;
+  cartItemsEl.innerHTML = "";
+  let total = 0, count = 0;
 
-  
-// Function to show toast
-function showToast(productName) {
-  if (!cartToast || !toastEl) return;
+  cart.forEach((item, i) => {
+    total += item.price * item.qty;
+    count += item.qty;
+    const div = document.createElement("div");
+    div.className = "cart-item";
+    div.innerHTML = `
+      <span>${item.name} × ${item.qty} — ₦${(item.price * item.qty).toLocaleString()}</span>
+      <button class="remove" data-i="${i}">×</button>
+    `;
+    cartItemsEl.appendChild(div);
+  });
 
-  // Update message
-  toastEl.querySelector(".toast-body").textContent = `${productName} added to cart! 🎉`;
-
-  // Update timestamp
-  toastEl.querySelector(".toast-header small").textContent = "Just now";
-
-  // Show toast
-  cartToast.show();
+  if (cartTotalEl) cartTotalEl.textContent = `₦${total.toLocaleString()}`;
+  if (checkoutTotalEl) checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
+  if (cartCountEl) cartCountEl.textContent = count;
+  saveCart();
 }
 
-// Add to Cart function
+// ---------------- Toast Functions ----------------
+function showToast(message, duration = 3000) {
+  if (!toastEl || !toastMessage) return;
+
+  toastMessage.textContent = message;
+  toastEl.classList.add("show");
+
+  // Hide after duration
+  setTimeout(() => toastEl.classList.remove("show"), duration);
+}
+
+// Close button
+toastClose?.addEventListener("click", () => toastEl.classList.remove("show"));
+
+// ---------------- Add to Cart ----------------
 function addToCart(product) {
   const found = cart.find(i => i.id === product.id);
   if (found) {
@@ -122,39 +126,33 @@ function addToCart(product) {
     cart.push({ ...product, qty: 1 });
   }
 
-  // Update cart UI
   updateCartUI();
-
-  // Show toast notification
-  showToast(product.name);
+  showToast(`${product.name} added to cart! 🎉`);
 }
 
-
-  // Remove item
-  if (cartItemsEl) {
-    cartItemsEl.addEventListener("click", (e) => {
-      if (e.target.classList.contains("remove")) {
-        cart.splice(e.target.dataset.i, 1);
-        updateCartUI();
-      }
-    });
-  }
-
-  // Toggle cart modal
-if (cartBtn)
-  cartBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    cartModal.classList.add("open"); // ✅ changed from cartSidebar
+// Remove item
+if (cartItemsEl) {
+  cartItemsEl.addEventListener("click", (e) => {
+    if (e.target.classList.contains("remove")) {
+      cart.splice(e.target.dataset.i, 1);
+      updateCartUI();
+    }
   });
+}
 
-if (closeCart)
-  closeCart.addEventListener("click", (e) => {
-    e.preventDefault();
-    cartModal.classList.remove("open"); // ✅ changed from cartSidebar
-  });
+// Toggle cart modal
+cartBtn?.addEventListener("click", (e) => {
+  e.preventDefault();
+  cartModal?.classList.add("open");
+});
+closeCart?.addEventListener("click", (e) => {
+  e.preventDefault();
+  cartModal?.classList.remove("open");
+});
 
-  window.addToCart = addToCart;
-  updateCartUI();
+// Make globally accessible
+window.addToCart = addToCart;
+updateCartUI();
 
   // ---------------- PRODUCTS ----------------
   const productsContainer = document.getElementById("product-grid");
