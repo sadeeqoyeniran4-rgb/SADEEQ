@@ -73,12 +73,6 @@ if (DISCOUNT.active && banner) {
   const closeCart = document.getElementById("close-cart");
   const checkoutTotalEl = document.getElementById("checkout-total");
   const cartToastEl = document.getElementById("cartToast");
-  let cartToast;
-
-const toastEl = document.getElementById("cartToast");
-if (toastEl) {
-  cartToast = bootstrap.Toast.getOrCreateInstance(toastEl);
-}
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
 
@@ -745,12 +739,31 @@ hamburger.addEventListener('click', () => {
   }
 });
 
+// Spinner functions
+// Spinner
 function showSpinner() {
-  document.getElementById("spinner-overlay").classList.remove("d-none");
+  const spinner = document.getElementById("spinner-overlay");
+  if (spinner) spinner.classList.remove("d-none");
+}
+function hideSpinner() {
+  const spinner = document.getElementById("spinner-overlay");
+  if (spinner) spinner.classList.add("d-none");
 }
 
-function hideSpinner() {
-  document.getElementById("spinner-overlay").classList.add("d-none");
+// Toast
+let cartToast;
+const toastEl = document.getElementById("cartToast");
+if (toastEl) cartToast = new bootstrap.Toast(toastEl);
+
+function showToast(message) {
+  if (!cartToast || !toastEl) return;
+  toastEl.querySelector(".toast-body").textContent = message;
+  cartToast.show();
 }
+
+// Make them globally available
+window.showSpinner = showSpinner;
+window.hideSpinner = hideSpinner;
+window.showToast = showToast;
   
 });
