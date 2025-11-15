@@ -212,20 +212,57 @@ loadProducts();
 
 function renderPagination() {
   const paginationContainer = document.getElementById("pagination");
-  if (!paginationContainer) return;
+  if (!paginationContainer || totalPages <= 1) {
+    paginationContainer.innerHTML = "";
+    return;
+  }
 
-  paginationContainer.innerHTML = "";
+  paginationContainer.innerHTML = `
+    <nav aria-label="Product pages">
+      <ul class="pagination justify-content-center"></ul>
+    </nav>
+  `;
 
+  const ul = paginationContainer.querySelector(".pagination");
+
+  // Previous
+  const prev = document.createElement("li");
+  prev.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+  prev.innerHTML = `<a class="page-link" href="#">&laquo;</a>`;
+  prev.onclick = e => {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      loadProducts(currentPage);
+    }
+  };
+  ul.appendChild(prev);
+
+  // Page numbers
   for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement("button");
-    btn.textContent = i;
-    btn.className = i === currentPage ? "active" : "";
-    btn.addEventListener("click", () => {
+    const li = document.createElement("li");
+    li.className = `page-item ${i === currentPage ? "active" : ""}`;
+    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+    li.onclick = e => {
+      e.preventDefault();
       currentPage = i;
       loadProducts(currentPage);
-    });
-    paginationContainer.appendChild(btn);
+    };
+    ul.appendChild(li);
   }
+
+  // Next
+  const next = document.createElement("li");
+  next.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+  next.innerHTML = `<a class="page-link" href="#">&raquo;</a>`;
+  next.onclick = e => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      loadProducts(currentPage);
+    }
+  };
+  ul.appendChild(next);
 }
 
 
@@ -510,20 +547,32 @@ const API_BASE = window.API_BASE; // make sure this is set globally
 
 // Load reviews safely
 async function loadSocialProof() {
-  if (!socialProofEl) return; // Element may not exist
+  if (!socialProofEl) return;
+
   try {
     const res = await fetch(`${API_BASE}/api/reviews`);
     const reviews = await res.json();
-    socialProofEl.innerHTML = reviews.map(r => `
-      <div class="testimonial">
-        <p>“${r.message}”</p>
-        <span>– ${r.name}${r.location ? ", " + r.location : ""}</span>
-        <div class="stars">${'⭐'.repeat(r.rating)}</div>
-      </div>
-    `).join('');
+
+    socialProofEl.innerHTML = reviews.map(r => {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        stars += i <= r.rating
+          ? '<i class="bi bi-star-fill text-warning"></i>'
+          : '<i class="bi bi-star text-muted"></i>';
+      }
+
+      return `
+        <div class="card mb-3 p-3 shadow-sm">
+          <p class="mb-1">“${r.message}”</p>
+          <small class="text-muted">– ${r.name}${r.location ? ", " + r.location : ""}</small>
+          <div class="stars mt-2">${stars}</div>
+        </div>
+      `;
+    }).join('');
+
   } catch (err) {
     console.error("❌ Error loading social proof:", err);
-    socialProofEl.innerHTML = "<p class='error-msg'>Unable to load reviews.</p>";
+    socialProofEl.innerHTML = "<p class='text-danger'>Unable to load reviews.</p>";
   }
 }
 
