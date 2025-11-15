@@ -1819,27 +1819,3 @@ h1 {
   pointer-events: none;
   background-color: #fff;
 }
-#spinner-overlay {
-  backdrop-filter: blur(2px);
-}
-/* Force toast & spinner to stay above footer */
-#spinner-overlay,
-#cartToast,
-.toast {
-  position: fixed !important;
-  z-index: 999999 !important;
-}
-
-/* Toast position */
-#cartToast {
-  top: 20px !important;
-  right: 20px !important;
-}
-
-/* Spinner overlay full screen */
-#spinner-overlay {
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-}
