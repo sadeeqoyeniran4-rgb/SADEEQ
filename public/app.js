@@ -196,12 +196,6 @@ closeCart?.addEventListener("click", (e) => {
 window.addToCart = addToCart;
 updateCartUI();
 
-
-const searchBar = document.getElementById("search-bar");
-const searchIcon = document.getElementById("search-icon");
-const navLinks = document.querySelector('.nav-links');
-const hamburger = document.querySelector('.hamburger');
-
   // ---------------- PRODUCTS ----------------
   const productsContainer = document.getElementById("product-grid");
   const categoryButtons = document.querySelectorAll(".filter-btn");
@@ -559,6 +553,163 @@ if (shippingSelect) {
       handler.openIframe();
     });
   }
+
+ document.addEventListener("DOMContentLoaded", () => {
+  // ---------------- NAVBAR ----------------
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+  const searchIcon = document.getElementById("search-icon");
+  const searchBar = document.getElementById("search-bar");
+  const searchInput = document.getElementById("search-input");
+  const searchBtn = document.getElementById("search-btn");
+  const searchIconInner = searchBtn.querySelector("i");
+  const cartBtn = document.getElementById("cartBtn");
+  const cartModal = document.getElementById("cart-modal");
+
+  // Hamburger toggle
+  hamburger?.addEventListener("click", () => navLinks.classList.toggle("open"));
+
+  // Close nav when clicking a link
+  document.querySelectorAll("#nav-links a").forEach(link => {
+    link.addEventListener("click", () => navLinks.classList.remove("open"));
+  });
+
+  // Toggle search bar
+  searchIcon?.addEventListener("click", () => {
+    searchBar?.classList.toggle("show");
+    if (searchBar?.classList.contains("show")) searchInput.focus();
+  });
+
+  // Live search
+  searchInput?.addEventListener("input", () => {
+    const query = searchInput.value.toLowerCase().trim();
+    currentSearchQuery = query;
+    currentPage = 1;
+    loadProducts(currentPage);
+
+    if (query) {
+      searchBtn.classList.add("clear");
+      searchIconInner.className = "bi bi-x";
+      searchBtn.style.display = "inline-flex";
+    } else {
+      searchBtn.classList.remove("clear");
+      searchIconInner.className = "bi bi-search";
+      searchBtn.style.display = "none";
+    }
+  });
+
+  // Clear input
+  searchBtn?.addEventListener("click", () => {
+    if (searchBtn.classList.contains("clear")) {
+      searchInput.value = "";
+      currentSearchQuery = "";
+      currentPage = 1;
+      loadProducts(currentPage);
+
+      searchBtn.classList.remove("clear");
+      searchIconInner.className = "bi bi-search";
+      searchBtn.style.display = "none";
+      searchInput.focus();
+    } else {
+      searchBar?.classList.toggle("show");
+      if (searchBar?.classList.contains("show")) searchInput.focus();
+    }
+  });
+
+  // Toggle cart modal
+  cartBtn?.addEventListener("click", e => {
+    e.preventDefault();
+    cartModal?.classList.add("open");
+  });
+
+  // Close cart & nav when clicking outside
+  document.addEventListener("click", e => {
+    if (
+      !searchBar?.contains(e.target) &&
+      !searchIcon?.contains(e.target) &&
+      !cartModal?.contains(e.target) &&
+      !cartBtn?.contains(e.target) &&
+      !navLinks?.contains(e.target) &&
+      !hamburger?.contains(e.target)
+    ) {
+      searchBar?.classList.remove("show");
+      cartModal?.classList.remove("open");
+      navLinks?.classList.remove("open");
+    }
+  });
+
+  // ---------------- MODALS (About & Contact) ----------------
+  function setupModal(openBtnId, modalId, closeBtnId) {
+    const openBtn = document.getElementById(openBtnId);
+    const modal = document.getElementById(modalId);
+    const closeBtn = document.getElementById(closeBtnId);
+
+    openBtn?.addEventListener("click", e => {
+      e.preventDefault();
+      modal.style.display = "flex";
+    });
+
+    closeBtn?.addEventListener("click", () => modal.style.display = "none");
+
+    window.addEventListener("click", e => {
+      if (e.target === modal) modal.style.display = "none";
+    });
+  }
+
+  setupModal("aboutBtnSidebar", "about-modal", "close-about");
+  setupModal("contactBtnSidebar", "contact-modal", "close-contact");
+});
+
+ 
+  const searchIcon = document.getElementById("search-icon");
+const searchBar = document.getElementById("search-bar");
+const searchInput = document.getElementById("search-input");
+const searchBtn = document.getElementById("search-btn");
+const searchIconInner = searchBtn.querySelector("i");
+
+// Toggle search bar visibility
+searchIcon.addEventListener("click", () => {
+  searchBar.classList.toggle("show");
+  if (searchBar.classList.contains("show")) searchInput.focus();
+});
+
+// Live search as user types
+searchInput.addEventListener("input", () => {
+  currentSearchQuery = searchInput.value.toLowerCase().trim();
+  currentPage = 1;
+  loadProducts(currentPage);
+
+  // Toggle search/clear button
+  if (currentSearchQuery) {
+    searchBtn.classList.add("clear");
+    searchIconInner.className = "bi bi-x"; // ❌
+    searchBtn.style.display = "inline-flex";
+  } else {
+    searchBtn.classList.remove("clear");
+    searchIconInner.className = "bi bi-search"; // 🔍
+    searchBtn.style.display = "none";
+  }
+});
+
+// Clear input when button is clicked
+searchBtn.addEventListener("click", () => {
+  if (searchBtn.classList.contains("clear")) {
+    searchInput.value = "";
+    currentSearchQuery = "";
+    currentPage = 1;
+    loadProducts(currentPage);
+
+    searchBtn.classList.remove("clear");
+    searchIconInner.className = "bi bi-search";
+    searchBtn.style.display = "none";
+    searchInput.focus();
+  } else {
+    // Optional: toggle search bar
+    searchBar.classList.toggle("show");
+    if (searchBar.classList.contains("show")) searchInput.focus();
+  }
+});
+
   
 // ---------------- REVIEWS / SOCIAL PROOF ----------------
 const reviewForm = document.getElementById("reviewForm");
@@ -676,6 +827,23 @@ setInterval(showRecentPurchaseFromOrders, 12000);
 
 // Optional: refresh recent orders every 60 seconds to catch new orders
 setInterval(loadRecentOrders, 60000);
+
+const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
+
+hamburger.addEventListener('click', () => {
+  navLinks.classList.toggle('open');
+});
+
+
+    // Close menu when clicking a link
+    document.querySelectorAll("#nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+      });
+    });
+ 
+
 
   // ---------------- ABOUT MODAL ----------------
   const aboutModal = document.getElementById("about-modal"),
