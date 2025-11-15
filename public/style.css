@@ -1799,7 +1799,7 @@ h1 {
 }
 
 .page-link {
-  color: #000;
+  color: #503f46;
   text-decoration: none;
   padding: 0.5rem 0.75rem;
   border: 1px solid #dee2e6;
@@ -1826,7 +1826,7 @@ h1 {
   right: 1rem;
   min-width: 250px;
   max-width: 300px;
-  background: #1a1a1a;
+  background: #503f46;
   color: #fff;
   padding: 0.75rem 1rem;
   border-radius: 8px;
@@ -1881,7 +1881,7 @@ h1 {
 /* Spinner animation */
 .spinner {
   border: 6px solid #f3f3f3; /* Light grey */
-  border-top: 6px solid #6f42c1; /* Purple or brand color */
+  border-top: 6px solid #503f46; /* Purple or brand color */
   border-radius: 50%;
   width: 50px;
   height: 50px;
