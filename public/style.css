@@ -1819,3 +1819,6 @@ h1 {
   pointer-events: none;
   background-color: #fff;
 }
+#spinner-overlay {
+  backdrop-filter: blur(2px);
+}

@@ -730,12 +730,27 @@ hamburger.addEventListener('click', () => {
     navLinks?.classList.remove("open");
   }
 });
+
+const cartToastEl = document.getElementById("cartToast");
+const cartToast = new bootstrap.Toast(cartToastEl);
+
+function addToCart(product) {
+  const found = cart.find((i) => i.id === product.id);
+  found ? found.qty++ : cart.push({ ...product, qty: 1 });
+  updateCartUI();
+
+  // Show toast
+  cartToastEl.querySelector(".toast-body").textContent = `${product.name} added to cart! 🎉`;
+  cartToast.show();
+}
+
+
 function showSpinner() {
-  document.getElementById("spinner-overlay").style.display = "flex";
+  document.getElementById("spinner-overlay").classList.remove("d-none");
 }
 
 function hideSpinner() {
-  document.getElementById("spinner-overlay").style.display = "none";
+  document.getElementById("spinner-overlay").classList.add("d-none");
 }
-
+  
 });
