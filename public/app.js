@@ -73,8 +73,11 @@ if (DISCOUNT.active && banner) {
   const closeCart = document.getElementById("close-cart");
   const checkoutTotalEl = document.getElementById("checkout-total");
   const cartToastEl = document.getElementById("cartToast");
-  const cartToast = new bootstrap.Toast(cartToastEl);
+  let cartToast;
 
+  if (cartToastEl) {
+    cartToast = new bootstrap.Toast(cartToastEl);
+}
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
 
