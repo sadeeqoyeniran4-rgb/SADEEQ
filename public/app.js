@@ -75,8 +75,9 @@ if (DISCOUNT.active && banner) {
   const cartToastEl = document.getElementById("cartToast");
   let cartToast;
 
-  if (cartToastEl) {
-    cartToast = new bootstrap.Toast(cartToastEl);
+const toastEl = document.getElementById("cartToast");
+if (toastEl) {
+  cartToast = bootstrap.Toast.getOrCreateInstance(toastEl);
 }
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
@@ -104,14 +105,18 @@ if (DISCOUNT.active && banner) {
   }
 
   function addToCart(product) {
-  const found = cart.find((i) => i.id === product.id);
+  const found = cart.find(i => i.id === product.id);
   found ? found.qty++ : cart.push({ ...product, qty: 1 });
+
   updateCartUI();
 
-  // Show toast
-  cartToastEl.querySelector(".toast-body").textContent = `${product.name} added to cart! 🎉`;
-  cartToast.show();
+  if (cartToast) {
+    cartToastEl.querySelector(".toast-body").textContent =
+      `${product.name} added to cart 🎉`;
+    cartToast.show();
+  }
 }
+
 
   // Remove item
   if (cartItemsEl) {
