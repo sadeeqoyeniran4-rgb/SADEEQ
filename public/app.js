@@ -217,11 +217,10 @@ function renderPagination() {
     return;
   }
 
-  paginationContainer.innerHTML = `
-    <nav aria-label="Product pages">
-      <ul class="pagination justify-content-center"></ul>
-    </nav>
-  `;
+  // Bootstrap-like pagination wrapper
+  paginationContainer.innerHTML = `<nav aria-label="Product pages">
+      <ul class="pagination justify-content-center flex-wrap"></ul>
+    </nav>`;
 
   const ul = paginationContainer.querySelector(".pagination");
 
@@ -547,31 +546,30 @@ const API_BASE = window.API_BASE; // make sure this is set globally
 
 // Load reviews safely
 async function loadSocialProof() {
+  const socialProofEl = document.getElementById("review-cards");
   if (!socialProofEl) return;
 
   try {
     const res = await fetch(`${API_BASE}/api/reviews`);
     const reviews = await res.json();
 
-    socialProofEl.innerHTML = reviews.map(r => {
-      let stars = '';
-      for (let i = 1; i <= 5; i++) {
-        stars += i <= r.rating
-          ? '<i class="bi bi-star-fill text-warning"></i>'
-          : '<i class="bi bi-star text-muted"></i>';
-      }
-
-      return `
-        <div class="card mb-3 p-3 shadow-sm">
-          <p class="mb-1">“${r.message}”</p>
-          <small class="text-muted">– ${r.name}${r.location ? ", " + r.location : ""}</small>
-          <div class="stars mt-2">${stars}</div>
+    socialProofEl.innerHTML = reviews.map(r => `
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <p class="card-text">“${r.message}”</p>
+            <h6 class="card-subtitle mb-2 text-muted">– ${r.name}${r.location ? ", " + r.location : ""}</h6>
+            <div class="text-warning">
+              ${'<i class="bi bi-star-fill"></i>'.repeat(r.rating)}
+              ${'<i class="bi bi-star"></i>'.repeat(5 - r.rating)}
+            </div>
+          </div>
         </div>
-      `;
-    }).join('');
+      </div>
+    `).join('');
 
   } catch (err) {
-    console.error("❌ Error loading social proof:", err);
+    console.error("❌ Error loading reviews:", err);
     socialProofEl.innerHTML = "<p class='text-danger'>Unable to load reviews.</p>";
   }
 }
