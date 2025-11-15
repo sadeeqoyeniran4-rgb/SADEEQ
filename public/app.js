@@ -72,6 +72,8 @@ if (DISCOUNT.active && banner) {
   const cartModal = document.getElementById("cart-modal");
   const closeCart = document.getElementById("close-cart");
   const checkoutTotalEl = document.getElementById("checkout-total");
+  const cartToastEl = document.getElementById("cartToast");
+  const cartToast = new bootstrap.Toast(cartToastEl);
 
 
   const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
@@ -99,10 +101,14 @@ if (DISCOUNT.active && banner) {
   }
 
   function addToCart(product) {
-    const found = cart.find((i) => i.id === product.id);
-    found ? found.qty++ : cart.push({ ...product, qty: 1 });
-    updateCartUI();
-  }
+  const found = cart.find((i) => i.id === product.id);
+  found ? found.qty++ : cart.push({ ...product, qty: 1 });
+  updateCartUI();
+
+  // Show toast
+  cartToastEl.querySelector(".toast-body").textContent = `${product.name} added to cart! 🎉`;
+  cartToast.show();
+}
 
   // Remove item
   if (cartItemsEl) {
@@ -730,20 +736,6 @@ hamburger.addEventListener('click', () => {
     navLinks?.classList.remove("open");
   }
 });
-
-const cartToastEl = document.getElementById("cartToast");
-const cartToast = new bootstrap.Toast(cartToastEl);
-
-function addToCart(product) {
-  const found = cart.find((i) => i.id === product.id);
-  found ? found.qty++ : cart.push({ ...product, qty: 1 });
-  updateCartUI();
-
-  // Show toast
-  cartToastEl.querySelector(".toast-body").textContent = `${product.name} added to cart! 🎉`;
-  cartToast.show();
-}
-
 
 function showSpinner() {
   document.getElementById("spinner-overlay").classList.remove("d-none");
