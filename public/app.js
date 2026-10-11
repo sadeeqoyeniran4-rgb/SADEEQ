@@ -1,773 +1,642 @@
 document.addEventListener("DOMContentLoaded", () => {
- 
- let currentPage = 1;
-const productsPerPage = 30; // change as needed
-let totalPages = 1;
-let currentCategory = "all";
-let currentSearchQuery = "";
+  if (!document.body.classList.contains("storefront")) return;
 
-  // ================= GLOBAL DISCOUNT CONFIG =================
-const DISCOUNT = {
-  active: false,
-  percentage: 5, // 💰 20% OFF
-  start: new Date("2025-10-28"),
-  end: new Date("2025-11-15"),
-};
-
-// 🕒 Check if sale period is active
-const today = new Date();
-if (today >= DISCOUNT.start && today <= DISCOUNT.end) {
-  DISCOUNT.active = true;
-  console.log("🔥 Sale is active! Applying discount...");
-} else {
-  console.log("💤 No sale currently.");
-}
-// ================= SHOW DISCOUNT BANNER =================
-const banner = document.getElementById("discount-banner");
-const bannerPercent = document.getElementById("discount-percentage");
-
-if (DISCOUNT.active && banner) {
-  bannerPercent.textContent = `${DISCOUNT.percentage}%`;
-  banner.style.display = "block";
-} else if (banner) {
-  banner.style.display = "none";
-}
-
-// ---------------- Spinner Functions ----------------
-const spinnerEl = document.getElementById("spinner-overlay");
-
-function showSpinner() {
-  spinnerEl?.classList.add("show");
-}
-
-function hideSpinner() {
-  spinnerEl?.classList.remove("show");
-}
-
-// Make globally accessible
-window.showSpinner = showSpinner;
-window.hideSpinner = hideSpinner;
-
-const menuToggle = document.getElementById("menu-toggle");
-const sidebar = document.getElementById("sidebar");
-
-
-  // ---------------- CONTACT FORM ----------------
-  const form = document.getElementById("contactForm");
-  const formResponse = document.getElementById("formResponse");
-
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = {
-        name: document.getElementById("contact-name").value,
-        email: document.getElementById("contact-email").value,
-        message: document.getElementById("message").value,
-      };
-
-      try {
-        const res = await fetch(`${window.API_BASE}/api/contact`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-        const data = await res.json();
-        formResponse.textContent = data.message;
-        formResponse.style.color = data.success ? "green" : "red";
-        if (data.success) form.reset();
-      } catch {
-        formResponse.textContent = "Something went wrong. Please try again.";
-        formResponse.style.color = "red";
-      }
-    });
-  }
-
-  // ---------------- CART SYSTEM ----------------
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-const cartItemsEl = document.getElementById("cart-items");
-const cartTotalEl = document.getElementById("cart-total");
-const cartCountEl = document.getElementById("cart-count");
-const cartBtn = document.getElementById("cartBtn");
-const cartModal = document.getElementById("cart-modal");
-const closeCart = document.getElementById("close-cart");
-const checkoutTotalEl = document.getElementById("checkout-total");
-
-// Toast element
-const toastEl = document.getElementById("cartToast");
-const toastMessage = toastEl?.querySelector(".toast-message");
-const toastClose = toastEl?.querySelector(".toast-close");
-
-const saveCart = () => localStorage.setItem("cart", JSON.stringify(cart));
-
-function updateCartUI() {
-  if (!cartItemsEl) return;
-  cartItemsEl.innerHTML = "";
-  let total = 0, count = 0;
-
-  cart.forEach((item, i) => {
-    total += item.price * item.qty;
-    count += item.qty;
-    const div = document.createElement("div");
-    div.className = "cart-item";
-    div.innerHTML = `
-      <span>${item.name} × ${item.qty} — ₦${(item.price * item.qty).toLocaleString()}</span>
-      <button class="remove" data-i="${i}">×</button>
-    `;
-    cartItemsEl.appendChild(div);
+  const API_BASE = String(window.API_BASE || window.location.origin).replace(/\/$/, "");
+  const pageSize = 12;
+  const currency = new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
   });
+  const productGrid = document.getElementById("product-grid");
+  const resultsCount = document.getElementById("results-count");
+  const pagination = document.getElementById("pagination");
+  const spinner = document.getElementById("spinner-overlay");
+  const categoryButtons = [...document.querySelectorAll(".filter-btn")];
+  let products = [];
+  let category = "all";
+  let query = "";
+  let currentPage = 1;
+  let checkoutTotals = null;
+  let checkoutRequestId = 0;
+  let activeDialog = null;
+  let dialogTrigger = null;
+  let toastTimer;
 
-  if (cartTotalEl) cartTotalEl.textContent = `₦${total.toLocaleString()}`;
-  if (checkoutTotalEl) checkoutTotalEl.textContent = `₦${total.toLocaleString()}`;
-  if (cartCountEl) cartCountEl.textContent = count;
-  saveCart();
-}
-
-// ---------------- Toast Functions ----------------
-function showToast(message, duration = 3000) {
-  if (!toastEl || !toastMessage) return;
-
-  toastMessage.textContent = message;
-  toastEl.classList.add("show");
-
-  // Hide after duration
-  setTimeout(() => toastEl.classList.remove("show"), duration);
-}
-
-// Close button
-toastClose?.addEventListener("click", () => toastEl.classList.remove("show"));
-
-// ---------------- Add to Cart ----------------
-function addToCart(product) {
-  const found = cart.find(i => i.id === product.id);
-  if (found) {
-    found.qty++;
-  } else {
-    cart.push({ ...product, qty: 1 });
-  }
-
-  updateCartUI();
-  showToast(`${product.name} added to cart! 🎉`);
-}
-
-// Remove item
-if (cartItemsEl) {
-  cartItemsEl.addEventListener("click", (e) => {
-    if (e.target.classList.contains("remove")) {
-      cart.splice(e.target.dataset.i, 1);
-      updateCartUI();
-    }
-  });
-}
-
-// Toggle cart modal
-cartBtn?.addEventListener("click", (e) => {
-  e.preventDefault();
-  cartModal?.classList.add("open");
-});
-closeCart?.addEventListener("click", (e) => {
-  e.preventDefault();
-  cartModal?.classList.remove("open");
-});
-
-// Make globally accessible
-window.addToCart = addToCart;
-updateCartUI();
-
-  // ---------------- PRODUCTS ----------------
-  const productsContainer = document.getElementById("product-grid");
-  const categoryButtons = document.querySelectorAll(".filter-btn");
-
-async function loadProducts(page = 1) {
-  if (!productsContainer) return;
-  showSpinner();
-
-  try {
-    const res = await fetch(`${window.API_BASE}/api/products`);
-    const products = await res.json();
-
-    // Filter based on category/search if you want (optional)
-    let filtered = Array.from(products);
-
-    // Category filter
-    if (currentCategory && currentCategory !== "all") {
-  filtered = filtered.filter(p =>
-    (p.description || "")
-      .toLowerCase()
-      .replace(/\s+/g, "-") === currentCategory.toLowerCase()
-  );
-}
-
-
-    // Search filter
-    if (currentSearchQuery) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(currentSearchQuery)
-      );
-    }
-
-    // Pagination logic
-    totalPages = Math.ceil(filtered.length / productsPerPage);
-    const start = (page - 1) * productsPerPage;
-    const end = start + productsPerPage;
-    const pageProducts = filtered.slice(start, end);
-
-    productsContainer.innerHTML = "";
-
-    pageProducts.forEach(p => {
-      const card = document.createElement("div");
-      card.className = "product-card";
-
-      let finalPrice = Number(p.price);
-      if (DISCOUNT.active) finalPrice = p.price - (p.price * DISCOUNT.percentage) / 100;
-
-      card.innerHTML = `
-        <img src="${p.image_url || 'default.jpg'}" alt="${p.name}" loading="lazy">
-        <h3>${p.name}</h3>
-        <p>${p.description || ""}</p>
-        ${DISCOUNT.active
-          ? `<p class="price"><span class="old-price">₦${p.price.toLocaleString()}</span> <span class="new-price">₦${finalPrice.toLocaleString()}</span></p>
-             <span class="discount-badge">-${DISCOUNT.percentage}% OFF</span>`
-          : `<p class="price">₦${p.price.toLocaleString()}</p>`}
-        <button class="add-to-cart" data-id="${p.id}" data-name="${p.name}" data-price="${finalPrice}">Add to Cart</button>
-      `;
-      productsContainer.appendChild(card);
-    });
-
-    document.querySelectorAll(".add-to-cart").forEach(btn =>
-      btn.addEventListener("click", () => addToCart({
-        id: +btn.dataset.id,
-        name: btn.dataset.name,
-        price: +btn.dataset.price
-      }))
-    );
-
-    renderPagination(); // render page buttons
-
-  } catch (err) {
-    console.error("❌ Error loading products:", err);
-    productsContainer.innerHTML = "<p class='error-msg'>Unable to load products.</p>";
-  } finally {
-    hideSpinner();
-  }
-}
-
-loadProducts();
-
-function renderPagination() {
-  const paginationContainer = document.getElementById("pagination");
-  if (!paginationContainer || totalPages <= 1) {
-    paginationContainer.innerHTML = "";
-    return;
-  }
-
-  // Bootstrap-like pagination wrapper
-  paginationContainer.innerHTML = `<nav aria-label="Product pages">
-      <ul class="pagination justify-content-center flex-wrap"></ul>
-    </nav>`;
-
-  const ul = paginationContainer.querySelector(".pagination");
-
-  // Previous
-  const prev = document.createElement("li");
-  prev.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
-  prev.innerHTML = `<a class="page-link" href="#">&laquo;</a>`;
-  prev.onclick = e => {
-    e.preventDefault();
-    if (currentPage > 1) {
-      currentPage--;
-      loadProducts(currentPage);
-    }
+  const elements = (selector, parent = document) => [...parent.querySelectorAll(selector)];
+  const setStatus = (element, message, isError = false) => {
+    if (!element) return;
+    element.textContent = message;
+    element.classList.toggle("is-error", isError);
   };
-  ul.appendChild(prev);
 
-  // Page numbers
-  for (let i = 1; i <= totalPages; i++) {
-    const li = document.createElement("li");
-    li.className = `page-item ${i === currentPage ? "active" : ""}`;
-    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-    li.onclick = e => {
-      e.preventDefault();
-      currentPage = i;
-      loadProducts(currentPage);
+  async function requestJson(url, options) {
+    const response = await fetch(url, options);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || data.error || "The request could not be completed.");
+    }
+    return data;
+  }
+
+  function getSavedCart() {
+    try {
+      const stored = JSON.parse(localStorage.getItem("cart") || "[]");
+      if (!Array.isArray(stored)) return [];
+      return stored
+        .filter(item => item && item.id !== undefined && typeof item.name === "string")
+        .map(item => ({
+          id: item.id,
+          name: item.name,
+          price: Number(item.price),
+          qty: Math.max(1, Math.floor(Number(item.qty) || 1)),
+        }))
+        .filter(item => Number.isFinite(item.price) && item.price >= 0);
+    } catch (error) {
+      console.warn("Could not restore the saved shopping bag.", error);
+      return [];
+    }
+  }
+
+  let cart = getSavedCart();
+
+  function saveCart() {
+    try {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (error) {
+      console.warn("Could not save the shopping bag on this device.", error);
+    }
+  }
+
+  function updateCart() {
+    const cartItems = document.getElementById("cart-items");
+    const cartTotal = document.getElementById("cart-total");
+    const cartCount = document.getElementById("cart-count");
+    const cartButton = document.getElementById("cartBtn");
+    const checkoutButton = document.getElementById("checkout-btn");
+    const itemLabel = document.getElementById("cart-item-label");
+    const quantity = cart.reduce((sum, item) => sum + item.qty, 0);
+    const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+    cartItems.replaceChildren();
+    if (!cart.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-cart";
+      empty.textContent = "Your bag is waiting for something lovely.";
+      cartItems.append(empty);
+    }
+
+    cart.forEach((item, index) => {
+      const row = document.createElement("article");
+      row.className = "cart-item";
+      const details = document.createElement("div");
+      const name = document.createElement("h3");
+      name.textContent = item.name;
+      const price = document.createElement("p");
+      price.textContent = currency.format(item.price);
+      details.append(name, price);
+
+      const controls = document.createElement("div");
+      controls.className = "quantity-controls";
+      controls.setAttribute("aria-label", `${item.name} quantity`);
+      const decrease = document.createElement("button");
+      decrease.type = "button";
+      decrease.textContent = "−";
+      decrease.setAttribute("aria-label", `Decrease ${item.name} quantity`);
+      decrease.dataset.action = "decrease";
+      decrease.dataset.index = String(index);
+      decrease.disabled = item.qty <= 1;
+      const quantityLabel = document.createElement("span");
+      quantityLabel.textContent = String(item.qty);
+      const increase = document.createElement("button");
+      increase.type = "button";
+      increase.textContent = "+";
+      increase.setAttribute("aria-label", `Increase ${item.name} quantity`);
+      increase.dataset.action = "increase";
+      increase.dataset.index = String(index);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "remove-item";
+      remove.textContent = "Remove";
+      remove.dataset.action = "remove";
+      remove.dataset.index = String(index);
+      controls.append(decrease, quantityLabel, increase, remove);
+      row.append(details, controls);
+      cartItems.append(row);
+    });
+
+    cartCount.textContent = String(quantity);
+    cartButton.setAttribute("aria-label", `Open shopping bag, ${quantity} ${quantity === 1 ? "item" : "items"}`);
+    itemLabel.textContent = quantity ? `(${quantity})` : "";
+    cartTotal.textContent = currency.format(subtotal);
+    checkoutButton.disabled = cart.length === 0;
+    saveCart();
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById("cartToast");
+    toast.querySelector(".toast-message").textContent = message;
+    toast.classList.add("show");
+    toast.setAttribute("aria-hidden", "false");
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => {
+      toast.classList.remove("show");
+      toast.setAttribute("aria-hidden", "true");
+    }, 3200);
+  }
+
+  function addToCart(product) {
+    const existing = cart.find(item => String(item.id) === String(product.id));
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
+    }
+    updateCart();
+    showToast(`${product.name} added to your bag.`);
+  }
+
+  function showDialog(dialog, trigger) {
+    if (!dialog) return;
+    if (activeDialog) closeDialog(activeDialog);
+    activeDialog = dialog;
+    dialogTrigger = trigger;
+    dialog.setAttribute("aria-hidden", "false");
+    const firstControl = dialog.querySelector("button, input, select, textarea, a[href]");
+    firstControl?.focus();
+  }
+
+  function closeDialog(dialog) {
+    if (!dialog) return;
+    dialog.setAttribute("aria-hidden", "true");
+    if (activeDialog === dialog) {
+      activeDialog = null;
+      dialogTrigger?.focus();
+      dialogTrigger = null;
+    }
+  }
+
+  function normalized(value) {
+    return String(value || "")
+      .toLocaleLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
+  function renderPagination(pageCount) {
+    pagination.replaceChildren();
+    if (pageCount <= 1) return;
+
+    const addPageButton = (label, page, text, disabled = false) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "page-button";
+      button.textContent = text;
+      button.disabled = disabled;
+      if (page === currentPage) button.setAttribute("aria-current", "page");
+      button.setAttribute("aria-label", label);
+      button.addEventListener("click", () => {
+        currentPage = page;
+        renderProducts();
+        document.getElementById("shop-title").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      pagination.append(button);
     };
-    ul.appendChild(li);
+
+    addPageButton("Previous page", Math.max(1, currentPage - 1), "←", currentPage === 1);
+    for (let page = 1; page <= pageCount; page += 1) {
+      addPageButton(`Page ${page}`, page, String(page));
+    }
+    addPageButton("Next page", Math.min(pageCount, currentPage + 1), "→", currentPage === pageCount);
   }
 
-  // Next
-  const next = document.createElement("li");
-  next.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
-  next.innerHTML = `<a class="page-link" href="#">&raquo;</a>`;
-  next.onclick = e => {
-    e.preventDefault();
-    if (currentPage < totalPages) {
-      currentPage++;
-      loadProducts(currentPage);
+  function renderProducts() {
+    const filtered = products.filter(product => {
+      const matchesCategory = category === "all" || normalized(product.description).includes(category);
+      const searchableText = `${product.name} ${product.description || ""}`.toLocaleLowerCase();
+      return matchesCategory && searchableText.includes(query);
+    });
+    const pageCount = Math.ceil(filtered.length / pageSize);
+    currentPage = Math.min(Math.max(1, currentPage), Math.max(1, pageCount));
+    const firstProduct = (currentPage - 1) * pageSize;
+    const visibleProducts = filtered.slice(firstProduct, firstProduct + pageSize);
+
+    productGrid.replaceChildren();
+    resultsCount.textContent = `${filtered.length} ${filtered.length === 1 ? "fragrance" : "fragrances"}`;
+    if (!visibleProducts.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      const heading = document.createElement("h3");
+      heading.textContent = products.length ? "No scents found this time." : "Our collection is being refreshed.";
+      const message = document.createElement("p");
+      message.textContent = products.length
+        ? "Try another search or choose a different fragrance type."
+        : "Please check back shortly, or get in touch and we will be happy to help.";
+      empty.append(heading, message);
+      productGrid.append(empty);
     }
-  };
-  ul.appendChild(next);
-}
 
+    visibleProducts.forEach(product => {
+      const card = document.createElement("article");
+      card.className = "product-card";
+      const imageWrap = document.createElement("div");
+      imageWrap.className = "product-image-wrap";
+      const image = document.createElement("img");
+      image.src = product.image_url || "lofinda2.png";
+      image.alt = product.name;
+      image.loading = "lazy";
+      image.decoding = "async";
+      image.addEventListener("error", () => {
+        image.src = "lofinda2.png";
+        image.classList.add("image-fallback");
+      }, { once: true });
+      imageWrap.append(image);
 
-  // ---------------- CATEGORY FILTER ----------------
-  categoryButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    currentCategory = btn.dataset.category; // Set selected category
-    currentPage = 1;                        // Reset page
-    categoryButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    loadProducts(currentPage);              // Reload products
-  });
-});
+      const copy = document.createElement("div");
+      copy.className = "product-copy";
+      const name = document.createElement("h3");
+      name.textContent = product.name;
+      const description = document.createElement("p");
+      description.className = "product-description";
+      description.textContent = product.description || "A fragrance to make your own.";
+      const price = document.createElement("p");
+      price.className = "product-price";
+      price.textContent = currency.format(product.price);
+      const addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className = "button button-outline add-to-cart";
+      addButton.textContent = "Add to bag";
+      addButton.addEventListener("click", () => addToCart(product));
+      copy.append(name, description, price, addButton);
+      card.append(imageWrap, copy);
+      productGrid.append(card);
+    });
 
- // ---------------- CHECKOUT MODAL ----------------
-const checkoutBtn = document.getElementById("checkout-btn");
-const checkoutModal = document.getElementById("checkout-modal");
-const checkoutClose = document.getElementById("checkout-close");
-const shippingSelect = document.getElementById("shipping");
-const checkoutForm = document.getElementById("checkout-form");
-let checkoutTotals = {};
+    productGrid.setAttribute("aria-busy", "false");
+    renderPagination(pageCount);
+  }
 
-if (checkoutBtn) {
-  checkoutBtn.addEventListener("click", async () => {
-    if (cart.length === 0) {
-      alert("Your cart is empty!");
+  async function loadProducts() {
+    spinner.setAttribute("aria-hidden", "false");
+    productGrid.setAttribute("aria-busy", "true");
+    try {
+      const data = await requestJson(`${API_BASE}/api/products`);
+      if (!Array.isArray(data)) throw new Error("The collection is temporarily unavailable.");
+      products = data
+        .map(product => ({
+          id: product.id,
+          name: String(product.name || "").trim(),
+          description: String(product.description || ""),
+          image_url: typeof product.image_url === "string" ? product.image_url : "",
+          price: Number(product.price),
+        }))
+        .filter(product => product.id !== undefined && product.name && Number.isFinite(product.price) && product.price >= 0);
+      renderProducts();
+    } catch (error) {
+      console.error("Could not load the fragrance collection.", error);
+      productGrid.replaceChildren();
+      const message = document.createElement("p");
+      message.className = "error-message";
+      message.textContent = "We could not load the collection right now. Please refresh or try again in a moment.";
+      productGrid.append(message);
+      productGrid.setAttribute("aria-busy", "false");
+      resultsCount.textContent = "";
+    } finally {
+      spinner.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  function openCheckout() {
+    if (!cart.length) return;
+    checkoutRequestId += 1;
+    const response = document.getElementById("checkoutResponse");
+    const submit = document.getElementById("proceed-payment");
+    checkoutTotals = null;
+    document.getElementById("shipping").value = "";
+    document.getElementById("checkout-total").textContent = "Choose a delivery method to see your total.";
+    setStatus(response, "");
+    submit.disabled = true;
+    document.getElementById("cart-modal").setAttribute("aria-hidden", "true");
+    activeDialog = null;
+    dialogTrigger = document.getElementById("checkout-btn");
+    showDialog(document.getElementById("checkout-modal"), dialogTrigger);
+  }
+
+  async function updateCheckoutTotal() {
+    const requestId = ++checkoutRequestId;
+    const shipping = document.getElementById("shipping").value;
+    const totalBox = document.getElementById("checkout-total");
+    const submit = document.getElementById("proceed-payment");
+    const response = document.getElementById("checkoutResponse");
+    checkoutTotals = null;
+    submit.disabled = true;
+    if (!shipping) {
+      totalBox.textContent = "Choose a delivery method to see your total.";
       return;
     }
 
+    totalBox.textContent = "Calculating your total…";
     try {
-      // ✅ Single fetch — includes discount info
-      const res = await fetch(`${window.API_BASE}/api/checkout`, {
+      const data = await requestJson(`${API_BASE}/api/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cart,
-          frontendDiscountApplied: DISCOUNT.active, // 👈 include discount flag
-        }),
+        body: JSON.stringify({ cart, shipping }),
       });
-
-      const data = await res.json();
-
-      if (data.success) {
-        checkoutTotals = data;
-        checkoutTotalEl.innerHTML = `
-          <div><strong>Subtotal:</strong> ₦${data.subtotal.toLocaleString()}</div>
-          <div><strong>Shipping:</strong> ₦${data.shippingCost.toLocaleString()}</div>
-          ${
-            data.discount > 0
-              ? `<div><strong>Discount:</strong> -₦${data.discount.toLocaleString()}</div>`
-              : ""
-          }
-          <hr>
-          <div><strong>Total:</strong> ₦${data.grandTotal.toLocaleString()}</div>
-        `;
-        checkoutModal.style.display = "flex";
-      } else {
-        alert("Error calculating total");
+      if (requestId !== checkoutRequestId) return;
+      if (!data.success || !Number.isFinite(Number(data.grandTotal))) {
+        throw new Error("We could not calculate your total. Please try again.");
       }
-    } catch (err) {
-      console.error("Checkout error:", err);
-      alert("Checkout error — please try again.");
+      checkoutTotals = data;
+      totalBox.replaceChildren();
+      [
+        ["Items", data.subtotal],
+        ["Delivery", data.shippingCost],
+        ...(Number(data.discount) > 0 ? [["Discount", -Number(data.discount)]] : []),
+        ["Total", data.grandTotal],
+      ].forEach(([label, amount], index, rows) => {
+        const row = document.createElement("p");
+        row.className = index === rows.length - 1 ? "checkout-grand-total" : "";
+        const rowLabel = document.createElement("span");
+        rowLabel.textContent = label;
+        const value = document.createElement("strong");
+        value.textContent = currency.format(Number(amount));
+        row.append(rowLabel, value);
+        totalBox.append(row);
+      });
+      setStatus(response, "");
+      submit.disabled = false;
+    } catch (error) {
+      if (requestId !== checkoutRequestId) return;
+      totalBox.textContent = "Your total is not available yet.";
+      setStatus(response, error.message, true);
     }
-  });
-}
+  }
 
-// Close modal
-if (checkoutClose)
-  checkoutClose.addEventListener("click", () => (checkoutModal.style.display = "none"));
-window.addEventListener("click", (e) => {
-  if (e.target === checkoutModal) checkoutModal.style.display = "none";
-});
-
-// Update total when shipping method changes
-if (shippingSelect) {
-  shippingSelect.addEventListener("change", async (e) => {
-    const selected = e.target.value;
-    if (!selected) return;
-
-    checkoutTotalEl.style.opacity = "0.5";
-    checkoutTotalEl.innerHTML = "<em>Calculating...</em>";
-
-    try {
-      const res = await fetch(`${window.API_BASE}/api/checkout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cart,
-          shipping: selected,
-          frontendDiscountApplied: DISCOUNT.active, // 👈 include here too
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        checkoutTotals = data;
-        setTimeout(() => {
-          checkoutTotalEl.style.transition = "all 0.4s ease";
-          checkoutTotalEl.style.opacity = "1";
-          checkoutTotalEl.innerHTML = `
-            <div><strong>Subtotal:</strong> ₦${data.subtotal.toLocaleString()}</div>
-            <div><strong>Shipping:</strong> ₦${data.shippingCost.toLocaleString()}</div>
-            ${
-              data.discount > 0
-                ? `<div><strong>Discount:</strong> -₦${data.discount.toLocaleString()}</div>`
-                : ""
-            }
-            <hr>
-            <div style="font-size:1.1em;"><strong>Total:</strong> ₦${data.grandTotal.toLocaleString()}</div>
-          `;
-        }, 300);
-      } else {
-        checkoutTotalEl.innerHTML = "<span style='color:red;'>Error updating total.</span>";
-      }
-    } catch (err) {
-      console.error("❌ Error updating total with shipping:", err);
-      checkoutTotalEl.innerHTML = "<span style='color:red;'>Network error. Try again.</span>";
+  async function submitPayment(event) {
+    event.preventDefault();
+    const response = document.getElementById("checkoutResponse");
+    const submit = document.getElementById("proceed-payment");
+    if (!checkoutTotals || !document.getElementById("shipping").value) {
+      setStatus(response, "Choose a delivery method and wait for the total before continuing.", true);
+      return;
     }
-  });
-}
+    if (!window.PaystackPop || !window.PAYSTACK_KEY) {
+      setStatus(response, "Secure checkout is temporarily unavailable. Please contact us on WhatsApp to place your order.", true);
+      return;
+    }
 
-
-  // ---------------- ERROR MODAL ----------------
-  function showErrorModal(message) {
-    let modal = document.createElement("div");
-    modal.id = "errorModal";
-    modal.style.position = "fixed";
-    modal.style.top = "0";
-    modal.style.left = "0";
-    modal.style.width = "100%";
-    modal.style.height = "100%";
-    modal.style.background = "rgba(0,0,0,0.5)";
-    modal.style.display = "flex";
-    modal.style.alignItems = "center";
-    modal.style.justifyContent = "center";
-    modal.style.zIndex = "9999";
-
-    modal.innerHTML = `
-      <div style="background:white; padding:20px; border-radius:12px; max-width:400px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
-        <h2 style="color:#d9534f; margin-bottom:15px;">Transaction Failed</h2>
-        <p>${message}</p>
-        <button id="closeErrorModal" style="margin-top:15px; padding:10px 20px; background:#d9534f; color:white; border:none; border-radius:6px; cursor:pointer;">Close</button>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    document.getElementById("closeErrorModal").addEventListener("click", () => {
-      modal.remove();
-    });
-  }
-
-  // ---------------- PAYSTACK + VERIFY PAYMENT ----------------
-  if (checkoutForm) {
-    checkoutForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const name = document.getElementById("checkout-name").value.trim(),
-        email = document.getElementById("checkout-email").value.trim(),
-        phone = document.getElementById("checkout-phone").value.trim(),
-        address = document.getElementById("address").value.trim(),
-        shipping = document.getElementById("shipping").value || "pickup";
-
-      if (!checkoutTotals.success || checkoutTotals.grandTotal <= 0) {
-        return showErrorModal("Your cart is empty or totals not calculated!");
-      }
-
-      if (!name || !email || !phone || !address) {
-        return showErrorModal("Please fill in all required fields!");
-      }
-
-      if (typeof PaystackPop === "undefined") {
-        return showErrorModal("Payment system not loaded. Please refresh and try again.");
-      }
-
-        let handler = PaystackPop.setup({
-          key: window.PAYSTACK_KEY,
-        email,
-        amount: checkoutTotals.grandTotal * 100,
-        currency: "NGN",
-        ref: "LOFINDA-" + Date.now(),
-        callback: function (res) {
-          // ✅ Call our backend to verify and save the order
-            fetch(`${window.API_BASE}/api/verify-payment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              reference: res.reference,
-              cart,
-              customer: { name, email, phone, address, shipping },
-              totals: checkoutTotals,
-            }),
-          })
-            .then((r) => r.json())
-            .then((data) => {
-              if (data.success) {
-                localStorage.setItem(
-                  "lastOrder",
-                  JSON.stringify({
-                    reference: res.reference,
-                    cart,
-                    customer: { name, email, phone, address, shipping },
-                    totals: checkoutTotals,
-                  })
-                );
-                cart = [];
-                localStorage.removeItem("cart");
-                window.location.href = "thankyou.html";
-              } else {
-                showErrorModal("❌ Payment verification failed.");
-              }
-            })
-            .catch((err) => {
-              console.error("Error verifying payment:", err);
-              showErrorModal("❌ Error verifying payment.");
-            });
-        },
-        onClose: function () {
-          showErrorModal("Transaction was not completed. Please try again.");
-        },
-      });
-
-      handler.openIframe();
-    });
-  }
- 
-  // ---------------- SEARCH BAR ----------------
-const searchIcon = document.getElementById("search-icon");
-const searchBar = document.getElementById("search-bar");
-const searchInput = document.getElementById("search-input");
-const searchBtn = document.getElementById("search-btn");
-const searchIconInner = searchBtn.querySelector("i");
-
-// Toggle search bar visibility
-searchIcon.addEventListener("click", () => {
-  searchBar.classList.toggle("show");
-  if (searchBar.classList.contains("show")) searchInput.focus();
-});
-
-// Live search as user types
-searchInput.addEventListener("input", () => {
-  currentSearchQuery = searchInput.value.toLowerCase().trim();
-  currentPage = 1;
-  loadProducts(currentPage);
-
-  // Toggle search/clear button
-  if (currentSearchQuery) {
-    searchBtn.classList.add("clear");
-    searchIconInner.className = "bi bi-x"; // ❌
-    searchBtn.style.display = "inline-flex";
-  } else {
-    searchBtn.classList.remove("clear");
-    searchIconInner.className = "bi bi-search"; // 🔍
-    searchBtn.style.display = "none";
-  }
-});
-
-// Clear input when button is clicked
-searchBtn.addEventListener("click", () => {
-  if (searchBtn.classList.contains("clear")) {
-    searchInput.value = "";
-    currentSearchQuery = "";
-    currentPage = 1;
-    loadProducts(currentPage);
-
-    searchBtn.classList.remove("clear");
-    searchIconInner.className = "bi bi-search";
-    searchBtn.style.display = "none";
-    searchInput.focus();
-  } else {
-    // Optional: toggle search bar
-    searchBar.classList.toggle("show");
-    if (searchBar.classList.contains("show")) searchInput.focus();
-  }
-});
-
-  
-// ---------------- REVIEWS / SOCIAL PROOF ----------------
-const reviewForm = document.getElementById("reviewForm");
-const reviewResponse = document.getElementById("reviewResponse");
-const socialProofEl = document.getElementById("social-proof");
-const API_BASE = window.API_BASE; // make sure this is set globally
-
-// Load reviews safely
-async function loadSocialProof() {
-  const socialProofEl = document.getElementById("review-cards");
-  if (!socialProofEl) return;
-
-  try {
-    const res = await fetch(`${API_BASE}/api/reviews`);
-    const reviews = await res.json();
-
-    socialProofEl.innerHTML = reviews.map(r => `
-      <div class="col-md-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <p class="card-text">“${r.message}”</p>
-            <h6 class="card-subtitle mb-2 text-muted">– ${r.name}${r.location ? ", " + r.location : ""}</h6>
-            <div class="text-warning">
-              ${'<i class="bi bi-star-fill"></i>'.repeat(r.rating)}
-              ${'<i class="bi bi-star"></i>'.repeat(5 - r.rating)}
-            </div>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-  } catch (err) {
-    console.error("❌ Error loading reviews:", err);
-    socialProofEl.innerHTML = "<p class='text-danger'>Unable to load reviews.</p>";
-  }
-}
-
-if (reviewForm) {
-  reviewForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = {
-      name: document.getElementById("review-name").value,
-      location: document.getElementById("review-location").value,
-      message: document.getElementById("review-message").value,
-      rating: +document.getElementById("review-rating").value
+    const customer = {
+      name: document.getElementById("checkout-name").value.trim(),
+      email: document.getElementById("checkout-email").value.trim(),
+      phone: document.getElementById("checkout-phone").value.trim(),
+      address: document.getElementById("address").value.trim(),
+      shipping: document.getElementById("shipping").value,
     };
+    submit.disabled = true;
+    setStatus(response, "Opening secure payment…");
+    let paymentCallbackReceived = false;
     try {
-      const res = await fetch(`${API_BASE}/api/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+      const handler = window.PaystackPop.setup({
+        key: window.PAYSTACK_KEY,
+        email: customer.email,
+        amount: Math.round(Number(checkoutTotals.grandTotal) * 100),
+        currency: "NGN",
+        ref: `LOFINDA-${Date.now()}`,
+        callback: async payment => {
+          paymentCallbackReceived = true;
+          setStatus(response, "Confirming your payment…");
+          try {
+            const data = await requestJson(`${API_BASE}/api/verify-payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ reference: payment.reference, cart, customer, totals: checkoutTotals }),
+            });
+            if (!data.success) throw new Error(data.message || "Payment confirmation failed.");
+            localStorage.setItem("lastOrder", JSON.stringify({
+              reference: payment.reference,
+              cart,
+              customer,
+              totals: checkoutTotals,
+            }));
+            localStorage.removeItem("cart");
+            window.location.assign("thankyou.html");
+          } catch (error) {
+            setStatus(response, `${error.message} Please contact us with your payment reference: ${payment.reference}`, true);
+          }
+        },
+        onClose: () => {
+          if (paymentCallbackReceived) return;
+          setStatus(response, "Payment was not completed. Your bag is saved; you can try again when ready.");
+          submit.disabled = false;
+        },
       });
-      const data = await res.json();
-      if (reviewResponse) {
-        reviewResponse.textContent = data.message;
-        reviewResponse.style.color = data.success ? "green" : "red";
+      handler.openIframe();
+    } catch (error) {
+      setStatus(response, error.message || "Secure checkout could not be opened. Please try again.", true);
+      submit.disabled = false;
+    }
+  }
+
+  async function loadReviews() {
+    const reviewCards = document.getElementById("review-cards");
+    reviewCards.setAttribute("aria-busy", "true");
+    try {
+      const data = await requestJson(`${API_BASE}/api/reviews`);
+      if (!Array.isArray(data)) throw new Error("Customer reviews are temporarily unavailable.");
+      reviewCards.replaceChildren();
+      if (!data.length) {
+        const empty = document.createElement("p");
+        empty.className = "reviews-empty";
+        empty.textContent = "Be the first to share a kind word.";
+        reviewCards.append(empty);
       }
-      if (data.success) {
-        reviewForm.reset();
-        loadSocialProof(); // refresh reviews
-      }
-    } catch {
-      if (reviewResponse) {
-        reviewResponse.textContent = "Something went wrong. Try again.";
-        reviewResponse.style.color = "red";
-      }
+      data.slice(0, 6).forEach(review => {
+        const card = document.createElement("article");
+        card.className = "review-card";
+        const stars = document.createElement("p");
+        stars.className = "review-stars";
+        const rating = Math.max(0, Math.min(5, Math.round(Number(review.rating) || 0)));
+        stars.textContent = `${"★".repeat(rating)}${"☆".repeat(5 - rating)}`;
+        stars.setAttribute("aria-label", `${rating} out of 5 stars`);
+        const message = document.createElement("blockquote");
+        message.textContent = `“${String(review.message || "")}”`;
+        const author = document.createElement("p");
+        author.className = "review-author";
+        author.textContent = `— ${String(review.name || "Customer")}${review.location ? `, ${review.location}` : ""}`;
+        card.append(stars, message, author);
+        reviewCards.append(card);
+      });
+    } catch (error) {
+      console.error("Could not load customer reviews.", error);
+      const message = document.createElement("p");
+      message.className = "reviews-empty";
+      message.textContent = "Customer reviews are unavailable right now.";
+      reviewCards.replaceChildren(message);
+    } finally {
+      reviewCards.setAttribute("aria-busy", "false");
+    }
+  }
+
+  updateCart();
+  loadProducts();
+  loadReviews();
+  document.getElementById("current-year").textContent = String(new Date().getFullYear());
+
+  const menuToggle = document.getElementById("menu-toggle");
+  const navLinks = document.getElementById("nav-links");
+  menuToggle.addEventListener("click", () => {
+    const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
+    menuToggle.setAttribute("aria-expanded", String(!isOpen));
+    menuToggle.setAttribute("aria-label", isOpen ? "Open navigation menu" : "Close navigation menu");
+    navLinks.classList.toggle("open", !isOpen);
+  });
+  elements("a", navLinks).forEach(link => link.addEventListener("click", () => {
+    navLinks.classList.remove("open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.setAttribute("aria-label", "Open navigation menu");
+  }));
+
+  const searchBar = document.getElementById("search-bar");
+  const searchToggle = document.getElementById("search-icon");
+  const searchInput = document.getElementById("search-input");
+  const searchClear = document.getElementById("search-btn");
+  searchToggle.addEventListener("click", () => {
+    const isOpen = !searchBar.hidden;
+    searchBar.hidden = isOpen;
+    searchToggle.setAttribute("aria-expanded", String(!isOpen));
+    if (!isOpen) searchInput.focus();
+    else {
+      searchInput.value = "";
+      query = "";
+      currentPage = 1;
+      searchClear.hidden = true;
+      renderProducts();
     }
   });
-}
+  searchInput.addEventListener("input", () => {
+    query = searchInput.value.trim().toLocaleLowerCase();
+    currentPage = 1;
+    searchClear.hidden = !searchInput.value;
+    renderProducts();
+  });
+  searchBar.addEventListener("submit", event => event.preventDefault());
+  searchClear.addEventListener("click", () => {
+    searchInput.value = "";
+    query = "";
+    currentPage = 1;
+    searchClear.hidden = true;
+    renderProducts();
+    searchInput.focus();
+  });
 
-// Load reviews on page load
-loadSocialProof();
+  categoryButtons.forEach(button => button.addEventListener("click", () => {
+    category = button.dataset.category;
+    currentPage = 1;
+    categoryButtons.forEach(item => {
+      const selected = item === button;
+      item.classList.toggle("active", selected);
+      item.setAttribute("aria-pressed", String(selected));
+    });
+    renderProducts();
+  }));
 
-// ---------------- RECENT PURCHASE (REAL ORDERS) ----------------
-const recentPurchaseEl = document.getElementById("recent-purchase");
-let recentOrders = [];
+  document.getElementById("cartBtn").addEventListener("click", event => showDialog(document.getElementById("cart-modal"), event.currentTarget));
+  document.getElementById("close-cart").addEventListener("click", () => closeDialog(document.getElementById("cart-modal")));
+  document.getElementById("cart-modal").addEventListener("click", event => {
+    if (event.target.id === "cart-modal") closeDialog(event.currentTarget);
+  });
+  document.getElementById("cart-items").addEventListener("click", event => {
+    const button = event.target.closest("button[data-action]");
+    if (!button) return;
+    const item = cart[Number(button.dataset.index)];
+    if (!item) return;
+    if (button.dataset.action === "increase") item.qty += 1;
+    if (button.dataset.action === "decrease") item.qty = Math.max(1, item.qty - 1);
+    if (button.dataset.action === "remove") cart.splice(Number(button.dataset.index), 1);
+    updateCart();
+  });
 
-// Fetch recent orders from backend
-async function loadRecentOrders() {
-  try {
-    const res = await fetch(`${window.API_BASE}/api/orders`);
-    const data = await res.json();
+  document.getElementById("checkout-btn").addEventListener("click", openCheckout);
+  document.getElementById("checkout-close").addEventListener("click", () => closeDialog(document.getElementById("checkout-modal")));
+  document.getElementById("shipping").addEventListener("change", updateCheckoutTotal);
+  document.getElementById("checkout-form").addEventListener("submit", submitPayment);
 
-    if (data.success && data.orders.length > 0) {
-      recentOrders = data.orders;
+  const aboutModal = document.getElementById("about-modal");
+  const contactModal = document.getElementById("contact-modal");
+  const openContentDialog = dialog => event => {
+    navLinks.classList.remove("open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.setAttribute("aria-label", "Open navigation menu");
+    const trigger = window.matchMedia("(max-width: 680px)").matches
+      ? menuToggle
+      : event.currentTarget;
+    showDialog(dialog, trigger);
+  };
+  document.getElementById("aboutBtn").addEventListener("click", openContentDialog(aboutModal));
+  document.getElementById("contactBtn").addEventListener("click", openContentDialog(contactModal));
+  document.getElementById("close-about").addEventListener("click", () => closeDialog(aboutModal));
+  document.getElementById("close-contact").addEventListener("click", () => closeDialog(contactModal));
+  [aboutModal, contactModal, document.getElementById("checkout-modal")].forEach(dialog => {
+    dialog.addEventListener("click", event => {
+      if (event.target === dialog) closeDialog(dialog);
+    });
+  });
+  document.addEventListener("keydown", event => {
+    if (!activeDialog) return;
+    if (event.key === "Escape") {
+      closeDialog(activeDialog);
+      return;
     }
-  } catch (err) {
-    console.error("❌ Error fetching recent orders:", err);
-  }
-}
+    if (event.key !== "Tab") return;
+    const focusable = elements("button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]", activeDialog)
+      .filter(element => element.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
 
-// Show a random recent purchase
-function showRecentPurchaseFromOrders() {
-  if (!recentPurchaseEl || recentOrders.length === 0) return;
-
-  // Pick a random order
-  const order = recentOrders[Math.floor(Math.random() * recentOrders.length)];
-
-  // Pick a random item from that order
-  if (!order.items || order.items.length === 0) return;
-  const item = order.items[Math.floor(Math.random() * order.items.length)];
-
-  // Display notification
-  recentPurchaseEl.textContent = `${order.customer_name} just bought ${item.product_name}! 🎉`;
-  recentPurchaseEl.style.display = "block";
-
-  setTimeout(() => (recentPurchaseEl.style.display = "none"), 5000);
-}
-
-// Initial fetch
-loadRecentOrders();
-
-// Randomize notification every 12 seconds
-setInterval(showRecentPurchaseFromOrders, 12000);
-
-// Optional: refresh recent orders every 60 seconds to catch new orders
-setInterval(loadRecentOrders, 60000);
-
-const hamburger = document.querySelector('.hamburger');
-const navLinks = document.querySelector('.nav-links');
-
-hamburger.addEventListener('click', () => {
-  navLinks.classList.toggle('open');
-});
-
-
-    // Close menu when clicking a link
-    document.querySelectorAll("#nav-links a").forEach(link => {
-      link.addEventListener("click", () => {
-        navLinks.classList.remove("open");
+  document.getElementById("reviewForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const response = document.getElementById("reviewResponse");
+    const submit = form.querySelector("button[type='submit']");
+    submit.disabled = true;
+    setStatus(response, "Sending your review…");
+    try {
+      const data = await requestJson(`${API_BASE}/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: document.getElementById("review-name").value.trim(),
+          location: document.getElementById("review-location").value.trim(),
+          message: document.getElementById("review-message").value.trim(),
+          rating: Number(document.getElementById("review-rating").value),
+        }),
       });
-    });
- 
+      if (!data.success) throw new Error(data.message || "Your review could not be sent.");
+      form.reset();
+      setStatus(response, data.message || "Thank you for sharing your review.");
+      await loadReviews();
+    } catch (error) {
+      setStatus(response, error.message || "Your review could not be sent. Please try again.", true);
+    } finally {
+      submit.disabled = false;
+    }
+  });
 
-
-  // ---------------- ABOUT MODAL ----------------
-  const aboutModal = document.getElementById("about-modal"),
-    openAbout = document.getElementById("aboutBtn"),
-    closeAbout = document.getElementById("close-about");
-
-  if (openAbout) {
-    openAbout.addEventListener("click", (e) => {
-      e.preventDefault();
-      aboutModal.style.display = "flex";
-    });
-    closeAbout.addEventListener(
-      "click",
-      () => (aboutModal.style.display = "none")
-    );
-    window.addEventListener("click", (e) => {
-      if (e.target === aboutModal) aboutModal.style.display = "none";
-    });
-  }
-
-  // ---------------- CONTACT MODAL ----------------
-  const contactModal = document.getElementById("contact-modal"),
-    openContact = document.getElementById("contact"),
-    closeContact = document.getElementById("close-contact");
-
-  if (openContact) {
-    openContact.addEventListener("click", (e) => {
-      e.preventDefault();
-      contactModal.style.display = "flex";
-    });
-    closeContact.addEventListener(
-      "click",
-      () => (contactModal.style.display = "none")
-    );
-    window.addEventListener("click", (e) => {
-      if (e.target === contactModal) contactModal.style.display = "none";
-    });
-  }
-
-  document.addEventListener("click", (e) => {
-  if (
-    !searchBar?.contains(e.target) &&
-    !searchIcon?.contains(e.target) &&
-    !cartModal?.contains(e.target) &&
-    !cartBtn?.contains(e.target) &&
-    !navLinks?.contains(e.target) &&
-    !hamburger?.contains(e.target)
-  ) {
-    searchBar?.classList.remove("show");
-    cartModal?.classList.remove("open");
-    navLinks?.classList.remove("open");
-  }
-});
-
-  
+  document.querySelector("#cartToast .toast-close").addEventListener("click", () => {
+    const toast = document.getElementById("cartToast");
+    toast.classList.remove("show");
+    toast.setAttribute("aria-hidden", "true");
+    window.clearTimeout(toastTimer);
+  });
 });
