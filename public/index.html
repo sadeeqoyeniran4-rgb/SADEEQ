@@ -1,288 +1,232 @@
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Luxury perfumes vendor - shop premium Arabian & designer fragrances.">
-  <title>LÓFÍNDÀ Perfumes</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"> 
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link  rel="stylesheet"href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
-  <script type="application/ld+json">{"@context": "https://schema.org/","@type": "Store","name": "Lofinda Perfumes","url": "https://thelofinda.com","logo": "https://thelofinda.com/lofinda2.png","image": "https://thelofinda.com/lofinda2.png","address": {  "@type": "PostalAddress",  "streetAddress": "5, Ogunrotimi Close, Akobo-ojurin", "addressLocality": "Ibadan","addressCountry": "Nigeria"}}</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Discover distinctive Arabian and designer fragrances at Lọ́fíndà. Find your signature scent and shop our collection in Ibadan, Nigeria.">
+  <meta name="theme-color" content="#30212c">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Lọ́fíndà — Your scent, your masterpiece">
+  <meta property="og:description" content="Discover distinctive Arabian and designer fragrances at Lọ́fíndà. Find your signature scent and shop our collection in Ibadan, Nigeria.">
+  <meta property="og:url" content="https://thelofinda.com/">
+  <meta property="og:image" content="https://thelofinda.com/lofinda2.png">
+  <link rel="canonical" href="https://thelofinda.com/">
+  <link rel="preload" href="hero.svg" as="image" fetchpriority="high">
+  <link rel="icon" href="lofinda2.png" type="image/png">
+  <link rel="stylesheet" href="storefront.css">
+  <title>Lọ́fíndà | Arabian &amp; Designer Perfumes in Ibadan</title>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "Lọ́fíndà",
+      "url": "https://thelofinda.com/",
+      "image": "https://thelofinda.com/lofinda2.png",
+      "description": "Arabian and designer perfumes in Ibadan, Nigeria.",
+      "telephone": "+2347068716090",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "5, Ogunrotimi Close, Akobo-ojurin",
+        "addressLocality": "Ibadan",
+        "addressRegion": "Oyo State",
+        "addressCountry": "NG"
+      }
+    }
+  </script>
 </head>
-<body>
-  <!-- ================= HEADER ================= -->
-  <header>
-    <nav>
-      <div class="logo">
-  <img src="lofinda2.png" alt="LOFINDA Logo">
-</div>
-
+<body class="storefront">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="site-nav" aria-label="Main navigation">
+      <a class="brand" href="#home" aria-label="Lọ́fíndà home">
+        <img src="lofinda2.png" alt="Lọ́fíndà" width="160" height="100">
+      </a>
+      <button class="icon-button menu-toggle" id="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-links">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
       <ul class="nav-links" id="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#" id="aboutBtn">About</a></li>
-        <li><a href="#" id="contactBtn">Contact</a></li>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#shop">Shop</a></li>
+        <li><button class="nav-link-button" id="aboutBtn" type="button">Our story</button></li>
+        <li><button class="nav-link-button" id="contactBtn" type="button">Contact</button></li>
       </ul>
-</nav>
-      <div class="header-right">
-  <button id="search-icon" class="icon-btn" title="Search">
-    <i class="bi bi-search"></i>
-  </button>
-
-  <button id="cartBtn" class="cart-btn" title="Cart">
-    <i class="bi bi-cart4"></i>
-    <span id="cart-count">0</span>
-  </button>
-
-  <button class="hamburger icon-btn" id="menu-toggle" title="Menu">
-  <i class="bi bi-list"></i>
-</button>
-
-</div>
-
-<div id="search-bar" class="search-bar hidden">
-  <input type="text" id="search-input" placeholder="Search...">
-  <button id="search-btn"><i class="bi bi-search"></i></button>
-</div>
-
+      <div class="header-actions">
+        <button class="icon-button" id="search-icon" type="button" aria-label="Search fragrances" aria-expanded="false" aria-controls="search-bar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m16 16 4 4"/></svg>
+        </button>
+        <button class="cart-button" id="cartBtn" type="button" aria-label="Open shopping bag, 0 items" aria-controls="cart-modal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+          <span>Bag</span><span class="cart-count" id="cart-count" aria-live="polite">0</span>
+        </button>
+      </div>
+      <form class="search-bar" id="search-bar" role="search" hidden>
+        <label class="visually-hidden" for="search-input">Search the collection</label>
+        <input type="search" id="search-input" name="q" placeholder="Search fragrances…" autocomplete="off">
+        <button class="search-clear" id="search-btn" type="button" aria-label="Clear search" hidden>&times;</button>
+      </form>
+    </nav>
   </header>
 
-  <!-- 🏷️ Discount Banner -->
-<div id="discount-banner" class="discount-banner" style="display: none;">
-  🎉 Enjoy <span id="discount-percentage">5%</span> OFF all items! Offer ends soon!
-</div>
-  <main>
-    <!-- ================= HERO ================= -->
-    <section id="home" class="hero">
-      <div class="hero-text">
-        <i><h1>YOUR SCENT, <br> YOUR MASTERPIECE...</h1></i>
-        <button onclick="document.querySelector('#shop').scrollIntoView({behavior:'smooth'})">Shop Now</button>
+  <main id="main">
+    <section class="hero" id="home" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <p class="eyebrow">A little luxury, every day</p>
+        <h1 id="hero-title">Your scent.<br><em>Your masterpiece.</em></h1>
+        <p class="hero-copy">Find the fragrance that feels unmistakably you.</p>
+        <a class="button button-light" href="#shop">Explore the collection <span aria-hidden="true">↗</span></a>
       </div>
+      <a class="hero-scroll" href="#shop">Discover your scent <span aria-hidden="true">↓</span></a>
     </section>
 
-    <!-- ================= SHOP ================= -->
-    <section id="shop" class="products">
-      <!-- Category Filter -->
-  <div id="category-filter" style="text-align:center; margin-bottom:20px;">
-  <button class="filter-btn active" data-category="all">All</button>
-  <button class="filter-btn" data-category="designer-perfume">Designer Perfume</button>
-  <button class="filter-btn" data-category="arabian-perfume">Arabian Perfume</button>
-  <button class="filter-btn" data-category="body-spray">Body Spray</button>
-  <button class="filter-btn" data-category="body-mist">Body Mist</button>
-  <button class="filter-btn" data-category="roll-on">Roll On</button>
-  <button class="filter-btn" data-category="antiperspirant">Antiperspirant</button>
-  <button class="filter-btn" data-category="combo-set">Combo Set</button>
-  <button class="filter-btn" data-category="mini-perfume">Mini Perfume</button>
-  <button class="filter-btn" data-category="diffuser">Diffuser</button>
-</div>
-      <h2>Our Collection</h2>
-
-<div id="product-list-section">
-  <div id="product-grid" class="product-grid">
-    <!-- JS will inject product cards here -->
-  </div>
-</div>
-
-<div id="pagination" class="mt-4"></div>
-
+    <section class="shop-section section-wrap" id="shop" aria-labelledby="shop-title">
+      <div class="section-heading">
+        <p class="eyebrow">Curated for you</p>
+        <h2 id="shop-title">Find your signature</h2>
+        <p>From everyday favourites to scents that make an entrance.</p>
+      </div>
+      <div class="collection-tools">
+        <div class="category-filter" id="category-filter" role="group" aria-label="Filter by fragrance type">
+          <button class="filter-btn active" type="button" data-category="all" aria-pressed="true">Everything</button>
+          <button class="filter-btn" type="button" data-category="designer-perfume" aria-pressed="false">Designer</button>
+          <button class="filter-btn" type="button" data-category="arabian-perfume" aria-pressed="false">Arabian</button>
+          <button class="filter-btn" type="button" data-category="body-spray" aria-pressed="false">Body spray</button>
+          <button class="filter-btn" type="button" data-category="body-mist" aria-pressed="false">Body mist</button>
+          <button class="filter-btn" type="button" data-category="roll-on" aria-pressed="false">Roll-on</button>
+          <button class="filter-btn" type="button" data-category="antiperspirant" aria-pressed="false">Antiperspirant</button>
+          <button class="filter-btn" type="button" data-category="combo-set" aria-pressed="false">Gift sets</button>
+          <button class="filter-btn" type="button" data-category="mini-perfume" aria-pressed="false">Miniatures</button>
+          <button class="filter-btn" type="button" data-category="diffuser" aria-pressed="false">Diffusers</button>
+        </div>
+        <p class="results-count" id="results-count" aria-live="polite"></p>
+      </div>
+      <div class="product-grid" id="product-grid" aria-live="polite" aria-busy="true"></div>
+      <nav class="pagination" id="pagination" aria-label="Product pages"></nav>
     </section>
 
-<!-- Review Form -->
-<section id="review-form-section">
-  <h2>Leave a Review 💖</h2>
-  <form id="reviewForm">
-    <input type="text" id="review-name" placeholder="Your Name" required>
-    <input type="text" id="review-location" placeholder="City / Location">
-    <textarea id="review-message" placeholder="Your Review" required></textarea>
-    <select id="review-rating" required>
-      <option value="5">⭐️⭐️⭐️⭐️⭐️</option>
-      <option value="4">⭐️⭐️⭐️⭐️</option>
-      <option value="3">⭐️⭐️⭐️</option>
-      <option value="2">⭐️⭐️</option>
-      <option value="1">⭐️</option>
-    </select>
-    <button type="submit">Submit Review</button>
-  </form>
-  <div id="reviewResponse"></div>
-
-  <h2>Customer Reviews</h2>
-  <div class="container my-5" id="social-proof">
-  <div class="row g-4" id="review-cards">
-    <!-- Reviews will be injected here -->
-  </div>
-</div>
-
-
-    <!-- ================= ABOUT MODAL ================= -->
-    <div id="about-modal" class="modal">
-      <div class="modal-box">
-        <span id="close-about" class="close">
-  <i class="bi bi-x-lg"></i>
-</span>
-
-        <h2 class="modal-title">About Us</h2>
-        <p>At Lọ́fíndà, we know how powerful a scent can be — it boosts your mood, your confidence, and your presence.
-That’s why at Lọ́fíndà, we bring you high-quality Arabian and designer perfumes that turn heads and leave memories.
-Whether you love something bold, sweet, or mysterious, we’ve got a scent that fits your vibe perfectly.
-<br><br>
-Lọ́fíndà — your scent, your masterpiece.</p>
-      </div>
-    </div>
-
-    <!-- ================= CONTACT MODAL ================= --> 
-<div id="contact-modal" class="modal">
-  <div class="modal-box">
-    <span id="close-contact" class="close">
-  <i class="bi bi-x-lg"></i>
-</span>
-
-    <h2 class="modal-title">Contact Us</h2>
-    <div class="contact-info">
-      <p><i class="bi bi-telephone-fill icon"></i> <strong>Phone:</strong> +234 706 871 6090</p>
-      <p><i class="bi bi-geo-alt-fill icon"></i> <strong>Address:</strong> 5, Ogunrotimi Close, Akobo-ojurin, Ibadan, Oyo State, Nigeria</p>
-      <p><i class="bi bi-envelope-fill icon"></i> <strong>Email:</strong> oyenirangbemisola5@gmail.com</p>
-    </div>
-  </div>
-</div>
-
-    <!-- CART MODAL -->
-<!-- 🛍️ Cart Modal -->
-<div id="cart-modal" class="cart-modal">
-  <div class="cart-content">
-    <div class="cart-header">
-      <h3>Your Cart</h3>
-      <button id="close-cart" class="close-cart" type="button">&times;</button>
-    </div>
-
-    <div id="cart-items" class="cart-items"></div>
-
-    <div class="cart-footer">
-      <p>Total: <span id="cart-total">₦0</span></p>
-      <button id="checkout-btn" class="checkout-btn" type="button">
-        Proceed to Checkout
-      </button>
-    </div>
-  </div>
-</div> 
-
-   <!-- ================= CHECKOUT MODAL ================= -->
-    <div id="checkout-modal" class="modal">
-      <div class="modal-box">
-        <span class="close" id="checkout-close">&times;</span>
-        <h2 class="modal-title">Checkout</h2>
-
-        <form id="checkout-form" class="modal-form">
-          <div class="form-group">
-            <label for="checkout-name">Full Name</label>
-            <input type="text" id="checkout-name" required>
-          </div>
-
-          <div class="form-group">
-            <label for="checkout-email">Email</label>
-            <input type="email" id="checkout-email" required>
-          </div>
-
-          <div class="form-group">
-            <label for="checkout-phone">Phone Number</label>
-            <input type="tel" id="checkout-phone" required>
-          </div>
-
-          <div class="form-group">
-            <label for="address">Delivery Address</label>
-            <textarea id="address" rows="3" required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="shipping">Shipping Method</label>
-            <select id="shipping" required>
-              <option value="">-- Select Shipping --</option>
-              <option value="intra-state">Intra-State Delivery</option>
-              <option value="inter-state">Inter-State Delivery</option>
-              <option value="pickup">Pickup</option>
+    <section class="review-section" aria-labelledby="review-title">
+      <div class="section-wrap review-layout">
+        <div class="review-intro">
+          <p class="eyebrow">Notes from our customers</p>
+          <h2 id="review-title">Loved, and remembered.</h2>
+          <p>Found a scent you love? Share your Lọ́fíndà experience.</p>
+          <form id="reviewForm" class="review-form">
+            <label for="review-name">Your name</label>
+            <input type="text" id="review-name" name="name" autocomplete="name" maxlength="100" required>
+            <label for="review-location">City <span>(optional)</span></label>
+            <input type="text" id="review-location" name="location" autocomplete="address-level2" maxlength="100">
+            <label for="review-message">Your review</label>
+            <textarea id="review-message" name="message" rows="3" maxlength="1000" required></textarea>
+            <label for="review-rating">Your rating</label>
+            <select id="review-rating" name="rating" required>
+              <option value="5">5 — Loved it</option>
+              <option value="4">4 — Really good</option>
+              <option value="3">3 — Good</option>
+              <option value="2">2 — Could be better</option>
+              <option value="1">1 — Not for me</option>
             </select>
-          </div>
-
-          <p class="checkout-total">
-            <strong>Total: </strong><span id="checkout-total">₦0</span>
-          </p>
-
-          <button type="submit" id="proceed-payment" class="modal-btn">
-            Proceed to Payment
-          </button>
-        </form>
+            <button class="button button-dark" type="submit">Share your review</button>
+            <p class="form-response" id="reviewResponse" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <div class="customer-reviews">
+          <h3>Kind words</h3>
+          <div id="review-cards" class="review-cards" aria-live="polite" aria-busy="true"></div>
+        </div>
       </div>
-    </div>
+    </section>
 
-<!-- ❌ Transaction Failed Modal -->
-<div id="payment-failed-modal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="closeModal('payment-failed-modal')">&times;</span>
-    <h2>⚠️ Payment Failed</h2>
-    <p>Your transaction was not completed. Please try again.</p>
-    <div class="modal-buttons">
-      <button class="retry-btn" onclick="retryPayment()">🔄 Retry Payment</button>
-      <button class="close-btn-alt" onclick="closeModal('payment-failed-modal')">Close</button>
-    </div>
-  </div>
-</div>
+    <section class="contact-strip" aria-label="Visit or contact Lọ́fíndà">
+      <div class="section-wrap contact-strip-inner">
+        <div><p class="eyebrow">Come say hello</p><h2>Your next favourite is waiting.</h2></div>
+        <a class="button button-light" href="https://wa.me/2347068716090" target="_blank" rel="noopener noreferrer">Chat with us on WhatsApp <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
   </main>
-  <!-- ================= FOOTER ================= -->
-  <footer>
-  <div class="footer-content">
-    <p>&copy; 2025 LÓFÍNDÀ Perfumes. All Rights Reserved.</p>
-   <div class="social-links">
-      <a href="https://instagram.com/lofinda.ng_shop" target="_blank" aria-label="Instagram">
-        <i class="fab fa-instagram"></i>
-      </a>
-      <a href="https://tiktok.com/@lofinda.ng" target="_blank" aria-label="TikTok">
-        <i class="fab fa-tiktok"></i>
-      </a>
-      <a href="https://wa.me/2347068716090" target="_blank" aria-label="WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-      </a>
+
+  <footer class="site-footer">
+    <a class="footer-brand" href="#home">Lọ́fíndà</a>
+    <p>5, Ogunrotimi Close, Akobo-ojurin, Ibadan, Oyo State, Nigeria</p>
+    <div class="social-links">
+      <a href="https://instagram.com/lofinda.ng_shop" target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+      <a href="https://tiktok.com/@lofinda.ng" target="_blank" rel="noopener noreferrer">TikTok <span aria-hidden="true">↗</span></a>
+      <a href="https://wa.me/2347068716090" target="_blank" rel="noopener noreferrer">WhatsApp <span aria-hidden="true">↗</span></a>
+      <a href="tel:+2347068716090">+234 706 871 6090</a>
+      <a href="mailto:oyenirangbemisola5@gmail.com">Email us</a>
+    </div>
+    <div class="footer-bottom"><span>&copy; <span id="current-year">2026</span> Lọ́fíndà. All rights reserved.</span><a href="admin.html">Admin</a></div>
+  </footer>
+
+  <div class="modal" id="about-modal" aria-hidden="true" aria-labelledby="about-title">
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <button class="modal-close" id="close-about" type="button" aria-label="Close our story">&times;</button>
+      <p class="eyebrow">Our story</p>
+      <h2 id="about-title">A scent that stays with you.</h2>
+      <p>At Lọ́fíndà, we know how powerful a scent can be — it boosts your mood, your confidence, and your presence. We bring you high-quality Arabian and designer perfumes that turn heads and leave memories. Whether you love something bold, sweet, or mysterious, there is a scent here for you.</p>
+      <p><em>Lọ́fíndà — your scent, your masterpiece.</em></p>
     </div>
   </div>
-     <a href="admin.html" style="color: white; text-decoration: none;" id="adminLink">@</a>
-  </footer>
-<!-- Recent purchase notification -->
-<div id="recent-purchase" class="recent-purchase" style="
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: #503f46;
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  display: none;
-  z-index: 9999;
-  font-weight: 500;
-  font-family: sans-serif;
-  ">
-</div>
 
-<!-- BOOTSTRAP TOAST -->
-<div id="cartToast">
-  <span class="toast-message"></span>
-  <button class="toast-close">&times;</button>
-</div>
+  <div class="modal" id="contact-modal" aria-hidden="true" aria-labelledby="contact-title">
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <button class="modal-close" id="close-contact" type="button" aria-label="Close contact details">&times;</button>
+      <p class="eyebrow">We would love to hear from you</p>
+      <h2 id="contact-title">Get in touch</h2>
+      <address class="contact-info">
+        <a href="tel:+2347068716090">+234 706 871 6090</a>
+        <a href="mailto:oyenirangbemisola5@gmail.com">oyenirangbemisola5@gmail.com</a>
+        <span>5, Ogunrotimi Close, Akobo-ojurin, Ibadan, Oyo State, Nigeria</span>
+      </address>
+    </div>
+  </div>
 
-<!-- Spinner -->
-<div id="spinner-overlay">
-  <div class="spinner"></div>
-</div>
+  <div class="cart-backdrop" id="cart-modal" aria-hidden="true">
+    <section class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+      <div class="cart-header"><div><p class="eyebrow">Your edit</p><h2 id="cart-title">Shopping bag <span id="cart-item-label"></span></h2></div><button class="modal-close" id="close-cart" type="button" aria-label="Close shopping bag">&times;</button></div>
+      <div class="cart-items" id="cart-items" aria-live="polite"></div>
+      <div class="cart-footer">
+        <p class="cart-total-line"><span>Subtotal</span><strong id="cart-total">₦0</strong></p>
+        <p class="cart-note">Delivery is calculated at checkout.</p>
+        <button class="button button-dark checkout-btn" id="checkout-btn" type="button" disabled>Continue to checkout</button>
+      </div>
+    </section>
+  </div>
 
+  <div class="modal" id="checkout-modal" aria-hidden="true" aria-labelledby="checkout-title">
+    <div class="modal-box checkout-box" role="dialog" aria-modal="true">
+      <button class="modal-close" id="checkout-close" type="button" aria-label="Close checkout">&times;</button>
+      <p class="eyebrow">Almost yours</p>
+      <h2 id="checkout-title">Delivery &amp; checkout</h2>
+      <form id="checkout-form" class="checkout-form">
+        <label for="checkout-name">Full name</label>
+        <input type="text" id="checkout-name" name="name" autocomplete="name" required>
+        <label for="checkout-email">Email address</label>
+        <input type="email" id="checkout-email" name="email" autocomplete="email" required>
+        <label for="checkout-phone">Phone number</label>
+        <input type="tel" id="checkout-phone" name="tel" autocomplete="tel" required>
+        <label for="address">Delivery address</label>
+        <textarea id="address" name="street-address" rows="3" autocomplete="street-address" required></textarea>
+        <label for="shipping">Delivery method</label>
+        <select id="shipping" name="shipping" required>
+          <option value="">Choose a delivery method</option>
+          <option value="intra-state">Within Oyo State</option>
+          <option value="inter-state">Outside Oyo State</option>
+          <option value="pickup">Pickup</option>
+        </select>
+        <div class="checkout-summary" id="checkout-total" aria-live="polite">Choose a delivery method to see your total.</div>
+        <p class="form-response" id="checkoutResponse" role="status" aria-live="polite"></p>
+        <button class="button button-dark" type="submit" id="proceed-payment" disabled>Pay securely with Paystack</button>
+      </form>
+    </div>
+  </div>
 
-<!-- ================= SCRIPTS ================= -->
- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="config.js"></script>
-  <script src="https://js.paystack.co/v1/inline.js"></script>
-  <script type="module" src="app.js"></script>
+  <div class="toast" id="cartToast" role="status" aria-live="polite" aria-hidden="true">
+    <span class="toast-message"></span>
+    <button class="toast-close" type="button" aria-label="Dismiss notification">&times;</button>
+  </div>
+  <div class="loading-overlay" id="spinner-overlay" aria-hidden="true"><span class="spinner" aria-label="Loading"></span><span class="visually-hidden">Loading products</span></div>
 
-
+  <script src="config.js"></script>
+  <script src="https://js.paystack.co/v1/inline.js" async></script>
+  <script src="app.js" defer></script>
 </body>
 </html>

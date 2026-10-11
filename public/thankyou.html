@@ -1,196 +1,162 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thank You - LOFINDA Perfumes</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f8f8;
-      padding: 40px;
-      text-align: center;
-    }
-    .invoice {
-      max-width: 700px;
-      margin: auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      text-align: left;
-    }
-    .invoice-header {
-      border-bottom: 2px solid #2f1e3d;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .invoice-header h1 {
-      color: #2f1e3d;
-      margin: 0;
-    }
-    .invoice-details {
-      margin-bottom: 20px;
-    }
-    .invoice-details p {
-      margin: 5px 0;
-      font-size: 14px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background: #f3f3f3;
-    }
-    .total {
-      font-weight: bold;
-      font-size: 16px;
-      text-align: right;
-    }
-    .thankyou-msg {
-      text-align: center;
-      margin-top: 30px;
-      font-size: 18px;
-      color: #333;
-    }
-    .back-home, .download-invoice {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #2f1e3d;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
-      margin-right: 10px;
-      cursor: pointer;
-    }
-    .back-home:hover, .download-invoice:hover {
-      background: #b02956;
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#30212c">
+  <title>Your order | Lọ́fíndà</title>
+  <link rel="stylesheet" href="storefront.css">
 </head>
-<body>
-
-  <div class="invoice" id="invoice">
-    <div class="invoice-header">
-      <h1>🎉 Thank You for Your Order!</h1>
-      <p>Your purchase was successful.</p>
-    </div>
-
-    <div class="invoice-details">
-      <p><strong>Name:</strong> <span id="customer-name"></span></p>
-      <p><strong>Email:</strong> <span id="customer-email"></span></p>
-      <p><strong>Phone:</strong> <span id="customer-phone"></span></p>
-      <p><strong>Address:</strong> <span id="customer-address"></span></p>
-      <p><strong>Reference:</strong> <span id="order-reference"></span></p>
-    </div>
-
-    <h3>Order Summary</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Price (₦)</th>
-          <th>Qty</th>
-          <th>Subtotal (₦)</th>
-        </tr>
-      </thead>
-      <tbody id="order-items"></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="3" class="total">Shipping:</td>
-          <td>₦<span id="order-shipping"></span></td>
-        </tr>
-        <tr>
-          <td colspan="3" class="total">Total Paid:</td>
-          <td><strong>₦<span id="order-total"></span></strong></td>
-        </tr>
-      </tfoot>
-    </table>
-
-    <p class="thankyou-msg">We’ll process your order shortly and contact you with delivery details. 💐</p>
-
-    <div style="text-align:center;">
-      <a href="index.html" class="back-home">Back to Home</a>
-      <button class="download-invoice" onclick="downloadInvoice()">Download Invoice (PDF)</button>
-    </div>
-  </div>
-
-  <!-- jsPDF for invoice download -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+<body class="storefront receipt-page">
+  <main class="receipt-main">
+    <article class="receipt-card" id="invoice">
+      <a class="receipt-brand" href="index.html">Lọ́fíndà</a>
+      <p class="eyebrow">Order received</p>
+      <h1 id="receipt-title">Thank you.</h1>
+      <p class="receipt-intro" id="receipt-message">Your order is being confirmed.</p>
+      <div id="receipt-content" hidden>
+        <dl class="receipt-details">
+          <div><dt>Name</dt><dd id="customer-name"></dd></div>
+          <div><dt>Email</dt><dd id="customer-email"></dd></div>
+          <div><dt>Phone</dt><dd id="customer-phone"></dd></div>
+          <div><dt>Delivery address</dt><dd id="customer-address"></dd></div>
+          <div><dt>Payment reference</dt><dd id="order-reference"></dd></div>
+        </dl>
+        <h2>Order summary</h2>
+        <div class="receipt-table-wrap">
+          <table class="receipt-table">
+            <thead><tr><th scope="col">Item</th><th scope="col">Qty</th><th scope="col">Amount</th></tr></thead>
+            <tbody id="order-items"></tbody>
+            <tfoot>
+              <tr><th scope="row" colspan="2">Delivery</th><td id="order-shipping"></td></tr>
+              <tr class="receipt-grand-total"><th scope="row" colspan="2">Total paid</th><td id="order-total"></td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p class="receipt-thanks">We’ll be in touch soon with your delivery details.</p>
+        <div class="receipt-actions">
+          <a class="button button-dark" href="index.html">Back to the collection</a>
+          <button class="button button-outline" id="download-invoice" type="button">Download invoice</button>
+        </div>
+      </div>
+      <div class="receipt-actions" id="missing-order-actions" hidden>
+        <a class="button button-dark" href="index.html">Return to Lọ́fíndà</a>
+        <a class="button button-outline" href="https://wa.me/2347068716090" target="_blank" rel="noopener noreferrer">Contact us</a>
+      </div>
+    </article>
+  </main>
   <script>
-    const orderData = JSON.parse(localStorage.getItem("lastOrder"));
+    const receiptTitle = document.getElementById("receipt-title");
+    const receiptMessage = document.getElementById("receipt-message");
+    const receiptContent = document.getElementById("receipt-content");
+    const missingOrderActions = document.getElementById("missing-order-actions");
+    let orderData = null;
+    let pdfLibraryPromise;
 
-    if (orderData) {
-      document.getElementById("customer-name").textContent = orderData.customer.name;
-      document.getElementById("customer-email").textContent = orderData.customer.email;
-      document.getElementById("customer-phone").textContent = orderData.customer.phone;
-      document.getElementById("customer-address").textContent = orderData.customer.address;
-      document.getElementById("order-reference").textContent = orderData.reference;
-
-      document.getElementById("order-total").textContent = orderData.totals.grandTotal.toLocaleString();
-      document.getElementById("order-shipping").textContent = (orderData.totals.shippingCost || 0).toLocaleString();
-
-      const itemsList = document.getElementById("order-items");
-      orderData.cart.forEach(item => {
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${item.name}</td>
-          <td>₦${item.price.toLocaleString()}</td>
-          <td>${item.qty}</td>
-          <td>₦${(item.price * item.qty).toLocaleString()}</td>
-        `;
-        itemsList.appendChild(tr);
-      });
+    try {
+      orderData = JSON.parse(localStorage.getItem("lastOrder") || "null");
+    } catch (error) {
+      console.warn("Could not read the saved order receipt.", error);
     }
 
-    // ✅ Download invoice as PDF
-    function downloadInvoice() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+    if (orderData && orderData.customer && Array.isArray(orderData.cart) && orderData.totals) {
+      document.getElementById("customer-name").textContent = orderData.customer.name || "";
+      document.getElementById("customer-email").textContent = orderData.customer.email || "";
+      document.getElementById("customer-phone").textContent = orderData.customer.phone || "";
+      document.getElementById("customer-address").textContent = orderData.customer.address || "";
+      document.getElementById("order-reference").textContent = orderData.reference || "";
+      document.getElementById("order-shipping").textContent = new Intl.NumberFormat("en-NG", {
+        style: "currency",
+        currency: "NGN",
+        maximumFractionDigits: 0,
+      }).format(Number(orderData.totals.shippingCost) || 0);
+      document.getElementById("order-total").textContent = new Intl.NumberFormat("en-NG", {
+        style: "currency",
+        currency: "NGN",
+        maximumFractionDigits: 0,
+      }).format(Number(orderData.totals.grandTotal) || 0);
 
-      doc.setFontSize(16);
-      doc.text("LOFINDA Perfumes - Invoice", 20, 20);
-      doc.setFontSize(12);
-      doc.text(`Reference: ${orderData.reference}`, 20, 30);
-      doc.text(`Name: ${orderData.customer.name}`, 20, 40);
-      doc.text(`Email: ${orderData.customer.email}`, 20, 50);
-      doc.text(`Phone: ${orderData.customer.phone}`, 20, 60);
-      doc.text(`Address: ${orderData.customer.address}`, 20, 70);
-
-      let y = 90;
-      doc.text("Order Summary:", 20, y);
-      y += 10;
-
+      const orderItems = document.getElementById("order-items");
       orderData.cart.forEach(item => {
-        doc.text(
-          `${item.name} (x${item.qty}) - ₦${(item.price * item.qty).toLocaleString()}`,
-          20,
-          y
-        );
+        const row = document.createElement("tr");
+        const name = document.createElement("td");
+        name.textContent = String(item.name || "Item");
+        const quantity = document.createElement("td");
+        quantity.textContent = String(Math.max(1, Number(item.qty) || 1));
+        const amount = document.createElement("td");
+        amount.textContent = new Intl.NumberFormat("en-NG", {
+          style: "currency",
+          currency: "NGN",
+          maximumFractionDigits: 0,
+        }).format((Number(item.price) || 0) * (Number(item.qty) || 1));
+        row.append(name, quantity, amount);
+        orderItems.append(row);
+      });
+
+      receiptContent.hidden = false;
+      receiptMessage.textContent = "Your payment was successful and your order is with us.";
+      function loadPdfLibrary() {
+        if (window.jspdf) return Promise.resolve(window.jspdf);
+        if (!pdfLibraryPromise) {
+          pdfLibraryPromise = new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+            script.async = true;
+            script.onload = () => window.jspdf
+              ? resolve(window.jspdf)
+              : reject(new Error("The invoice library did not initialize."));
+            script.onerror = () => reject(new Error("The invoice library could not be loaded."));
+            document.head.append(script);
+          });
+        }
+        return pdfLibraryPromise;
+      }
+      document.getElementById("download-invoice").addEventListener("click", async () => {
+        let pdf;
+        try {
+          pdf = await loadPdfLibrary();
+        } catch (error) {
+          console.warn("Could not load the invoice PDF library.", error);
+          receiptMessage.textContent = "Invoice download is unavailable right now. You can print this page instead.";
+          window.print();
+          return;
+        }
+        const { jsPDF } = pdf;
+        const doc = new jsPDF();
+        doc.setFontSize(20);
+        doc.text("Lofinda - Order Receipt", 20, 22);
+        doc.setFontSize(11);
+        doc.text(`Reference: ${String(orderData.reference || "")}`, 20, 34);
+        doc.text(`Name: ${String(orderData.customer.name || "")}`, 20, 43);
+        doc.text(`Email: ${String(orderData.customer.email || "")}`, 20, 52);
+        doc.text(`Phone: ${String(orderData.customer.phone || "")}`, 20, 61);
+        doc.text(`Address: ${String(orderData.customer.address || "")}`, 20, 70, { maxWidth: 165 });
+        let y = 91;
+        doc.text("Order summary", 20, y);
         y += 10;
+        orderData.cart.forEach(item => {
+          const line = `${String(item.name || "Item")} (x${Number(item.qty) || 1}) - NGN ${((Number(item.price) || 0) * (Number(item.qty) || 1)).toLocaleString()}`;
+          const lines = doc.splitTextToSize(line, 165);
+          if (y + lines.length * 6 > 275) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.text(lines, 20, y);
+          y += lines.length * 6 + 2;
+        });
+        y += 5;
+        doc.text(`Delivery: NGN ${(Number(orderData.totals.shippingCost) || 0).toLocaleString()}`, 20, y);
+        y += 8;
+        doc.text(`Total paid: NGN ${(Number(orderData.totals.grandTotal) || 0).toLocaleString()}`, 20, y);
+        doc.save(`Lofinda_${String(orderData.reference || "receipt").replace(/[^a-zA-Z0-9_-]/g, "")}.pdf`);
       });
-
-      y += 10;
-      doc.text(`Shipping: ₦${(orderData.totals.shippingCost || 0).toLocaleString()}`, 20, y);
-      y += 10;
-      doc.text(`Total Paid: ₦${orderData.totals.grandTotal.toLocaleString()}`, 20, y);
-
-      doc.save(`Invoice_${orderData.reference}.pdf`);
+      localStorage.removeItem("lastOrder");
+    } else {
+      receiptTitle.textContent = "Order details unavailable.";
+      receiptMessage.textContent = "We couldn’t find an order receipt on this device. If you completed a payment, please contact us and we’ll be happy to help.";
+      missingOrderActions.hidden = false;
     }
-
-    // ✅ Clear order data after displaying
-    localStorage.removeItem("lastOrder");
   </script>
 </body>
 </html>
