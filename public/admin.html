@@ -1,422 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Lọ́fíndà Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    /* ====== GLOBAL ====== */
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      background: #f4f4f9;
-      color: #333;
-    }
-
-    header {
-      background: #3b0066;
-      color: white;
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header img {
-      height: 40px;
-    }
-
-    nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .nav-links {
-      display: none;
-      flex-direction: column;
-      background: #3b0066;
-      position: absolute;
-      top: 60px;
-      right: 0;
-      width: 200px;
-      text-align: center;
-    }
-
-    .nav-links.active {
-      display: flex;
-    }
-
-    .nav-links a {
-      color: white;
-      padding: 10px;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .nav-links a:hover {
-      background: #550099;
-    }
-
-    .hamburger {
-      cursor: pointer;
-      font-size: 24px;
-      color: white;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 2rem auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      display: none;
-    }
-
-    h2 {
-      color: #3b0066;
-      margin-bottom: 1rem;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    button {
-      background: #3b0066;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background: #550099;
-    }
-
-    /* ====== TABLES ====== */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      font-size: 15px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-
-    th {
-      background: #3b0066;
-      color: white;
-    }
-
-    tr:nth-child(even) {
-      background: #f9f9f9;
-    }
-
-    img {
-      max-width: 80px;
-      height: auto;
-      display: block;
-    }
-
-    .confirm-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-right: 5px;
-    }
-
-    .delete-btn {
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .confirm-btn:hover {
-      background-color: #218838;
-    }
-
-    .delete-btn:hover {
-      background-color: #c82333;
-    }
-
-    .status.pending {
-      color: orange;
-      font-weight: bold;
-    }
-
-    .status.confirmed {
-      color: green;
-      font-weight: bold;
-    }
-
-    .status.delivered {
-      color: purple;
-      font-weight: bold;
-    }
-
-    /* ====== LOGIN MODAL ====== */
-    #admin-login-modal {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-    }
-
-    .modal-content {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-    }
-
-    #loginResponse {
-      margin-top: 10px;
-    }
-
-    /* ====== EDIT MODAL ====== */
-    #edit-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    #edit-modal .modal-box {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 400px;
-    }
-
-    /* ====== ORDER STATS & SEARCH ====== */
-    .order-items {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: left;
-}
-
-.order-items li {
-  font-size: 0.9rem;
-  margin: 3px 0;
-  color: #333;
-}
-
-@media (max-width: 768px) {
-  .order-items li {
-    font-size: 0.8rem;
-  }
-}
-
-    
-    .order-stats {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .order-stats .stat {
-      padding: 5px 10px;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      flex: 1;
-      text-align: center;
-    }
-
-    .stat.pending { background-color: orange; }
-    .stat.confirmed { background-color: green; }
-    .stat.delivered { background-color: purple; }
-    .stat.total { background-color: black; }
-
-    #searchOrders {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-.loading-indicator {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  z-index: 9999;
-}
-
-.spinner {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid #fff;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 10px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#21171e">
+  <title>Admin dashboard | Lọ́fíndà</title>
+  <link rel="icon" href="lofinda2.png" type="image/png">
+  <link rel="stylesheet" href="admin.css">
 </head>
-
-<body>
-  <!-- ====== HEADER ====== -->
-  <header>
-    <nav>
-      <div class="logo">
-        <img src="lofinda2.png" alt="Lọ́fíndà Logo">
+<body class="admin-page">
+  <div class="admin-app">
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="index.html" aria-label="Lọ́fíndà storefront">
+        <img src="lofinda2.png" alt="Lọ́fíndà" width="120" height="72">
+        <span>STUDIO</span>
+      </a>
+      <p class="sidebar-caption">WORKSPACE</p>
+      <nav class="admin-nav" id="nav-links-admin" aria-label="Admin dashboard">
+        <a class="nav-item" href="#dashboard-overview"><span class="nav-icon" aria-hidden="true">⌂</span>Overview</a>
+        <a class="nav-item" href="#product-list"><span class="nav-icon" aria-hidden="true">◇</span>Products</a>
+        <a class="nav-item" href="#order-list"><span class="nav-icon" aria-hidden="true">▤</span>Orders</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <a class="store-link" href="index.html"><span aria-hidden="true">↗</span> View storefront</a>
+        <div class="admin-profile"><span class="profile-avatar">L</span><span><strong>Store admin</strong><small>Lọ́fíndà Studio</small></span></div>
       </div>
-      <ul class="nav-links" id="nav-links-admin">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="#product-list-section">Products</a></li>
-        <li><a href="#orders-section">Orders</a></li>
-      </ul>
-      <div class="hamburger" id="hamburger-admin">☰</div>
-    </nav>
-  </header>
+    </aside>
 
-  <!-- ====== LOGIN MODAL ====== -->
-  <div id="admin-login-modal">
-    <div class="modal-content">
-      <h2>🔑 Admin Login</h2>
+    <main class="admin-main" id="dashboard-overview">
+      <header class="admin-topbar">
+        <button class="menu-toggle" id="hamburger-admin" type="button" aria-label="Open dashboard navigation" aria-expanded="false" aria-controls="nav-links-admin"><span></span><span></span></button>
+        <div class="breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong>Overview</strong></div>
+        <div class="topbar-actions">
+          <span class="status-indicator"><span></span> Store dashboard</span>
+          <button class="logout-button" type="button" onclick="logoutAdmin()">Sign out</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <section class="welcome-panel">
+          <div>
+            <p class="eyebrow">LOFINDA STUDIO</p>
+            <h1>Your store, at a glance.</h1>
+            <p>Manage your collection and take care of every order.</p>
+          </div>
+          <div class="welcome-mark" aria-hidden="true">L<span>.</span></div>
+          <a href="#order-list" class="welcome-link">Review orders <span aria-hidden="true">↗</span></a>
+        </section>
+
+        <section id="admin-section" class="dashboard-card product-create">
+          <div class="card-heading">
+            <div><p class="eyebrow">COLLECTION</p><h2>Add a new product</h2><p>Bring a new favourite to your storefront.</p></div>
+            <span class="heading-icon" aria-hidden="true">＋</span>
+          </div>
+          <form id="addProductForm" class="product-form">
+            <div class="form-field">
+              <label for="prod-name">Product name</label>
+              <input type="text" id="prod-name" placeholder="e.g. Rose Oud" required>
+            </div>
+            <div class="form-field">
+              <label for="prod-price">Price <span>(NGN)</span></label>
+              <input type="number" id="prod-price" placeholder="0" min="0" step="1" required>
+            </div>
+            <div class="form-field form-field-wide">
+              <label for="prod-desc">Description or category</label>
+              <textarea id="prod-desc" rows="3" placeholder="A few words about this fragrance"></textarea>
+            </div>
+            <div class="form-field form-field-wide">
+              <label for="prod-image-file">Product photograph</label>
+              <input type="file" id="prod-image-file" accept="image/jpeg,image/png,image/webp" required>
+              <small class="field-hint">Choose a clear JPG, PNG, or WebP image.</small>
+            </div>
+            <div class="form-submit">
+              <p id="productResponse" role="status" aria-live="polite"></p>
+              <button class="primary-button" type="submit" id="addProductBtn">Add product <span aria-hidden="true">↗</span></button>
+            </div>
+          </form>
+        </section>
+
+        <section id="product-list" class="dashboard-card">
+          <div class="card-heading card-heading-inline">
+            <div><p class="eyebrow">YOUR CATALOG</p><h2>Products</h2><p>Keep your collection fresh and up to date.</p></div>
+            <a class="subtle-link" href="#admin-section">Add product <span aria-hidden="true">＋</span></a>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th scope="col">ID</th><th scope="col">Photo</th><th scope="col">Product</th><th scope="col">Price</th><th scope="col">Actions</th></tr></thead>
+              <tbody id="productTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="order-list" class="dashboard-card">
+          <div class="card-heading card-heading-inline">
+            <div><p class="eyebrow">CUSTOMER CARE</p><h2>Orders</h2><p>Follow each purchase through to delivery.</p></div>
+            <label class="search-field"><span class="visually-hidden">Search orders</span><span aria-hidden="true">⌕</span><input type="search" id="searchOrders" placeholder="Search orders..." autocomplete="off"></label>
+          </div>
+          <div class="order-stats" aria-label="Order totals">
+            <div class="stat total"><span class="stat-label">All orders</span><strong id="totalCount">0</strong><span class="stat-accent"></span></div>
+            <div class="stat pending"><span class="stat-label">Pending</span><strong id="pendingCount">0</strong><span class="stat-accent"></span></div>
+            <div class="stat confirmed"><span class="stat-label">Confirmed</span><strong id="confirmedCount">0</strong><span class="stat-accent"></span></div>
+            <div class="stat delivered"><span class="stat-label">Delivered</span><strong id="deliveredCount">0</strong><span class="stat-accent"></span></div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table order-table">
+              <thead><tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Phone</th><th scope="col">Email</th><th scope="col">Delivery address</th><th scope="col">Items</th><th scope="col">Total</th><th scope="col">Status</th><th scope="col">Date</th><th scope="col">Action</th></tr></thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer class="dashboard-footer"><span>&copy; <span id="admin-year">2026</span> Lọ́fíndà Studio</span><span>Thoughtfully made for your store.</span></footer>
+      </div>
+    </main>
+  </div>
+
+  <div id="admin-login-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="login-card">
+      <a class="login-brand" href="index.html"><img src="lofinda2.png" alt="Lọ́fíndà" width="120" height="72"></a>
+      <p class="eyebrow">PRIVATE WORKSPACE</p>
+      <h2 id="login-title">Welcome back.</h2>
+      <p class="login-copy">Sign in to manage your Lọ́fíndà storefront.</p>
       <form id="adminLoginForm">
-        <input type="password" id="admin-password" placeholder="Enter admin password" required>
-        <button type="submit">Login</button>
+        <label for="admin-password">Admin password</label>
+        <input type="password" id="admin-password" placeholder="Enter your password" autocomplete="current-password" required>
+        <button class="primary-button" type="submit">Sign in <span aria-hidden="true">→</span></button>
       </form>
-      <p id="loginResponse"></p>
+      <p id="loginResponse" role="status" aria-live="polite"></p>
+      <a class="login-back-link" href="index.html">← Back to the storefront</a>
     </div>
   </div>
 
-  <!-- ====== ADD PRODUCT ====== -->
-  <div id="admin-section" class="container">
-    <h2>Add New Product</h2>
-    <form id="addProductForm">
-      <input type="text" id="prod-name" placeholder="Product Name" required>
-      <textarea id="prod-desc" placeholder="Product Description"></textarea>
-      <input type="number" id="prod-price" placeholder="Price (₦)" required>
-      <input type="file" id="prod-image-file" accept="image/*" required>
-      <button type="submit" id="addProductBtn">Add Product</button>
-    </form>
-    <p id="productResponse"></p>
-  </div>
-
-  <!-- ====== PRODUCT LIST ====== -->
-  <div id="product-list" class="container">
-    <h2>All Products</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Image</th>
-          <th>Name</th>
-          <th>Price (₦)</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="productTableBody"></tbody>
-    </table>
-  </div>
-
-  <!-- ====== ORDERS ====== -->
-  <div id="order-list" class="container">
-    <h2>Orders</h2>
-
-    <div class="order-stats">
-      <div class="stat total">Total: <span id="totalCount">0</span></div>
-      <div class="stat pending">Pending: <span id="pendingCount">0</span></div>
-      <div class="stat confirmed">Confirmed: <span id="confirmedCount">0</span></div>
-      <div class="stat delivered">Delivered: <span id="deliveredCount">0</span></div>
-    </div>
-
-    <input type="text" id="searchOrders" placeholder="Search by name, phone, or email...">
-
-    <table>
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Customer</th>
-          <th>Phone</th>
-          <th>Email</th>
-          <th>Address</th>
-          <th>Items</th>
-          <th>Total (₦)</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="ordersBody"></tbody>
-    </table>
-  </div>
-
-  <!-- ====== EDIT MODAL ====== -->
-  <div id="edit-modal">
-    <div class="modal-box">
-      <h2>Edit Product</h2>
+  <div id="edit-modal" class="edit-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+    <div class="edit-card">
+      <div class="edit-heading"><div><p class="eyebrow">COLLECTION</p><h2 id="edit-title">Edit product</h2></div><button class="icon-close" type="button" onclick="closeEditModal()" aria-label="Close edit form">&times;</button></div>
       <form id="editProductForm">
         <input type="hidden" id="edit-id">
-        <input type="text" id="edit-name" placeholder="Product Name" required>
-        <textarea id="edit-desc" placeholder="Product Description"></textarea>
-        <input type="number" id="edit-price" placeholder="Price (₦)" required>
-        <input type="file" id="edit-image-file" accept="image/*">
-        <button type="submit">Save Changes</button>
-        <button type="button" onclick="closeEditModal()">Cancel</button>
+        <label for="edit-name">Product name</label>
+        <input type="text" id="edit-name" placeholder="Product name" required>
+        <label for="edit-desc">Description or category</label>
+        <textarea id="edit-desc" rows="3" placeholder="Description"></textarea>
+        <label for="edit-price">Price (NGN)</label>
+        <input type="number" id="edit-price" placeholder="Price" min="0" step="1" required>
+        <label for="edit-image-file">Replace photograph <span>(optional)</span></label>
+        <input type="file" id="edit-image-file" accept="image/jpeg,image/png,image/webp">
+        <div class="edit-actions"><button class="secondary-button" type="button" onclick="closeEditModal()">Cancel</button><button class="primary-button" type="submit">Save changes</button></div>
       </form>
     </div>
   </div>
 
-<!-- Loading Spinner -->
-<div id="loading-indicator" class="loading-indicator">
-  <div class="spinner"></div>
-  <p>Loading, please wait...</p>
-</div>
+  <div id="loading-indicator" class="loading-indicator" aria-live="polite" aria-label="Loading dashboard">
+    <span class="spinner"></span><p>Preparing your workspace...</p>
+  </div>
 
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
   <script src="config.js"></script>
   <script src="admin.js"></script>
 </body>

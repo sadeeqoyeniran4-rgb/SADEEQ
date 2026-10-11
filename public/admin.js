@@ -3,6 +3,7 @@
 // ===============================
 const API_BASE = "https://lofinda.onrender.com";
 const ADMIN_PASSWORD = "sadeeq123"; // ⚠️ Change this to a secure password
+let loadedOrders = [];
 
 // ===============================
 // 🔐 ADMIN LOGIN HANDLING
@@ -12,13 +13,6 @@ const loginResponse = document.getElementById("loginResponse");
 const adminModal = document.getElementById("admin-login-modal");
 const adminSection = document.getElementById("admin-section");
 const loadingIndicator = document.getElementById("loading-indicator");
-
-// Hide admin section by default
-window.addEventListener("DOMContentLoaded", () => {
-  adminModal.style.display = "flex";
-  adminSection.style.display = "none";
-  loadingIndicator.style.display = "none";
-});
 
 // Handle login
 if (adminLoginForm) {
@@ -52,6 +46,8 @@ if (localStorage.getItem("isAdmin") === "true") {
   document.getElementById("product-list").style.display = "block";
   document.getElementById("order-list").style.display = "block";
   initializeDashboard();
+} else {
+  adminModal.style.display = "flex";
 }
 
 // ===============================
@@ -133,28 +129,67 @@ async function loadProducts() {
     if (!res.ok) throw new Error("Failed to load products");
     const products = await res.json();
 
-    productTableBody.innerHTML = products.length
-      ? products
-          .map(
-            (p) => `
-        <tr>
-          <td>${p.id}</td>
-          <td><img src="${p.image_url}" alt="${p.name}" width="80" height="80" style="object-fit:cover;border-radius:8px;"></td>
-          <td>${p.name}</td>
-          <td>₦${Number(p.price).toLocaleString()}</td>
-          <td>
-            <button class="edit-btn" onclick="openEditModal(${p.id}, '${p.name}', '${p.description || ""}', ${p.price})">Edit</button>
-            <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
-          </td>
-        </tr>`
-          )
-          .join("")
-      : `<tr><td colspan="5">No products found</td></tr>`;
+    productTableBody.replaceChildren();
+    if (!products.length) {
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+      cell.colSpan = 5;
+      cell.textContent = "No products found";
+      row.append(cell);
+      productTableBody.append(row);
+      return;
+    }
+
+    products.forEach(product => {
+      const row = document.createElement("tr");
+      const idCell = document.createElement("td");
+      idCell.textContent = product.id;
+      const imageCell = document.createElement("td");
+      const image = document.createElement("img");
+      image.src = product.image_url || "lofinda2.png";
+      image.alt = product.name || "Product";
+      image.loading = "lazy";
+      imageCell.append(image);
+      const nameCell = document.createElement("td");
+      nameCell.textContent = product.name || "";
+      const priceCell = document.createElement("td");
+      priceCell.textContent = `₦${Number(product.price).toLocaleString()}`;
+      const actionCell = document.createElement("td");
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.className = "edit-btn";
+      editButton.textContent = "Edit";
+      editButton.dataset.product = JSON.stringify(product);
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "delete-btn";
+      deleteButton.textContent = "Delete";
+      deleteButton.dataset.id = product.id;
+      actionCell.append(editButton, deleteButton);
+      row.append(idCell, imageCell, nameCell, priceCell, actionCell);
+      productTableBody.append(row);
+    });
   } catch (err) {
     console.error("❌ Error loading products:", err);
     productTableBody.innerHTML = `<tr><td colspan="5">Error loading products.</td></tr>`;
   }
 }
+
+productTableBody.addEventListener("click", event => {
+  const button = event.target.closest("button");
+  if (!button) return;
+
+  if (button.classList.contains("edit-btn")) {
+    try {
+      const product = JSON.parse(button.dataset.product);
+      openEditModal(product.id, product.name, product.description || "", product.price);
+    } catch (err) {
+      console.error("Could not open the selected product for editing:", err);
+    }
+  } else if (button.classList.contains("delete-btn")) {
+    deleteProduct(button.dataset.id);
+  }
+});
 
 // ===============================
 // 🗑️ DELETE PRODUCT
@@ -243,7 +278,8 @@ async function loadOrders() {
     if (!res.ok) throw new Error("Failed to fetch orders");
 
     const data = await res.json();
-    const orders = data.orders || []; // ✅ Extract actual array
+    const orders = Array.isArray(data.orders) ? data.orders : [];
+    loadedOrders = orders;
 
     const ordersBody = document.getElementById("ordersBody");
     const totalCount = document.getElementById("totalCount");
@@ -251,70 +287,112 @@ async function loadOrders() {
     const confirmedCount = document.getElementById("confirmedCount");
     const deliveredCount = document.getElementById("deliveredCount");
 
-    if (!orders.length) {
-      ordersBody.innerHTML = `<tr><td colspan="10">No orders yet</td></tr>`;
-      totalCount.textContent = pendingCount.textContent = confirmedCount.textContent = deliveredCount.textContent = 0;
-      return;
-    }
-
     // ✅ Update stats
     totalCount.textContent = orders.length;
     pendingCount.textContent = orders.filter(o => o.status === "pending").length;
     confirmedCount.textContent = orders.filter(o => o.status === "confirmed").length;
     deliveredCount.textContent = orders.filter(o => o.status === "delivered").length;
 
-    // ✅ Render orders
-    ordersBody.innerHTML = orders.map(o => {
-      const items = o.items.map(i => `${i.product_name} (${i.quantity} × ₦${i.price})`).join("<br>");
-      return `
-        <tr>
-          <td>${o.id}</td>
-          <td>${o.customer_name}</td>
-          <td>${o.phone || "N/A"}</td>
-          <td>${o.email || ""}</td>
-          <td>${o.address}</td>
-          <td>${items}</td>
-          <td>₦${Number(o.total_amount).toLocaleString()}</td>
-          <td><span class="status ${o.status}">${o.status}</span></td>
-          <td>${new Date(o.created_at).toLocaleDateString()}</td>
-          <td>
-            ${o.status === "pending"
-              ? `<button class="confirm-btn" data-id="${o.id}">Confirm</button>`
-              : o.status === "confirmed"
-                ? `<button class="deliver-btn" data-id="${o.id}">Mark Delivered</button>`
-                : `<button class="delete-btn" data-id="${o.id}">Delete</button>`}
-          </td>
-        </tr>`;
-    }).join("");
-
-    // ✅ Button actions
-    document.querySelectorAll(".confirm-btn").forEach(btn =>
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        await updateOrderStatus(id, "confirmed");
-      })
-    );
-
-    document.querySelectorAll(".deliver-btn").forEach(btn =>
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        await updateOrderStatus(id, "delivered");
-      })
-    );
-
-    document.querySelectorAll(".delete-btn").forEach(btn =>
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        if (!confirm("Delete this order?")) return;
-        await fetch(`${API_BASE}/api/orders/${id}`, { method: "DELETE" });
-        loadOrders();
-      })
-    );
+    renderOrders(orders);
 
   } catch (err) {
     console.error("❌ Error fetching orders:", err);
   }
 }
+
+function renderOrders(orders) {
+  const ordersBody = document.getElementById("ordersBody");
+  const searchTerm = document.getElementById("searchOrders").value.trim().toLocaleLowerCase();
+  const visibleOrders = orders.filter(order => {
+    const searchable = [
+      order.id,
+      order.customer_name,
+      order.phone,
+      order.email,
+      order.address,
+      ...(order.items || []).map(item => item.product_name),
+    ].join(" ").toLocaleLowerCase();
+    return searchable.includes(searchTerm);
+  });
+  ordersBody.replaceChildren();
+
+  if (!visibleOrders.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 10;
+    cell.textContent = orders.length ? "No orders match your search." : "No orders yet";
+    row.append(cell);
+    ordersBody.append(row);
+    return;
+  }
+
+  const addCell = (row, value) => {
+    const cell = document.createElement("td");
+    cell.textContent = value === null || value === undefined ? "" : String(value);
+    row.append(cell);
+  };
+
+  visibleOrders.forEach(order => {
+    const row = document.createElement("tr");
+    addCell(row, `#${order.id}`);
+    addCell(row, order.customer_name || "N/A");
+    addCell(row, order.phone || "N/A");
+    addCell(row, order.email || "N/A");
+    addCell(row, order.address || "N/A");
+    addCell(row, (order.items || []).map(item => `${item.product_name} (${item.quantity} × ₦${Number(item.price).toLocaleString()})`).join(", "));
+    addCell(row, `₦${Number(order.total_amount).toLocaleString()}`);
+
+    const statusCell = document.createElement("td");
+    const status = document.createElement("span");
+    status.className = `status ${["pending", "confirmed", "delivered"].includes(order.status) ? order.status : ""}`;
+    status.textContent = order.status || "unknown";
+    statusCell.append(status);
+    row.append(statusCell);
+
+    const date = new Date(order.created_at);
+    addCell(row, Number.isNaN(date.getTime()) ? "N/A" : date.toLocaleDateString());
+    const actionCell = document.createElement("td");
+    const actionButton = document.createElement("button");
+    actionButton.type = "button";
+    actionButton.dataset.id = order.id;
+    if (order.status === "pending") {
+      actionButton.className = "confirm-btn";
+      actionButton.textContent = "Confirm";
+    } else if (order.status === "confirmed") {
+      actionButton.className = "deliver-btn";
+      actionButton.textContent = "Mark delivered";
+    } else {
+      actionButton.className = "delete-btn";
+      actionButton.textContent = "Delete";
+    }
+    actionCell.append(actionButton);
+    row.append(actionCell);
+    ordersBody.append(row);
+  });
+}
+
+document.getElementById("searchOrders").addEventListener("input", () => {
+  renderOrders(loadedOrders);
+});
+
+document.getElementById("ordersBody").addEventListener("click", async event => {
+  const button = event.target.closest("button");
+  if (!button) return;
+  const id = button.dataset.id;
+  if (button.classList.contains("confirm-btn")) {
+    await updateOrderStatus(id, "confirmed");
+  } else if (button.classList.contains("deliver-btn")) {
+    await updateOrderStatus(id, "delivered");
+  } else if (button.classList.contains("delete-btn") && confirm("Delete this order?")) {
+    try {
+      const response = await fetch(`${API_BASE}/api/orders/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete order");
+      await loadOrders();
+    } catch (err) {
+      console.error("❌ Error deleting order:", err);
+    }
+  }
+});
 
 async function updateOrderStatus(id, status) {
   try {
@@ -331,6 +409,26 @@ async function updateOrderStatus(id, status) {
   }
 }
 
+const adminSidebar = document.querySelector(".admin-sidebar");
+const adminMenuToggle = document.getElementById("hamburger-admin");
+const adminNavigation = document.getElementById("nav-links-admin");
+
+adminMenuToggle.addEventListener("click", () => {
+  const isOpen = adminMenuToggle.getAttribute("aria-expanded") === "true";
+  adminMenuToggle.setAttribute("aria-expanded", String(!isOpen));
+  adminMenuToggle.setAttribute("aria-label", isOpen ? "Open dashboard navigation" : "Close dashboard navigation");
+  adminSidebar.classList.toggle("is-open", !isOpen);
+});
+
+adminNavigation.addEventListener("click", event => {
+  if (event.target.closest("a")) {
+    adminSidebar.classList.remove("is-open");
+    adminMenuToggle.setAttribute("aria-expanded", "false");
+    adminMenuToggle.setAttribute("aria-label", "Open dashboard navigation");
+  }
+});
+
+document.getElementById("admin-year").textContent = String(new Date().getFullYear());
 
 // ===============================
 // 🚪 LOGOUT

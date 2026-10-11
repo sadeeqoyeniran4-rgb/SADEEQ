@@ -1161,15 +1161,17 @@ body.storefront {
   }
 
   .hero {
-    min-height: min(690px, calc(88svh - 70px));
+    min-height: clamp(350px, 60svh, 490px);
     align-items: flex-end;
-    padding: 4rem 1.5rem 6.5rem;
+    padding: 2.75rem 1.5rem 4.75rem;
     background-image: linear-gradient(0deg, rgb(34 22 31 / 83%) 0%, rgb(34 22 31 / 46%) 63%, rgb(34 22 31 / 12%) 100%), url("hero.svg");
-    background-position: 58% center;
+    background-position: center, center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%, contain;
   }
 
   .hero h1 {
-    font-size: clamp(3.1rem, 13vw, 5.1rem);
+    font-size: clamp(2.65rem, 10vw, 4rem);
   }
 
   .hero-copy {
@@ -1202,6 +1204,16 @@ body.storefront {
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
+  }
+
+  .product-image-wrap {
+    aspect-ratio: 1;
+  }
+
+  .product-image-wrap img {
+    padding: 0.55rem;
+    background: var(--cream);
+    object-fit: contain;
   }
 
   .product-copy {
@@ -1277,6 +1289,11 @@ body.storefront {
   .product-copy {
     min-height: 195px;
     padding: 0.65rem;
+  }
+
+  .hero {
+    min-height: 390px;
+    padding-inline: 1.1rem;
   }
 }
 
