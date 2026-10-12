@@ -85,6 +85,10 @@
         <p>From everyday favourites to scents that make an entrance.</p>
       </div>
       <div class="collection-tools">
+        <div class="collection-meta">
+          <p class="filter-label">Shop by fragrance type</p>
+          <p class="results-count" id="results-count" aria-live="polite"></p>
+        </div>
         <div class="category-filter" id="category-filter" role="group" aria-label="Filter by fragrance type">
           <button class="filter-btn active" type="button" data-category="all" aria-pressed="true">Everything</button>
           <button class="filter-btn" type="button" data-category="designer-perfume" aria-pressed="false">Designer</button>
@@ -97,7 +101,6 @@
           <button class="filter-btn" type="button" data-category="mini-perfume" aria-pressed="false">Miniatures</button>
           <button class="filter-btn" type="button" data-category="diffuser" aria-pressed="false">Diffusers</button>
         </div>
-        <p class="results-count" id="results-count" aria-live="polite"></p>
       </div>
       <div class="product-grid" id="product-grid" aria-live="polite" aria-busy="true"></div>
       <nav class="pagination" id="pagination" aria-label="Product pages"></nav>
