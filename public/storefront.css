@@ -424,22 +424,24 @@ body.storefront {
 }
 
 .category-filter {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 0.6rem;
-  overflow-x: auto;
   padding: 0.35rem 0.25rem 0.85rem;
-  scrollbar-width: thin;
 }
 
 .filter-btn {
-  flex: 0 0 auto;
-  min-height: 40px;
+  min-width: 0;
+  min-height: 44px;
   padding: 0.55rem 0.9rem;
   border: 1px solid var(--line);
   border-radius: 99px;
   background: transparent;
   color: var(--plum);
   font-size: 0.81rem;
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
   cursor: pointer;
   transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
 }
@@ -1161,13 +1163,29 @@ body.storefront {
   }
 
   .hero {
-    min-height: clamp(350px, 60svh, 490px);
+    min-height: clamp(390px, calc(100svh - 70px), 620px);
     align-items: flex-end;
     padding: 2.75rem 1.5rem 4.75rem;
-    background-image: linear-gradient(0deg, rgb(34 22 31 / 83%) 0%, rgb(34 22 31 / 46%) 63%, rgb(34 22 31 / 12%) 100%), url("hero.svg");
-    background-position: center, center;
-    background-repeat: no-repeat;
-    background-size: 100% 100%, contain;
+    background-color: transparent;
+    background-image: url("hero.svg");
+    background-position: center;
+    background-size: cover;
+  }
+
+  .hero::after {
+    display: none;
+  }
+
+  .hero-content {
+    text-shadow: 0 2px 18px rgb(20 13 19 / 70%);
+  }
+
+  .hero-content .button {
+    text-shadow: none;
+  }
+
+  .hero-scroll {
+    display: none;
   }
 
   .hero h1 {
@@ -1177,11 +1195,6 @@ body.storefront {
   .hero-copy {
     max-width: 330px;
     margin-block: 1rem 1.4rem;
-  }
-
-  .hero-scroll {
-    right: 1.5rem;
-    bottom: 1.2rem;
   }
 
   .section-wrap {
@@ -1197,8 +1210,9 @@ body.storefront {
   }
 
   .category-filter {
-    margin-inline: -1rem;
-    padding-inline: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.25rem 0 0.75rem;
   }
 
   .product-grid {

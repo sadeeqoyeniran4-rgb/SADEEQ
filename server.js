@@ -4,14 +4,25 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const { Pool } = require("pg");
 const cors = require("cors");
-const fetch = require("node-fetch"); // npm install node-fetch@2
+const nodeFetch = require("node-fetch");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const { calculateCheckout, isValidReference, parseCart, validateCustomer } = require("./lib/commerce");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.locals.db = null;
+app.locals.paystackSecret = process.env.PAYSTACK_SECRET_KEY;
+app.locals.paystackFetch = (url, options = {}) => nodeFetch(url, {
+  ...options,
+  headers: {
+    ...options.headers,
+    Authorization: `Bearer ${app.locals.paystackSecret || ""}`,
+  },
+});
+const fetch = (url, options) => app.locals.paystackFetch(url, options);
 
 // ================== CLOUDINARY CONFIG ==================
 cloudinary.config({
@@ -25,15 +36,15 @@ const storage = new CloudinaryStorage({
   params: {
     folder: "lofinda_products",
     allowed_formats: ["jpg", "png", "jpeg", "webp"],
-    transformation: [{ width: 500, height: 500, crop: "fill" }],
+    transformation: [{ width: 500, height: 500, crop: "fill", quality: "auto", fetch_format: "auto" }],
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // ================== MIDDLEWARE ==================
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "100kb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ================== DATABASE CONFIG ==================
@@ -44,26 +55,31 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASS,
   port: 5432,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
+  connectionTimeoutMillis: 5000,
+  statement_timeout: 5000,
+  idleTimeoutMillis: 30000,
+  max: 10,
 });
 
-pool.connect()
-  .then(() => console.log("✅ Database connected"))
-  .catch(err => console.warn("⚠️ Database not connected:", err.message));
+app.locals.db = pool;
+pool.on("error", err => console.error("Unexpected database pool error:", err.message));
+
+app.get("/health/live", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.get("/health/ready", async (req, res) => {
+  try {
+    await app.locals.db.query("SELECT 1");
+    res.status(200).json({ status: "ready", database: "connected" });
+  } catch (err) {
+    console.error("Database readiness check failed:", err.message);
+    res.status(503).json({ status: "not_ready", database: "unavailable" });
+  }
+});
 
 // ================== ADMIN AUTH ==================
-function verifyAdmin(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader) return res.status(403).json({ message: "No token provided" });
-
-  const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.JWT_SECRET || "jwtsecretkey", (err, decoded) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
-    req.admin = decoded;
-    next();
-  });
-}
-
 app.post("/api/admin-login", (req, res) => {
   const { password } = req.body;
   if (password === process.env.ADMIN_PASS) {
@@ -96,8 +112,52 @@ app.post("/api/contact", (req, res) => {
 // ================== PRODUCTS ==================
 app.get("/api/products", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM products ORDER BY id DESC");
-    res.json(result.rows);
+    const db = app.locals.db;
+    const paginated = req.query.page !== undefined || req.query.limit !== undefined ||
+      req.query.category !== undefined || req.query.q !== undefined;
+    if (!paginated) {
+      const result = await db.query("SELECT * FROM products ORDER BY id DESC");
+      return res.json(result.rows);
+    }
+
+    const requestedPage = req.query.page === undefined ? 1 : Number(req.query.page);
+    const limit = req.query.limit === undefined ? 12 : Number(req.query.limit);
+    if (!Number.isSafeInteger(requestedPage) || requestedPage < 1 ||
+        !Number.isSafeInteger(limit) || limit < 1 || limit > 48) {
+      return res.status(400).json({ error: "Page must be positive and limit must be between 1 and 48." });
+    }
+
+    const conditions = [];
+    const values = [];
+    const search = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
+    const category = typeof req.query.category === "string" ? req.query.category.trim().slice(0, 60) : "";
+    if (search) {
+      values.push(`%${search}%`);
+      conditions.push(`(name ILIKE $${values.length} OR description ILIKE $${values.length})`);
+    }
+    if (category && category !== "all") {
+      values.push(`%${category}%`);
+      conditions.push(
+        `regexp_replace(lower(coalesce(description, '')), '[^a-z0-9]+', '-', 'g') LIKE $${values.length}`
+      );
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+    const countResult = await db.query(
+      `SELECT COUNT(*) AS total_count FROM products ${where}`,
+      values
+    );
+    const total = Number(countResult.rows[0].total_count);
+    const pageCount = Math.ceil(total / limit);
+    const page = Math.min(requestedPage, Math.max(1, pageCount));
+    const pageValues = [...values, limit, (page - 1) * limit];
+    const result = await db.query(
+      `SELECT * FROM products ${where} ORDER BY id DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
+      pageValues
+    );
+    res.json({
+      products: result.rows,
+      pagination: { page, limit, total, pageCount },
+    });
   } catch (err) {
     console.error("❌ Error fetching products:", err);
     res.status(500).json({ error: "Database error" });
@@ -170,50 +230,21 @@ app.put("/api/products/:id", upload.single("image"), async (req, res) => {
 // ================== CHECKOUT CALCULATION ==================
 app.post("/api/checkout", async (req, res) => {
   try {
-    const { cart, shipping, frontendDiscountApplied } = req.body;
-
-    if (!cart || cart.length === 0) {
-      return res.status(400).json({ success: false, message: "Cart is empty" });
-    }
-
-    // Calculate subtotal safely
-    let subtotal = cart.reduce((sum, item) => {
-      const price = parseFloat(item.price) || 0;
-      const qty = item.quantity || item.qty || 1;
-      return sum + price * qty;
-    }, 0);
-
-    // Determine shipping cost
-    let shippingCost = 0;
-    if (shipping === "intra-state") shippingCost = 1000;
-    else if (shipping === "inter-state") shippingCost = 3000;
-    else if (shipping === "pickup") shippingCost = 0;
-
-    // Optional 5% discount (only if frontend hasn't already applied it)
-    const today = new Date();
-    const discountStart = new Date("2025-10-28");
-    const discountEnd = new Date("2025-11-15");
-
-    let discount = 0;
-    if (!frontendDiscountApplied && today >= discountStart && today <= discountEnd) {
-      discount = 0.05 * subtotal;
-    }
-
-    // Calculate grand total
-    const grandTotal = subtotal - discount + shippingCost;
-
-    // Send response
-    res.json({
-      success: true,
-      subtotal,
-      shippingCost,
-      discount,
-      grandTotal,
-    });
-
+    const body = req.body && typeof req.body === "object" ? req.body : {};
+    const cart = parseCart(body.cart);
+    const ids = cart.map(item => item.id);
+    const result = await app.locals.db.query(
+      "SELECT id, name, price FROM products WHERE id = ANY($1::int[])",
+      [ids]
+    );
+    const totals = calculateCheckout(result.rows, cart, body.shipping);
+    res.json({ success: true, ...totals });
   } catch (err) {
     console.error("❌ Checkout error:", err);
-    res.status(500).json({ success: false, message: "Server error calculating checkout" });
+    res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.statusCode ? err.message : "Server error calculating checkout",
+    });
   }
 });
 
@@ -221,52 +252,103 @@ app.post("/api/checkout", async (req, res) => {
 // ================== VERIFY PAYMENT (FIXED) ==================
 app.post("/api/verify-payment", async (req, res) => {
   try {
-    const { reference, cart, customer, totals } = req.body;
-
-    if (!reference) {
-      return res.status(400).json({ success: false, message: "Missing payment reference" });
+    const body = req.body && typeof req.body === "object" ? req.body : {};
+    const { reference, cart, customer, shipping } = body;
+    if (!isValidReference(reference)) {
+      return res.status(400).json({ success: false, message: "A valid payment reference is required." });
     }
+    if (!app.locals.paystackSecret) {
+      return res.status(503).json({ success: false, message: "Secure payment verification is not configured." });
+    }
+
+    const parsedCart = parseCart(cart);
+    const customerDetails = validateCustomer(customer);
+    const ids = parsedCart.map(item => item.id);
+    const productsResult = await app.locals.db.query(
+      "SELECT id, name, price FROM products WHERE id = ANY($1::int[])",
+      [ids]
+    );
+    const totals = calculateCheckout(productsResult.rows, parsedCart, shipping);
 
     // ✅ Verify payment with Paystack
     const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` },
     });
     const data = await response.json();
-
-    if (!data.status || data.data.status !== "success") {
-      return res.status(400).json({ success: false, message: "Payment verification failed" });
+    if (!response.ok || !data.status || data.data?.status !== "success" ||
+        data.data.reference !== reference) {
+      return res.status(400).json({ success: false, message: "Payment verification failed." });
+    }
+    if (Number(data.data.amount) !== totals.amountMinor || data.data.currency !== "NGN") {
+      return res.status(400).json({
+        success: false,
+        message: "The verified payment amount does not match this order. Please contact us with your payment reference.",
+      });
     }
 
-    // ✅ Save order
-    const totalAmount = totals?.grandTotal || data.data.amount / 100;
-
-    const orderResult = await pool.query(
-      `INSERT INTO orders (customer_name, email, phone, address, total_amount, payment_reference)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-      [
-        customer?.name || "N/A",
-        customer?.email || "N/A",
-        customer?.phone || "N/A",
-        customer?.address || "N/A",
-        totalAmount,
-        reference,
-      ]
-    );
-
-    const orderId = orderResult.rows[0].id;
-
-    for (const item of cart) {
-      await pool.query(
-        `INSERT INTO order_items (order_id, product_name, quantity, price)
-         VALUES ($1, $2, $3, $4)`,
-        [orderId, item.name, item.quantity || item.qty || 1, item.price]
+    const client = await app.locals.db.connect();
+    let orderId;
+    let alreadySaved = false;
+    try {
+      await client.query("BEGIN");
+      await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [reference]);
+      const existing = await client.query(
+        "SELECT id FROM orders WHERE payment_reference = $1 LIMIT 1",
+        [reference]
       );
+      if (existing.rowCount) {
+        orderId = existing.rows[0].id;
+        alreadySaved = true;
+      } else {
+        const orderResult = await client.query(
+          `INSERT INTO orders (customer_name, email, phone, address, total_amount, payment_reference)
+           VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+          [
+            customerDetails.name,
+            customerDetails.email,
+            customerDetails.phone,
+            customerDetails.address,
+            totals.grandTotal,
+            reference,
+          ]
+        );
+        orderId = orderResult.rows[0].id;
+
+        for (const item of totals.items) {
+          await client.query(
+            `INSERT INTO order_items (order_id, product_name, quantity, price)
+             VALUES ($1, $2, $3, $4)`,
+            [orderId, item.name, item.quantity, item.price]
+          );
+        }
+      }
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
     }
 
-    res.json({ success: true, message: "✅ Payment verified and order saved!" });
+    res.json({
+      success: true,
+      message: alreadySaved ? "Payment was already confirmed." : "Payment verified and order saved.",
+      orderId,
+      alreadySaved,
+      items: totals.items,
+      totals: {
+        subtotal: totals.subtotal,
+        shippingCost: totals.shippingCost,
+        discount: totals.discount,
+        grandTotal: totals.grandTotal,
+      },
+    });
   } catch (err) {
     console.error("❌ Verify payment error:", err);
-    res.status(500).json({ success: false, message: "Server error verifying payment" });
+    res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.statusCode ? err.message : "Server error verifying payment",
+    });
   }
 });
 
@@ -364,6 +446,10 @@ app.post("/api/reviews", async (req, res) => {
 
 
 // ================== START SERVER ==================
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

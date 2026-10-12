@@ -17,6 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let category = "all";
   let query = "";
   let currentPage = 1;
+  let pageCount = 0;
+  let totalProducts = 0;
+  let catalogRequestId = 0;
+  let catalogTimer;
   let checkoutTotals = null;
   let checkoutRequestId = 0;
   let activeDialog = null;
@@ -49,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
           id: item.id,
           name: item.name,
           price: Number(item.price),
-          qty: Math.max(1, Math.floor(Number(item.qty) || 1)),
+          qty: Math.min(99, Math.max(1, Math.floor(Number(item.qty) || 1))),
         }))
         .filter(item => Number.isFinite(item.price) && item.price >= 0);
     } catch (error) {
@@ -147,8 +151,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function addToCart(product) {
     const existing = cart.find(item => String(item.id) === String(product.id));
-    if (existing) {
+    if (existing && existing.qty < 99) {
       existing.qty += 1;
+    } else if (existing) {
+      showToast("You can add up to 99 of the same product.");
     } else {
       cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
     }
@@ -176,15 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function normalized(value) {
-    return String(value || "")
-      .toLocaleLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-  }
-
   function renderPagination(pageCount) {
     pagination.replaceChildren();
     if (pageCount <= 1) return;
@@ -199,46 +196,50 @@ document.addEventListener("DOMContentLoaded", () => {
       button.setAttribute("aria-label", label);
       button.addEventListener("click", () => {
         currentPage = page;
-        renderProducts();
+        loadProducts();
         document.getElementById("shop-title").scrollIntoView({ behavior: "smooth", block: "start" });
       });
       pagination.append(button);
     };
 
-    addPageButton("Previous page", Math.max(1, currentPage - 1), "←", currentPage === 1);
-    for (let page = 1; page <= pageCount; page += 1) {
-      addPageButton(`Page ${page}`, page, String(page));
+    addPageButton("Previous page", Math.max(1, currentPage - 1), "Previous", currentPage === 1);
+    const pages = new Set([1, pageCount]);
+    for (let page = Math.max(1, currentPage - 2); page <= Math.min(pageCount, currentPage + 2); page += 1) {
+      pages.add(page);
     }
-    addPageButton("Next page", Math.min(pageCount, currentPage + 1), "→", currentPage === pageCount);
+    let previousPage = 0;
+    [...pages].sort((left, right) => left - right).forEach(page => {
+      if (previousPage && page - previousPage > 1) {
+        const gap = document.createElement("span");
+        gap.className = "page-gap";
+        gap.setAttribute("aria-hidden", "true");
+        gap.textContent = "…";
+        pagination.append(gap);
+      }
+      addPageButton(`Page ${page}`, page, String(page));
+      previousPage = page;
+    });
+    addPageButton("Next page", Math.min(pageCount, currentPage + 1), "Next", currentPage === pageCount);
   }
 
   function renderProducts() {
-    const filtered = products.filter(product => {
-      const matchesCategory = category === "all" || normalized(product.description).includes(category);
-      const searchableText = `${product.name} ${product.description || ""}`.toLocaleLowerCase();
-      return matchesCategory && searchableText.includes(query);
-    });
-    const pageCount = Math.ceil(filtered.length / pageSize);
-    currentPage = Math.min(Math.max(1, currentPage), Math.max(1, pageCount));
-    const firstProduct = (currentPage - 1) * pageSize;
-    const visibleProducts = filtered.slice(firstProduct, firstProduct + pageSize);
-
     productGrid.replaceChildren();
-    resultsCount.textContent = `${filtered.length} ${filtered.length === 1 ? "fragrance" : "fragrances"}`;
-    if (!visibleProducts.length) {
+    resultsCount.textContent = `${totalProducts} ${totalProducts === 1 ? "fragrance" : "fragrances"}`;
+    if (!products.length) {
       const empty = document.createElement("div");
       empty.className = "empty-state";
       const heading = document.createElement("h3");
-      heading.textContent = products.length ? "No scents found this time." : "Our collection is being refreshed.";
+      const hasFilters = category !== "all" || Boolean(query);
+      heading.textContent = hasFilters ? "No scents found this time." : "Our collection is being refreshed.";
       const message = document.createElement("p");
-      message.textContent = products.length
+      message.textContent = hasFilters
         ? "Try another search or choose a different fragrance type."
         : "Please check back shortly, or get in touch and we will be happy to help.";
       empty.append(heading, message);
       productGrid.append(empty);
     }
 
-    visibleProducts.forEach(product => {
+    products.forEach(product => {
       const card = document.createElement("article");
       card.className = "product-card";
       const imageWrap = document.createElement("div");
@@ -246,6 +247,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const image = document.createElement("img");
       image.src = product.image_url || "lofinda2.png";
       image.alt = product.name;
+      image.width = 500;
+      image.height = 500;
+      image.sizes = "(max-width: 680px) 46vw, (max-width: 1000px) 30vw, 260px";
       image.loading = "lazy";
       image.decoding = "async";
       image.addEventListener("error", () => {
@@ -279,12 +283,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadProducts() {
+    window.clearTimeout(catalogTimer);
+    const requestId = ++catalogRequestId;
     spinner.setAttribute("aria-hidden", "false");
     productGrid.setAttribute("aria-busy", "true");
     try {
-      const data = await requestJson(`${API_BASE}/api/products`);
-      if (!Array.isArray(data)) throw new Error("The collection is temporarily unavailable.");
-      products = data
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(pageSize),
+        category,
+      });
+      if (query) params.set("q", query);
+      const data = await requestJson(`${API_BASE}/api/products?${params}`);
+      if (requestId !== catalogRequestId) return;
+      if (!data || !Array.isArray(data.products) || !data.pagination) {
+        throw new Error("The collection is temporarily unavailable.");
+      }
+      products = data.products
         .map(product => ({
           id: product.id,
           name: String(product.name || "").trim(),
@@ -293,8 +308,12 @@ document.addEventListener("DOMContentLoaded", () => {
           price: Number(product.price),
         }))
         .filter(product => product.id !== undefined && product.name && Number.isFinite(product.price) && product.price >= 0);
+      currentPage = Number(data.pagination.page) || 1;
+      pageCount = Number(data.pagination.pageCount) || 0;
+      totalProducts = Number(data.pagination.total) || 0;
       renderProducts();
     } catch (error) {
+      if (requestId !== catalogRequestId) return;
       console.error("Could not load the fragrance collection.", error);
       productGrid.replaceChildren();
       const message = document.createElement("p");
@@ -303,9 +322,15 @@ document.addEventListener("DOMContentLoaded", () => {
       productGrid.append(message);
       productGrid.setAttribute("aria-busy", "false");
       resultsCount.textContent = "";
+      pagination.replaceChildren();
     } finally {
-      spinner.setAttribute("aria-hidden", "true");
+      if (requestId === catalogRequestId) spinner.setAttribute("aria-hidden", "true");
     }
+  }
+
+  function scheduleCatalogLoad() {
+    window.clearTimeout(catalogTimer);
+    catalogTimer = window.setTimeout(() => loadProducts(), 250);
   }
 
   function openCheckout() {
@@ -342,7 +367,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await requestJson(`${API_BASE}/api/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart, shipping }),
+        body: JSON.stringify({
+          cart: cart.map(item => ({ id: item.id, quantity: item.qty })),
+          shipping,
+        }),
       });
       if (requestId !== checkoutRequestId) return;
       if (!data.success || !Number.isFinite(Number(data.grandTotal))) {
@@ -411,14 +439,24 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await requestJson(`${API_BASE}/api/verify-payment`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ reference: payment.reference, cart, customer, totals: checkoutTotals }),
+              body: JSON.stringify({
+                reference: payment.reference,
+                cart: cart.map(item => ({ id: item.id, quantity: item.qty })),
+                customer,
+                shipping: customer.shipping,
+              }),
             });
             if (!data.success) throw new Error(data.message || "Payment confirmation failed.");
             localStorage.setItem("lastOrder", JSON.stringify({
               reference: payment.reference,
-              cart,
+              cart: data.items.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                qty: item.quantity,
+              })),
               customer,
-              totals: checkoutTotals,
+              totals: data.totals,
             }));
             localStorage.removeItem("cart");
             window.location.assign("thankyou.html");
@@ -512,14 +550,14 @@ document.addEventListener("DOMContentLoaded", () => {
       query = "";
       currentPage = 1;
       searchClear.hidden = true;
-      renderProducts();
+      loadProducts();
     }
   });
   searchInput.addEventListener("input", () => {
-    query = searchInput.value.trim().toLocaleLowerCase();
+    query = searchInput.value.trim();
     currentPage = 1;
     searchClear.hidden = !searchInput.value;
-    renderProducts();
+    scheduleCatalogLoad();
   });
   searchBar.addEventListener("submit", event => event.preventDefault());
   searchClear.addEventListener("click", () => {
@@ -527,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
     query = "";
     currentPage = 1;
     searchClear.hidden = true;
-    renderProducts();
+    loadProducts();
     searchInput.focus();
   });
 
@@ -539,7 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
       item.classList.toggle("active", selected);
       item.setAttribute("aria-pressed", String(selected));
     });
-    renderProducts();
+    loadProducts();
   }));
 
   document.getElementById("cartBtn").addEventListener("click", event => showDialog(document.getElementById("cart-modal"), event.currentTarget));
@@ -552,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!button) return;
     const item = cart[Number(button.dataset.index)];
     if (!item) return;
-    if (button.dataset.action === "increase") item.qty += 1;
+    if (button.dataset.action === "increase") item.qty = Math.min(99, item.qty + 1);
     if (button.dataset.action === "decrease") item.qty = Math.max(1, item.qty - 1);
     if (button.dataset.action === "remove") cart.splice(Number(button.dataset.index), 1);
     updateCart();
