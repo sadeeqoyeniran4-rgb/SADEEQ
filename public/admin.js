@@ -261,6 +261,8 @@ if (editForm) {
 function closeEditModal() {
   document.getElementById("edit-modal").style.display = "none";
 }
+window.closeEditModal = closeEditModal;
+
 function openEditModal(id, name, description, price) {
   document.getElementById("edit-id").value = id;
   document.getElementById("edit-name").value = name;
@@ -281,7 +283,6 @@ async function loadOrders() {
     const orders = Array.isArray(data.orders) ? data.orders : [];
     loadedOrders = orders;
 
-    const ordersBody = document.getElementById("ordersBody");
     const totalCount = document.getElementById("totalCount");
     const pendingCount = document.getElementById("pendingCount");
     const confirmedCount = document.getElementById("confirmedCount");
